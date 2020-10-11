@@ -2,14 +2,14 @@ package apple.excursion.discord.data.leaderboard;
 
 import java.util.List;
 
-public class LeaderBoardEntry {
+public class LeaderboardEntry {
     public long discordId;
     public String name;
     public int points = 0;
     public String guildName;
     public String guildTag;
 
-    public LeaderBoardEntry(List<Object> entry, int endIndex) {
+    public LeaderboardEntry(List<Object> entry, int endIndex) {
         Object discordIdObject = entry.get(0);
         if (discordIdObject instanceof String) {
             try {
