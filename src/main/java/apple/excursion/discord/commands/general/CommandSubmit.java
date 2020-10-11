@@ -3,7 +3,7 @@ package apple.excursion.discord.commands.general;
 import apple.excursion.ExcursionMain;
 import apple.excursion.discord.DiscordBot;
 import apple.excursion.discord.commands.DoCommand;
-import apple.excursion.discord.data.Submissions;
+import apple.excursion.discord.reactions.SubmissionMessage;
 import apple.excursion.sheets.PlayerStats;
 import apple.excursion.utils.Pair;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -159,7 +159,7 @@ public class CommandSubmit implements DoCommand {
                     messages.add(message);
                 }
                 for (Message message : messages) {
-                    Submissions.addSubmission(message, idToName, messages, questName, links, attachment);
+                    new SubmissionMessage(message, idToName, messages, questName, links, attachment);
                 }
             }
             eventMessage.addReaction("\u2705").queue();

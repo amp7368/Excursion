@@ -20,13 +20,11 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
 public class DiscordBot extends ListenerAdapter {
     public static final String PREFIX = "t!";
 
-    private static final HashMap<String, DoReaction> reactionMap = new HashMap<>();
     public static String discordToken; // my bot
     public static JDA client;
 
@@ -64,10 +62,6 @@ public class DiscordBot extends ListenerAdapter {
 
     @Override
     public void onReady(@Nonnull ReadyEvent event) {
-        reactionMap.put("\u2B05", new ReactionArrowLeft());
-        reactionMap.put("\u27A1", new ReactionArrowRight());
-        reactionMap.put("\u2705", new ReactionCheckMark());
-        reactionMap.put("\u274C", new ReactionExit());
     }
 
     @Override
@@ -102,12 +96,6 @@ public class DiscordBot extends ListenerAdapter {
         if (user == null || user.isBot()) {
             return;
         }
-        String emojiName = event.getReactionEmote().getName();
-        for (String reaction : reactionMap.keySet()) {
-            if (emojiName.equals(reaction)) {
-                reactionMap.get(emojiName).dealWithReaction(event);
-                break;
-            }
-        }
+        AllReactables.dealWithReaction(event);
     }
 }

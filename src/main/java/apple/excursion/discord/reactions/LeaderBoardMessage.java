@@ -1,11 +1,14 @@
-package apple.excursion.discord.data.leaderboard;
+package apple.excursion.discord.reactions;
 
-import apple.excursion.discord.data.Pageable;
+import apple.excursion.discord.data.leaderboard.LeaderBoard;
+import apple.excursion.discord.data.leaderboard.LeaderBoardEntry;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 
 
-public class LeaderBoardMessage implements Pageable {
+public class LeaderBoardMessage implements ReactableMessage {
     private static final int ENTRIES_PER_PAGE = 20;
     private Message message;
     private int page;
@@ -23,8 +26,8 @@ public class LeaderBoardMessage implements Pageable {
         StringBuilder leaderboardMessage = new StringBuilder();
         leaderboardMessage.append(String.format("```glsl\nExcursion Leaderboards Page (%d)\n", page + 1));
         leaderboardMessage.append(getDash());
-        leaderboardMessage.append(String.format("|%5s","|"));
-        leaderboardMessage.append(String.format(" Name%28s","|"));
+        leaderboardMessage.append(String.format("|%5s", "|"));
+        leaderboardMessage.append(String.format(" Name%28s", "|"));
         leaderboardMessage.append(" Total EP |\n");
 
         int entriesLength = LeaderBoard.leaderBoardEntries.size();
@@ -51,7 +54,7 @@ public class LeaderBoardMessage implements Pageable {
     }
 
     private String getDash() {
-        return "--------------------------------------------------\n";
+        return "-".repeat(50) + "\n";
     }
 
     public void forward() {
@@ -68,6 +71,33 @@ public class LeaderBoardMessage implements Pageable {
             message.editMessage(getMessage()).queue();
         }
         this.lastUpdated = System.currentTimeMillis();
+    }
+
+    private void top() {
+        page = 0;
+        message.editMessage(getMessage()).queue();
+        this.lastUpdated = System.currentTimeMillis();
+    }
+
+
+    @Override
+    public void dealWithReaction(AllReactables.Reactable reactable, String reaction, MessageReactionAddEvent event) {
+        final User user = event.getUser();
+        if (user == null) return;
+        switch (reactable) {
+            case LEFT:
+                backward();
+                event.getReaction().removeReaction(user).queue();
+                break;
+            case RIGHT:
+                forward();
+                event.getReaction().removeReaction(user).queue();
+                break;
+            case TOP:
+                top();
+                event.getReaction().removeReaction(user).queue();
+                break;
+        }
     }
 
     @Override
