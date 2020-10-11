@@ -1,6 +1,7 @@
 package apple.excursion.discord.data.leaderboard;
 
 import apple.excursion.sheets.LeaderBoardSheet;
+import apple.excursion.sheets.SheetsPlayerStats;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -19,12 +20,12 @@ public class LeaderBoard {
             System.exit(1);
         }
         if (everyone == null) {
-            System.out.println("There is nobody in the spreadsheet or something else went wrong getting the leaderboard");
+            System.err.println("There is nobody in the spreadsheet or something else went wrong getting the leaderboard");
             System.exit(1);
         }
         int endIndex = 0;
         for (Object header : everyone.get(1)) {
-            if (header.equals("# Tasks Done"))
+            if (header.equals(SheetsPlayerStats.TASKS_DONE_HEADER))
                 break;
             endIndex++;
         }

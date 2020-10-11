@@ -11,14 +11,14 @@ import java.util.Collections;
 import java.util.List;
 
 public class SheetsPlayerStats {
-    private static final String MISSIONS_ROW_RANGE = "PlayerStats!C2:2";
+    private static final String MISSIONS_ROW_RANGE = "PlayerStats!E2:2";
     private static final String ID_COL_RANGE = "PlayerStats!A5:A";
     private static final String PLAYER_INFO_RANGE = "PlayerStats!A5:D";
     private static final String PLAYER_STATS_SHEET = "PlayerStats";
     private static final String BASE_PLAYER_STATS_RANGE = "E5";
 
     private static final String TOTAL_EP_EARNED_FORMULA = "=SUM(C%d:%s)";
-    public static final String TOTAL_EP_EARNED_HEADER = "Total EP earned";
+    public static final String TASKS_DONE_HEADER = "Tasks Done";
     private static final String TOTAL_TASKS_FORMULA = "=COUNT(C%d:%s)*1/98";
 
     public static boolean isQuest(String quest) {
@@ -82,7 +82,7 @@ public class SheetsPlayerStats {
             int headerValuesLength = headerValuesInside.size();
             for (int i = 0; i < headerValuesLength; i++) {
                 Object headerValueInside = headerValuesInside.get(i);
-                if (headerValueInside.equals(TOTAL_EP_EARNED_HEADER)) {
+                if (headerValueInside.equals(TASKS_DONE_HEADER)) {
                     totalEpEarnedCol = i;
                     totalTasksCol = i + 1;
                 }

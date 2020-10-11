@@ -33,8 +33,9 @@ public class Profile {
         for (int i = 0; i < questsListLength; i++) {
             Object questNameObject = questsList.get(i);
             Object playerQuestObject = playerQuestsList.get(i);
-            if (questNameObject.equals(SheetsPlayerStats.TOTAL_EP_EARNED_HEADER))
+            if (questNameObject.equals(SheetsPlayerStats.TASKS_DONE_HEADER)) {
                 break;
+            }
             if (playerQuestObject == null || playerQuestObject.equals("")) {
                 tasksNotDone.add(questNameObject.toString());
             } else if (playerQuestObject instanceof String) {
