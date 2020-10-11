@@ -3,7 +3,6 @@ package apple.excursion.discord.commands.general;
 import apple.excursion.discord.commands.DoCommand;
 import apple.excursion.discord.data.Profile;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
@@ -50,8 +49,8 @@ public class CommandProfile implements DoCommand {
             profileMember = event.getMember();
         }
         StringBuilder text = new StringBuilder();
-        int questsNotDoneSize = profile.questsNotDone.size();
-        double percentage = profile.questsDone.size() / (double) (profile.questsDone.size() + questsNotDoneSize);
+        int questsNotDoneSize = profile.tasksNotDone.size();
+        double percentage = profile.tasksDone.size() / (double) (profile.tasksDone.size() + questsNotDoneSize);
         text.append(getProgressBar(percentage));
         text.append(" ");
         text.append((int) (percentage * 100));
@@ -60,7 +59,7 @@ public class CommandProfile implements DoCommand {
         text.append('\n');
         text.append("__*Uncompleted tasks:*__\n");
         int sizeToDisplay = Math.min(20, questsNotDoneSize);
-        text.append(String.join(" **\u2022** ", profile.questsNotDone.subList(0, sizeToDisplay)));
+        text.append(String.join(" **\u2022** ", profile.tasksNotDone.subList(0, sizeToDisplay)));
         if (sizeToDisplay < questsNotDoneSize) {
             text.append(String.format("...and **%d** more.", questsNotDoneSize - sizeToDisplay));
         }

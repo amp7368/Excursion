@@ -10,12 +10,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class PlayerStats {
+public class SheetsPlayerStats {
     private static final String MISSIONS_ROW_RANGE = "PlayerStats!C2:2";
     private static final String ID_COL_RANGE = "PlayerStats!A5:A";
-    private static final String NAME_ID_COL_RANGE = "PlayerStats!A5:B";
+    private static final String PLAYER_INFO_RANGE = "PlayerStats!A5:D";
     private static final String PLAYER_STATS_SHEET = "PlayerStats";
-    private static final String BASE_PLAYER_STATS_RANGE = "C5";
+    private static final String BASE_PLAYER_STATS_RANGE = "E5";
 
     private static final String TOTAL_EP_EARNED_FORMULA = "=SUM(C%d:%s)";
     public static final String TOTAL_EP_EARNED_HEADER = "Total EP earned";
@@ -186,11 +186,11 @@ public class PlayerStats {
 
     private static void addNewRow(String spreadsheetId, Sheets.Spreadsheets.Values sheets, String discordId, String discordName) throws IOException {
         ValueRange valueRange = new ValueRange();
-        valueRange.setRange(NAME_ID_COL_RANGE);
-        List<List<Object>> values = Collections.singletonList(Arrays.asList(discordId, discordName));
+        valueRange.setRange(PLAYER_INFO_RANGE);
+        List<List<Object>> values = Collections.singletonList(Arrays.asList(discordId, discordName, "", ""));
         valueRange.setValues(values);
 
-        sheets.append(spreadsheetId, NAME_ID_COL_RANGE, valueRange).setValueInputOption("USER_ENTERED").setInsertDataOption("INSERT_ROWS").execute();
+        sheets.append(spreadsheetId, PLAYER_INFO_RANGE, valueRange).setValueInputOption("USER_ENTERED").setInsertDataOption("INSERT_ROWS").execute();
     }
 
     private static int getRowFromDiscord(String spreadsheetId, Sheets.Spreadsheets.Values values, String discordId) throws IOException {
@@ -253,10 +253,9 @@ public class PlayerStats {
     public static List<List<Object>> getPlayerQuestsList(String discordId) {
         try {
             int row = getRowFromDiscord(SheetsConstants.spreadsheetId, SheetsConstants.sheetsValues, discordId);
-            return SheetsConstants.sheetsValues.get(SheetsConstants.spreadsheetId, String.format("%s!C%d:%d", PLAYER_STATS_SHEET, row + 5, row + 5)).execute().getValues();
-        } catch (IOException ignored) {
+            return SheetsConstants.sheetsValues.get(SheetsConstants.spreadsheetId, String.format("%s!E%d:%d", PLAYER_STATS_SHEET, row + 5, row + 5)).execute().getValues();
+        } catch (IOException e) {
+            return null;
         }
-        return null;
-
     }
 }

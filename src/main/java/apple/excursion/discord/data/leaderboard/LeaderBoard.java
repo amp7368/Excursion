@@ -1,22 +1,36 @@
 package apple.excursion.discord.data.leaderboard;
 
-import javax.annotation.Nullable;
-import java.util.HashMap;
+import apple.excursion.sheets.LeaderBoardSheet;
+
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class LeaderBoard {
-    public static HashMap<Integer, LeaderBoardEntry> leaderBoardEntries = new HashMap<>();
+    public static List<LeaderBoardEntry> leaderBoardEntries;
 
-    public static void update(@Nullable List<List<Object>> entries) {
-        if (entries == null) return;
-
-        HashMap<Integer, LeaderBoardEntry> entriesTemp = new HashMap<>();
-        int i = 1;
-        for (List<Object> entry : entries) {
-            entriesTemp.put(i, new LeaderBoardEntry(entry));
-            i++;
+    public static void update() {
+        leaderBoardEntries = new ArrayList<>();
+        List<List<Object>> everyone = null;
+        try {
+            everyone = LeaderBoardSheet.getEveryone();
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.exit(1);
         }
-        leaderBoardEntries = entriesTemp;
-
+        if (everyone == null) {
+            System.out.println("There is nobody in the spreadsheet or something else went wrong getting the leaderboard");
+            System.exit(1);
+        }
+        int endIndex = 0;
+        for (Object header : everyone.get(1)) {
+            if (header.equals("# Tasks Done"))
+                break;
+            endIndex++;
+        }
+        for (int i = 4; i < everyone.size(); i++) {
+            leaderBoardEntries.add(new LeaderBoardEntry(everyone.get(i), endIndex));
+        }
+        leaderBoardEntries.sort((o1, o2) -> o2.points - o1.points);
     }
 }

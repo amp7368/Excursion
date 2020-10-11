@@ -4,14 +4,9 @@ import java.io.IOException;
 import java.util.List;
 
 public class LeaderBoardSheet {
-    private static final String LEADER_BOARD_RANGE = "Leaderboards!D4:E";
+    private static final String EVERYONE_RANGE = "PlayerStats";
 
-    public static List<List<Object>> getLeaderBoard() {
-        try {
-            return SheetsConstants.sheetsValues.get(SheetsConstants.spreadsheetId, LEADER_BOARD_RANGE).execute().getValues();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
+    public static List<List<Object>> getEveryone() throws IOException {
+        return SheetsConstants.sheetsValues.get(SheetsConstants.spreadsheetId, EVERYONE_RANGE).execute().getValues();
     }
 }

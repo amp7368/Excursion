@@ -1,6 +1,7 @@
 package apple.excursion;
 
 import apple.excursion.discord.DiscordBot;
+import apple.excursion.discord.data.leaderboard.LeaderBoard;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
@@ -64,8 +65,6 @@ public class ExcursionMain {
         return user;
     }
 
-    /**
-     */
     public static void main(String... args) throws IOException, GeneralSecurityException {
         System.out.println("Starting Excursion");
 
@@ -74,6 +73,7 @@ public class ExcursionMain {
         service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
                 .setApplicationName(APPLICATION_NAME)
                 .build();
+        LeaderBoard.update();
         DiscordBot bot = new DiscordBot();
         try {
             bot.enableDiscord();

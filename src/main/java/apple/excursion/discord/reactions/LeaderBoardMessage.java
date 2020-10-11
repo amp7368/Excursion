@@ -36,11 +36,8 @@ public class LeaderBoardMessage implements ReactableMessage {
             if (place % 5 == 0) {
                 stringToAdd.append(getDash());
             }
-            LeaderBoardEntry entry = LeaderBoard.leaderBoardEntries.getOrDefault(place + 1, null);
-            if (entry == null) {
-                stringToAdd.append(String.format("Could not get place for #%d", place + 1));
-            } else
-                stringToAdd.append(String.format("|%4d| %-30s | %8d |\n", place + 1, entry.name, entry.points));
+            LeaderBoardEntry entry = LeaderBoard.leaderBoardEntries.get(place);
+            stringToAdd.append(String.format("|%4d| %-30s | %8d |\n", place + 1, entry.name, entry.points));
 
             if (leaderboardMessage.length() + 3 + stringToAdd.length() >= 2000) {
                 leaderboardMessage.append("```");

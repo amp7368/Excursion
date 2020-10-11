@@ -1,7 +1,7 @@
 package apple.excursion.discord.reactions;
 
 import apple.excursion.discord.DiscordBot;
-import apple.excursion.sheets.PlayerStats;
+import apple.excursion.sheets.SheetsPlayerStats;
 import apple.excursion.sheets.SheetsConstants;
 import apple.excursion.utils.Pair;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -39,7 +39,7 @@ public class SubmissionMessage implements ReactableMessage {
 
     public void completeSubmit() {
         for (Pair<Long, String> idToName : idToNames) {
-            PlayerStats.submit(SheetsConstants.spreadsheetId, SheetsConstants.sheetsValues, questName, String.valueOf(idToName.getKey()), idToName.getValue());
+            SheetsPlayerStats.submit(SheetsConstants.spreadsheetId, SheetsConstants.sheetsValues, questName, String.valueOf(idToName.getKey()), idToName.getValue());
         }
     }
 
