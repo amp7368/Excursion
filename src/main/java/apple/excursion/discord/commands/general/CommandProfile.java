@@ -1,5 +1,6 @@
-package apple.excursion.discord.commands;
+package apple.excursion.discord.commands.general;
 
+import apple.excursion.discord.commands.DoCommand;
 import apple.excursion.discord.data.Profile;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;

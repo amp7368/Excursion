@@ -1,5 +1,7 @@
-package apple.excursion.discord.commands;
+package apple.excursion.discord.commands.admin;
 
+import apple.excursion.discord.commands.general.CommandSubmit;
+import apple.excursion.discord.commands.DoCommand;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -7,7 +9,7 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import java.util.LinkedList;
 import java.util.List;
 
-public class CommandAddReviewer implements DoCommand {
+public class CommandRemoveReviewer implements DoCommand {
     @Override
     public void dealWithCommand(MessageReceivedEvent event) {
         if (CommandSubmit.isReviewer(event.getAuthor())) {
@@ -19,8 +21,8 @@ public class CommandAddReviewer implements DoCommand {
                 users.add(user);
                 names.add(user.getName());
             }
-            CommandSubmit.addReviewers(users);
-            event.getChannel().sendMessage(String.format("I added %s to the list of reviewers.", String.join(", ", names))).queue();
+            CommandSubmit.removeReviewers(users);
+            event.getChannel().sendMessage(String.format("I removed %s from the list of reviewers.", String.join(", ", names))).queue();
         }
     }
 }

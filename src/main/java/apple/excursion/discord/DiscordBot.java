@@ -2,6 +2,7 @@ package apple.excursion.discord;
 
 import apple.excursion.ExcursionMain;
 import apple.excursion.discord.commands.*;
+import apple.excursion.discord.commands.general.CommandSubmit;
 import apple.excursion.discord.reactions.*;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -23,15 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 
 public class DiscordBot extends ListenerAdapter {
-    private static final String PREFIX = "y!";
-    public static final String SUBMIT_COMMAND = PREFIX + "submit";
-    public static final String LEADERBOARD_COMMAND = PREFIX + "leaderboard";
-    public static final String LEADERBOARD_COMMAND2 = PREFIX + "lb";
-    private static final String PROFILE_COMMAND = PREFIX + "profile";
-    private static final String ADD_REVIEWER_COMMAND = PREFIX + "add_reviewer";
-    private static final String REMOVE_REVIEWER_COMMAND = PREFIX + "remove_reviewer";
+    public static final String PREFIX = "t!";
 
-    private static final HashMap<String, DoCommand> commandMap = new HashMap<>();
     private static final HashMap<String, DoReaction> reactionMap = new HashMap<>();
     public static String discordToken; // my bot
     public static JDA client;
@@ -70,13 +64,6 @@ public class DiscordBot extends ListenerAdapter {
 
     @Override
     public void onReady(@Nonnull ReadyEvent event) {
-        commandMap.put(SUBMIT_COMMAND, new CommandSubmit(client));
-        commandMap.put(LEADERBOARD_COMMAND, new CommandLeaderBoard());
-        commandMap.put(LEADERBOARD_COMMAND2, new CommandLeaderBoard());
-        commandMap.put(PROFILE_COMMAND, new CommandProfile());
-        commandMap.put(ADD_REVIEWER_COMMAND, new CommandAddReviewer());
-        commandMap.put(REMOVE_REVIEWER_COMMAND, new CommandRemoveReviewer());
-
         reactionMap.put("\u2B05", new ReactionArrowLeft());
         reactionMap.put("\u27A1", new ReactionArrowRight());
         reactionMap.put("\u2705", new ReactionCheckMark());
@@ -91,12 +78,20 @@ public class DiscordBot extends ListenerAdapter {
         }
         // the author is not a bot
 
-        String messageContent = event.getMessage().getContentStripped();
+        String messageContent = event.getMessage().getContentStripped().toLowerCase();
         // deal with the differenct commands
-        for (String command : commandMap.keySet()) {
-            if (messageContent.startsWith(command)) {
-                commandMap.get(command).dealWithCommand(event);
-                break;
+        for (Commands command : Commands.values()) {
+            if (command.isCommand(messageContent)) {
+                command.run(event);
+                return;
+            }
+        }
+        if (CommandSubmit.isReviewer(event.getAuthor())) {
+            for (CommandsAdmin command : CommandsAdmin.values()) {
+                if (command.isCommand(messageContent)) {
+                    command.run(event);
+                    return;
+                }
             }
         }
     }

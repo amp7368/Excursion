@@ -1,7 +1,8 @@
-package apple.excursion.discord.commands;
+package apple.excursion.discord.commands.general;
 
 import apple.excursion.ExcursionMain;
 import apple.excursion.discord.DiscordBot;
+import apple.excursion.discord.commands.DoCommand;
 import apple.excursion.discord.data.Submissions;
 import apple.excursion.sheets.PlayerStats;
 import apple.excursion.utils.Pair;
@@ -32,10 +33,10 @@ public class CommandSubmit implements DoCommand {
     private static List<User> reviewers;
     private static final Object reviewerSyncObject = new Object();
 
-    public CommandSubmit(JDA client) {
+    public CommandSubmit() {
         synchronized (reviewerSyncObject) {
             try {
-                reviewers = loadReviewers(client);
+                reviewers = loadReviewers(DiscordBot.client);
             } catch (IOException | ParseException e) {
                 e.printStackTrace();
             }
@@ -65,25 +66,24 @@ public class CommandSubmit implements DoCommand {
             // the author doesn't even exist atm
             return;
         }
-        nickName = author.getNickname();
-        if (nickName == null)
-            nickName = author.getEffectiveName();
+        nickName = author.getEffectiveName();
         idToName.add(new Pair<>(author.getIdLong(), nickName));
         String submitter = nickName;
 
         Message eventMessage = event.getMessage();
         String content = eventMessage.getContentStripped();
-        content = content.replace(DiscordBot.SUBMIT_COMMAND, "");
+        List<String> contentList = Arrays.asList(content.split(" "));
+        content = String.join(" ", contentList.subList(1, contentList.size()));
         for (Pair<Long, String> pair : idToName) {
             String other = pair.getValue();
             content = content.replace("@" + other, "");
         }
         content = content.replace("@" + submitter, "").trim();
 
-        String[] contentList = content.split(" ");
+        String[] contentArray = content.split(" ");
         StringBuilder questNameBuilder = new StringBuilder();
         List<String> links = new ArrayList<>();
-        for (String word : contentList) {
+        for (String word : contentArray) {
             if (word.startsWith("http")) {
                 links.add(word);
             } else {

@@ -12,7 +12,7 @@ import net.dv8tion.jda.api.entities.User;
 import java.util.LinkedList;
 import java.util.List;
 
-import static apple.excursion.discord.commands.CommandSubmit.BOT_COLOR;
+import static apple.excursion.discord.commands.general.CommandSubmit.BOT_COLOR;
 
 public class Submission {
     private final List<Pair<Long, String>> idToNames;
