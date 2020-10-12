@@ -29,6 +29,7 @@ public class AllReactables {
 
     public synchronized static void dealWithReaction(@NotNull MessageReactionAddEvent event) {
         String reaction = event.getReactionEmote().getName();
+        System.out.println(reaction);
         for (Reactable reactable : Reactable.values()) {
             if (reactable.isEmoji(reaction)) {
                 ReactableMessage message = pageableMessages.get(event.getMessageIdLong());
@@ -54,16 +55,23 @@ public class AllReactables {
         TOP(Collections.singletonList("\u21A9")),
         ACCEPT(Collections.singletonList("\u2705")),
         REJECT(Collections.singletonList("\u274C")),
-        DARES(Collections.singletonList("\u274C")),
-        EXCURSIONS(Collections.singletonList("\u274C")),
-        MISSIONS(Collections.singletonList("\u274C")),
+        DARES(Collections.singletonList("dareemooji"), Collections.singletonList(765315908683825183L)),
+        EXCURSIONS(Collections.singletonList("excursionemoji"), Collections.singletonList(765315908738482176L)),
+        MISSIONS(Collections.singletonList("missionemoji"), Collections.singletonList(765315910806011914L)),
         ALL_CATEGORIES(Collections.singletonList("\u274C")),
         ALPHABET(emojiAlphabet);
 
         private final List<String> emojis;
+        private final List<Long> ids;
 
         Reactable(List<String> emojis) {
             this.emojis = emojis;
+            this.ids = new ArrayList<>();
+        }
+
+        Reactable(List<String> emojis, List<Long> ids) {
+            this.emojis = emojis;
+            this.ids = ids;
         }
 
         public boolean isEmoji(String reaction) {
@@ -72,6 +80,10 @@ public class AllReactables {
 
         public String getFirstEmoji() {
             return emojis.get(0); // it should always have at least one emoji. otherwise it would be useless
+        }
+
+        public Long getFirstId() {
+            return ids.get(0); // this won't always work because i don't always provide ids
         }
     }
 }
