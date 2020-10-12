@@ -84,7 +84,6 @@ public class AllProfiles {
     }
 
     public static List<Profile> getProfile(String nameToGet) {
-        System.out.println(nameToGet);
         nameToGet = nameToGet.toLowerCase();
         List<Profile> answers = new ArrayList<>();
         synchronized (profileSync) {
@@ -110,7 +109,7 @@ public class AllProfiles {
             //make a new profile
             try {
                 int row = SheetsPlayerStats.addProfile(id, name);
-                final Profile newProfile = new Profile(name, id, row);
+                final Profile newProfile = new Profile(name, id, row, profiles.get(0));
                 profiles.add(newProfile);
                 return newProfile;
             } catch (IOException e) {

@@ -2,10 +2,12 @@ package apple.excursion.discord;
 
 import apple.excursion.ExcursionMain;
 import apple.excursion.discord.commands.*;
+import apple.excursion.discord.commands.general.CommandHelp;
 import apple.excursion.discord.commands.general.CommandSubmit;
 import apple.excursion.discord.reactions.*;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -58,6 +60,7 @@ public class DiscordBot extends ListenerAdapter {
         JDABuilder builder = new JDABuilder(discordToken);
         builder.addEventListeners(this);
         client = builder.build();
+//        client.getPresence().setPresence(Activity.playing(PREFIX + "help"), true);
     }
 
     @Override

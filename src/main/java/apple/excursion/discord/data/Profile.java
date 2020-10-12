@@ -45,12 +45,14 @@ public class Profile {
         complete = true;
     }
 
-    public Profile(String name, long id, int row) {
+    public Profile(String name, long id, int row, Profile other) {
         this.discordId = id;
         this.row = row;
         this.name = name;
-        this.guild = null;
-        this.guildTag = null;
+        this.guild = "";
+        this.guildTag = "";
+        this.tasksNotDone.addAll(other.tasksDone);
+        this.tasksNotDone.addAll(other.tasksNotDone);
     }
 
     public void updateName(String name) {
@@ -77,6 +79,7 @@ public class Profile {
     public boolean hasName(String name) {
         return this.name.toLowerCase().equals(name);
     }
+
     public boolean nameContains(String name) {
         return this.name.toLowerCase().contains(name);
     }
@@ -130,5 +133,18 @@ public class Profile {
             }
         }
         return topTasks;
+    }
+
+    public int getTaskPoints(String questName) {
+        for (TaskCompleted task : tasksDone) {
+            if (task.name.toLowerCase().equals(questName.toLowerCase())) {
+                return task.pointsEarned;
+            }
+        }
+        return 0;
+    }
+
+    public int getRow() {
+        return row;
     }
 }

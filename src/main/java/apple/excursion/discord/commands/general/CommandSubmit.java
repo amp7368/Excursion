@@ -3,14 +3,15 @@ package apple.excursion.discord.commands.general;
 import apple.excursion.ExcursionMain;
 import apple.excursion.discord.DiscordBot;
 import apple.excursion.discord.commands.DoCommand;
+import apple.excursion.discord.data.AllProfiles;
+import apple.excursion.discord.data.answers.SubmissionData;
+import apple.excursion.discord.reactions.AllReactables;
 import apple.excursion.discord.reactions.SubmissionMessage;
 import apple.excursion.sheets.SheetsPlayerStats;
 import apple.excursion.utils.Pair;
-import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
-import net.dv8tion.jda.api.requests.restaction.MessageAction;
 import org.json.simple.JSONArray;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -20,6 +21,7 @@ import java.io.*;
 import java.net.URISyntaxException;
 import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class CommandSubmit implements DoCommand {
     private static final String REVIEWERS_FILE_PATH = getPath();
@@ -55,9 +57,7 @@ public class CommandSubmit implements DoCommand {
         List<String> otherSubmitters = new ArrayList<>();
         String nickName;
         for (Member member : tags) {
-            nickName = member.getNickname();
-            if (nickName == null)
-                nickName = member.getEffectiveName();
+            nickName = member.getEffectiveName();
             idToName.add(new Pair<>(member.getIdLong(), nickName));
             otherSubmitters.add(nickName);
         }
@@ -104,65 +104,29 @@ public class CommandSubmit implements DoCommand {
                 return;
             }
             // verify discord nickname
-            SheetsPlayerStats.verifyDiscordNickname(submitter, event.getAuthor().getIdLong());
+            AllProfiles.getProfile(event.getAuthor().getIdLong(), submitter);
             for (Member tag : tags) {
-                nickName = tag.getNickname();
-                if (nickName == null)
-                    nickName = tag.getEffectiveName();
-                SheetsPlayerStats.verifyDiscordNickname(nickName, tag.getIdLong());
+                nickName = tag.getEffectiveName();
+                AllProfiles.getProfile(tag.getIdLong(), nickName);
             }
-            List<Pair<Long, String>> idToNameTemp = idToName;
-            idToName = new ArrayList<>();
-            for (Pair<Long, String> submit : idToNameTemp) {
-                idToName.add(new Pair<>(submit.getKey(), "__" + submit.getValue() + "__"));
-            }
+            idToName = idToName.stream().map(pair -> new Pair<>(pair.getKey(), "__" + pair.getValue() + "__")).collect(Collectors.toList());
 
-            StringBuilder text = new StringBuilder();
-            text.append("**");
-            text.append(submitter);
-            text.append("**");
-            text.append(" has submmited: ");
-            text.append("*");
-            text.append(questName);
-            text.append("*");
-            text.append("\n");
-            if (otherSubmitters.isEmpty()) {
-                text.append("There are no other submitters.");
-            } else {
-                text.append("The evidence includes: ");
-                text.append(String.join(" and ", otherSubmitters));
-                text.append('.');
-            }
-            if (!links.isEmpty()) {
-                text.append("\nAdditional links include:");
-                for (String link : links) {
-                    text.append("\n");
-                    text.append(link);
-                }
-            }
-            List<Message> messages = new ArrayList<>();
+
             synchronized (reviewerSyncObject) {
-                for (User reviewer : reviewers) {
-                    EmbedBuilder embed = new EmbedBuilder();
-                    embed.setColor(BOT_COLOR);
-                    embed.setTitle(questName);
-                    embed.setDescription(text);
-                    for (Message.Attachment file : attachment) {
-                        embed.setImage(file.getUrl());
-                        break;
-                    }
-                    MessageAction messageToSend = reviewer.openPrivateChannel().complete().sendMessage(embed.build());
 
-                    Message message = messageToSend.complete();
-                    message.addReaction("\u2705").queue();
-                    message.addReaction("\u274C").queue();
-                    messages.add(message);
+                SubmissionData submissionData = new SubmissionData(
+                        attachment,
+                        links,
+                        questName,
+                        submitter,
+                        idToName
+                );
+                for (User reviewer : reviewers) {
+                    new SubmissionMessage(submissionData, reviewer);
                 }
-                for (Message message : messages) {
-                    new SubmissionMessage(message, idToName, messages, questName, links, attachment);
-                }
+                //todo download submissionData
             }
-            eventMessage.addReaction("\u2705").queue();
+            eventMessage.addReaction(AllReactables.Reactable.ACCEPT.getFirstEmoji()).queue();
         }
     }
 

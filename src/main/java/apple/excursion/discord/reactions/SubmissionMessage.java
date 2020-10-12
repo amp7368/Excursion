@@ -1,118 +1,116 @@
 package apple.excursion.discord.reactions;
 
 import apple.excursion.discord.DiscordBot;
+import apple.excursion.discord.data.answers.SubmissionData;
 import apple.excursion.sheets.SheetsPlayerStats;
-import apple.excursion.sheets.SheetsConstants;
 import apple.excursion.utils.Pair;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.PrivateChannel;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 
-import java.util.LinkedList;
+import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static apple.excursion.discord.commands.general.CommandSubmit.BOT_COLOR;
 
 public class SubmissionMessage implements ReactableMessage {
-    private final List<Pair<Long, String>> idToNames;
-    private final long id;
-    public Message message;
-    private List<Message> reviewersMessages;
-    private String questName;
-    private List<String> links;
-    private List<Message.Attachment> attachment;
+    private SubmissionData data;
+    private User thisReviewer;
 
-    public SubmissionMessage(Message message, List<Pair<Long, String>> idToNames, List<Message> reviewers, String questName,
-                             List<String> links, List<Message.Attachment> attachment) {
-        this.message = message;
-        this.id = message.getIdLong();
-        this.idToNames = idToNames;
-        this.reviewersMessages = reviewers;
-        this.questName = questName;
-        this.links = links;
-        this.attachment = attachment;
+    private Message message;
+
+    public SubmissionMessage(SubmissionData data, User reviewer) {
+        thisReviewer = reviewer;
+        this.data = data;
+        message = thisReviewer.openPrivateChannel().complete().sendMessage(makeMessage()).complete();
+        message.addReaction("\u2705").queue();
+        message.addReaction("\u274C").queue();
+        this.data.addMessage(message, thisReviewer);
         AllReactables.add(this);
     }
 
-
-    public void completeSubmit() {
-        for (Pair<Long, String> idToName : idToNames) {
-            SheetsPlayerStats.submit(SheetsConstants.spreadsheetId, SheetsConstants.sheetsValues, questName, idToName.getKey(), idToName.getValue());
+    private MessageEmbed makeMessage() {
+        StringBuilder text = new StringBuilder();
+        text.append("**");
+        text.append(data.getSubmitterName());
+        text.append("**");
+        text.append(" has submitted: ");
+        text.append("*");
+        text.append(data.getTaskName());
+        text.append("*");
+        text.append("\n");
+        if (data.getSubmittersIds().isEmpty()) {
+            text.append("There are no other submitters.");
+        } else {
+            text.append("The evidence includes: ");
+            text.append(data.getSubmittersIds().stream().map(Pair::getValue).collect(Collectors.joining(" and ")));
+            text.append('.');
         }
-    }
-
-    public void confirm(boolean isAccepted, User reviewer) {
-        // find all the messages sent to other reviewers
-        for (Message other : reviewersMessages) {
-            if (isAccepted)
-                other.editMessage("**" + reviewer.getName() + " accepted the submission**\n" + other.getContentStripped()).queue();
-            else
-                other.editMessage("**" + reviewer.getName() + " denied the submission**\n" + other.getContentStripped()).queue();
-
-            other.removeReaction("\u274C").queue();
-            other.removeReaction("\u2705").queue();
-            AllReactables.remove(other.getIdLong());
+        if (!data.getLinks().isEmpty()) {
+            text.append("\nAdditional links include:");
+            for (String link : data.getLinks()) {
+                text.append("\n");
+                text.append(link);
+            }
         }
 
         EmbedBuilder embed = new EmbedBuilder();
-        embed.setTitle("You have submitted: " + questName);
         embed.setColor(BOT_COLOR);
-        for (Message.Attachment file : attachment) {
-            embed.setImage(file.getUrl());
-            break;
-        }
-        for (Pair<Long, String> userRaw : idToNames) {
-            User user = DiscordBot.client.getUserById(userRaw.getKey());
-            if (user != null) {
-                PrivateChannel channel = user.openPrivateChannel().complete();
-                List<String> otherSubmitters = new LinkedList<>();
-                for (Pair<Long, String> otherUserRaw : idToNames) {
-                    if (!otherUserRaw.getKey().equals(userRaw.getKey())) {
-                        otherSubmitters.add(otherUserRaw.getValue());
+        embed.setTitle(data.getTaskName());
+        embed.setDescription(text);
+        if (data.getAttachment() != null)
+            embed.setImage(data.getAttachment());
+
+        return embed.build();
+    }
+
+
+    public void acceptSubmit() {
+        synchronized (data.sync) {
+            if (data.isNotAccepted()) {
+                data.setAccepted();
+                for (Pair<Long, String> idToName : data.getSubmittersIds()) {
+                    try {
+                        SheetsPlayerStats.submit(data.getTaskName(), idToName.getKey(), idToName.getValue());
+                    } catch (IOException e) {
+                        final User user = DiscordBot.client.getUserById(idToName.getKey());
+                        if (user == null) continue;
+                        user.openPrivateChannel().complete().sendMessage("There was an error making your profile. Tell appleptr16 or ojomFox: " + e.getMessage()).queue();
+                    } catch (NumberFormatException e) {
+                        final User user = DiscordBot.client.getUserById(idToName.getKey());
+                        if (user == null) continue;
+                        user.openPrivateChannel().complete().sendMessage("The quest reward was not specified correctly. Tell appleptr16 or ojomFox: " + e.getMessage()).queue();
                     }
                 }
-                StringBuilder text = new StringBuilder();
-                text.append(String.format("**The evidence has been %s**", isAccepted ? "accepted!" : "denied."));
-                text.append("\n");
-                if (otherSubmitters.isEmpty()) {
-                    text.append("There were no other submitters.");
-                } else {
-                    text.append("Players submitted: *");
-                    text.append(String.join(", ", otherSubmitters));
-                    text.append("*");
-                    text.append('.');
-                }
-                if (!links.isEmpty()) {
-                    text.append("\nLinks include:");
-                    for (String link : links) {
-                        text.append("\n");
-                        text.append(link);
-                    }
-                }
-                embed.setDescription(text);
-                channel.sendMessage(embed.build()).queue();
             }
         }
+        // todo store info
+    }
+
+    public void completeSubmit(boolean isAccepted, User reviewer) {
+        // find all the messages sent to other reviewers
+        data.completeSubmit(isAccepted, reviewer);
     }
 
     @Override
     public void dealWithReaction(AllReactables.Reactable reactable, String reaction, MessageReactionAddEvent event) {
         switch (reactable) {
             case ACCEPT:
-                completeSubmit();
-                confirm(true, event.getUser());
+                acceptSubmit();
+                completeSubmit(true, event.getUser());
                 break;
             case REJECT:
-                confirm(false, event.getUser());
+                completeSubmit(false, event.getUser());
                 break;
         }
     }
 
     @Override
     public Long getId() {
-        return this.id;
+        return message.getIdLong();
     }
 
     @Override
