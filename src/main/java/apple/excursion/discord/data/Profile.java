@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 
 public class Profile {
+    private static final int TOP_TASKS_SIZE = 5;
     private List<Task> tasksNotDone = new ArrayList<>();
     private List<TaskCompleted> tasksDone = new ArrayList<>();
     private int totalEp = 0;
@@ -76,6 +77,9 @@ public class Profile {
     public boolean hasName(String name) {
         return this.name.toLowerCase().equals(name);
     }
+    public boolean nameContains(String name) {
+        return this.name.toLowerCase().contains(name);
+    }
 
     public boolean hasId(long id) {
         return this.discordId == id;
@@ -95,5 +99,36 @@ public class Profile {
 
     public String getGuildTag() {
         return guildTag;
+    }
+
+    public long getId() {
+        return this.discordId;
+    }
+
+    public double getProgress() {
+        final int tasksDoneSize = tasksDone.size();
+        return ((double) tasksDoneSize) / (tasksNotDone.size() + tasksDoneSize);
+    }
+
+    public int getCountTasksDone() {
+        return tasksDone.size();
+    }
+
+    public int getCountTasksTotal() {
+        return tasksDone.size() + tasksNotDone.size();
+    }
+
+    public List<Task> getTopTasks(String taskType) {
+        taskType = taskType.toLowerCase();
+        List<Task> topTasks = new ArrayList<>();
+        tasksNotDone.sort((o1, o2) -> o2.points - o1.points);
+        for (Task task : tasksNotDone) {
+            if (task.category.equals(taskType)) {
+                topTasks.add(task);
+                if (topTasks.size() == TOP_TASKS_SIZE)
+                    return topTasks;
+            }
+        }
+        return topTasks;
     }
 }

@@ -3,14 +3,16 @@ package apple.excursion.discord.commands.general;
 import apple.excursion.discord.commands.DoCommand;
 import apple.excursion.discord.data.AllProfiles;
 import apple.excursion.discord.data.Profile;
+import apple.excursion.discord.data.Task;
+import apple.excursion.discord.data.TaskCompleted;
+import apple.excursion.discord.data.answers.GuildLeaderboardProfile;
+import apple.excursion.discord.data.answers.PlayerLeaderboardProfile;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 import java.awt.*;
-import java.text.NumberFormat;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class CommandProfile implements DoCommand {
     private static final int NUM_OF_CHARS_PROGRESS = 20;
@@ -18,10 +20,11 @@ public class CommandProfile implements DoCommand {
 
     @Override
     public void dealWithCommand(MessageReceivedEvent event) {
+        AllProfiles.update();
         Profile profile;
-        final String[] eventContentSplit = event.getMessage().getContentStripped().split(" ", 2);
-        if (eventContentSplit.length > 1) {
-            final String nameToGet = eventContentSplit[1];
+        final String[] eventContentSplitOnce = event.getMessage().getContentStripped().split(" ", 2);
+        if (eventContentSplitOnce.length > 1) {
+            final String nameToGet = eventContentSplitOnce[1];
             List<Profile> profilesWithName = AllProfiles.getProfile(nameToGet);
             final int profilesWithNameLength = profilesWithName.size();
             if (profilesWithNameLength == 0) {
@@ -39,32 +42,52 @@ public class CommandProfile implements DoCommand {
             }
         } else {
             profile = AllProfiles.getProfile(event.getAuthor().getIdLong(), event.getMember().getEffectiveName());
+            if (profile == null) {
+                event.getChannel().sendMessage("There was an error making a new profile for you").queue();
+                return;
+            }
         }
-//        StringBuilder text = new StringBuilder();
-//        int questsNotDoneSize = profile.tasksNotDone.size();
-//        double percentage = profile.tasksDone.size() / (double) (profile.tasksDone.size() + questsNotDoneSize);
-//        text.append(getProgressBar(percentage));
-//        text.append(" ");
-//        text.append((int) (percentage * 100));
-//        text.append("% of completed tasks");
-//        text.append(String.format("\n\n__*Total EP: %s*__\n", NumberFormat.getIntegerInstance().format(profile.totalEp)));
-//        text.append('\n');
-//        text.append("__*Uncompleted tasks:*__\n");
-//        int sizeToDisplay = Math.min(20, questsNotDoneSize);
-//        text.append(String.join(" **\u2022** ", profile.tasksNotDone.subList(0, sizeToDisplay)));
-//        if (sizeToDisplay < questsNotDoneSize) {
-//            text.append(String.format("...and **%d** more.", questsNotDoneSize - sizeToDisplay));
-//        }
-//        text.append('\n');
-//        EmbedBuilder embed = new EmbedBuilder();
-//        if (profileMember != null) {
-//            String nickname = profileMember.getEffectiveName();
-//            embed.setTitle(nickname);
-//        }
-//        embed.setDescription(text.substring(0, Math.min(text.length(), 1999)));
-//        embed.setColor(BOT_COLOR);
-//
-//        event.getChannel().sendMessage(embed.build()).queue();
+        EmbedBuilder embed = new EmbedBuilder();
+        embed.setTitle(profile.getName());
+        StringBuilder description = new StringBuilder();
+
+        // put guild info
+        final GuildLeaderboardProfile guildProfile = AllProfiles.getLeaderboardOfGuilds().getGuildProfile(profile.getGuild());
+        if (guildProfile == null) {
+            // todo message if guild is null
+        } else {
+            description.append(String.format("Member of %s [%s]\n", profile.getGuild(), profile.getGuildTag()));
+            description.append('\n');
+            description.append(String.format("Guild rank: #%d\n", guildProfile.getRank()));
+            description.append(getProgressBar(guildProfile.getProgress()));
+            description.append('\n');
+        }
+        description.append('\n');
+
+        // put player info
+        final PlayerLeaderboardProfile playerLeaderboardProfile = AllProfiles.getOverallLeaderboard().getPlayerProfile(profile.getId());
+        if (playerLeaderboardProfile == null) {
+            // todo message if player is null
+        } else {
+            description.append(String.format("Player rank #%d\n", playerLeaderboardProfile.getRank()));
+            description.append(getProgressBar(playerLeaderboardProfile.getProgress()));
+            description.append('\n');
+            description.append(String.format("Tasks done: %d out of %d tasks\n", playerLeaderboardProfile.getCountTasksDone(), playerLeaderboardProfile.getCountTasksTotal()));
+            description.append(String.format("Total EP: %d EP\n", playerLeaderboardProfile.getTotalEp()));
+            description.append('\n');
+            for (String taskType : Task.TaskCategory.values()) {
+                description.append(String.format("**Uncompleted %s**\n", taskType));
+                description.append(playerLeaderboardProfile.getTopTasks(taskType).stream().map(task -> task.name).collect(Collectors.joining(	" **\u2022** ")));
+                description.append('\n');
+                description.append('\n');
+            }
+        }
+        description.append("**Submission record:** (not implemented)\n");
+
+        embed.setDescription(description);
+        embed.setColor(BOT_COLOR);
+
+        event.getChannel().sendMessage(embed.build()).queue();
     }
 
     private String getProgressBar(double percentage) {

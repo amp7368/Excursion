@@ -2,6 +2,7 @@ package apple.excursion.discord.data.answers;
 
 import apple.excursion.discord.data.Profile;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -36,5 +37,18 @@ public class LeaderboardOfGuilds {
 
     public long getNoGuildsEp() {
         return noGuildsEntry.points;
+    }
+
+    @Nullable
+    public GuildLeaderboardProfile getGuildProfile(String guild) {
+
+        guild = guild.toLowerCase();
+        int rank = 1;
+        for (GuildLeaderboardEntry entry : leaderboard) {
+            if (entry.guildName.toLowerCase().equals(guild))
+                return new GuildLeaderboardProfile(entry, totalEp, rank);
+            rank++;
+        }
+        return null;
     }
 }

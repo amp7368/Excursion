@@ -84,11 +84,12 @@ public class AllProfiles {
     }
 
     public static List<Profile> getProfile(String nameToGet) {
+        System.out.println(nameToGet);
         nameToGet = nameToGet.toLowerCase();
         List<Profile> answers = new ArrayList<>();
         synchronized (profileSync) {
             for (Profile profile : profiles) {
-                if (profile.hasName(nameToGet)) {
+                if (profile.nameContains(nameToGet)) {
                     answers.add(profile);
                 }
             }
@@ -106,7 +107,6 @@ public class AllProfiles {
                     return profile;
                 }
             }
-            System.out.println("new");
             //make a new profile
             try {
                 int row = SheetsPlayerStats.addProfile(id, name);
@@ -121,14 +121,12 @@ public class AllProfiles {
     }
 
     public static OverallLeaderboard getOverallLeaderboard() {
-        update();
         List<Profile> leaderboard = getCopy();
         leaderboard.sort((o1, o2) -> o2.getTotalEp() - o1.getTotalEp());
         return new OverallLeaderboard(leaderboard);
     }
 
     public static LeaderboardOfGuilds getLeaderboardOfGuilds() {
-        update();
         List<Profile> leaderboard = getCopy();
         return new LeaderboardOfGuilds(leaderboard);
     }
