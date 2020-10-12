@@ -39,7 +39,7 @@ public class SubmissionMessage implements ReactableMessage {
 
     public void completeSubmit() {
         for (Pair<Long, String> idToName : idToNames) {
-            SheetsPlayerStats.submit(SheetsConstants.spreadsheetId, SheetsConstants.sheetsValues, questName, String.valueOf(idToName.getKey()), idToName.getValue());
+            SheetsPlayerStats.submit(SheetsConstants.spreadsheetId, SheetsConstants.sheetsValues, questName, idToName.getKey(), idToName.getValue());
         }
     }
 

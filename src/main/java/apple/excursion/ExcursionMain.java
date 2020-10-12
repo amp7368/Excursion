@@ -73,7 +73,6 @@ public class ExcursionMain {
         service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
                 .setApplicationName(APPLICATION_NAME)
                 .build();
-        Leaderboard.update();
         DiscordBot bot = new DiscordBot();
         try {
             bot.enableDiscord();

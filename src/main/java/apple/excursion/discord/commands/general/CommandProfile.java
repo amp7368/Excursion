@@ -1,6 +1,7 @@
 package apple.excursion.discord.commands.general;
 
 import apple.excursion.discord.commands.DoCommand;
+import apple.excursion.discord.data.AllProfiles;
 import apple.excursion.discord.data.Profile;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
@@ -17,62 +18,54 @@ public class CommandProfile implements DoCommand {
 
     @Override
     public void dealWithCommand(MessageReceivedEvent event) {
+        AllProfiles.update();
         Profile profile;
-        Member profileMember;
         final String[] eventContentSplit = event.getMessage().getContentStripped().split(" ", 2);
         if (eventContentSplit.length > 1) {
             final String nameToGet = eventContentSplit[1];
-            final String nameToGetLower = nameToGet.toLowerCase();
-            List<Member> membersInGuild = event.getGuild().getMembers();
-            List<Member> membersWithName = new ArrayList<>();
-            for (Member memberInGuild : membersInGuild) {
-                if (memberInGuild.getEffectiveName().toLowerCase().contains(nameToGetLower)) {
-                    membersWithName.add(memberInGuild);
-                }
-            }
-            final int membersWithNameLength = membersWithName.size();
-            if (membersWithNameLength == 0) {
+            List<Profile> profilesWithName = AllProfiles.getProfile(nameToGet);
+            final int profilesWithNameLength = profilesWithName.size();
+            if (profilesWithNameLength == 0) {
                 // quit with an error message
-                event.getChannel().sendMessage(String.format("Sorry, but nobody's name contains '%s'.", nameToGet)).queue();
+                event.getChannel().sendMessage(String.format("Nobody's name contains '%s'.", nameToGet)).queue();
                 return;
-            } else if (membersWithNameLength == 1) {
+            } else if (profilesWithNameLength == 1) {
                 // we found the person
-                profileMember = membersWithName.get(0);
-                profile = new Profile(profileMember.getIdLong());
+                profile = profilesWithName.get(0);
             } else {
                 // ask the user to narrow their search
-                event.getChannel().sendMessage(String.format("There are %d people that have '%s' in their name. Please refine your search.", membersWithNameLength, nameToGet)).queue();
+                //todo what if multiple ppl have the same name
+                event.getChannel().sendMessage(String.format("There are %d people that have '%s' in their name.", profilesWithNameLength, nameToGet)).queue();
                 return;
             }
         } else {
-            profile = new Profile(event.getAuthor().getIdLong());
-            profileMember = event.getMember();
+            profile = AllProfiles.getProfile(event.getAuthor().getIdLong(), event.getMember().getEffectiveName());
         }
-        StringBuilder text = new StringBuilder();
-        int questsNotDoneSize = profile.tasksNotDone.size();
-        double percentage = profile.tasksDone.size() / (double) (profile.tasksDone.size() + questsNotDoneSize);
-        text.append(getProgressBar(percentage));
-        text.append(" ");
-        text.append((int) (percentage * 100));
-        text.append("% of completed tasks");
-        text.append(String.format("\n\n__*Total EP: %s*__\n", NumberFormat.getIntegerInstance().format(profile.totalEp)));
-        text.append('\n');
-        text.append("__*Uncompleted tasks:*__\n");
-        int sizeToDisplay = Math.min(20, questsNotDoneSize);
-        text.append(String.join(" **\u2022** ", profile.tasksNotDone.subList(0, sizeToDisplay)));
-        if (sizeToDisplay < questsNotDoneSize) {
-            text.append(String.format("...and **%d** more.", questsNotDoneSize - sizeToDisplay));
-        }
-        text.append('\n');
-        EmbedBuilder embed = new EmbedBuilder();
-        if (profileMember != null) {
-            String nickname = profileMember.getEffectiveName();
-            embed.setTitle(nickname);
-        }
-        embed.setDescription(text.substring(0, Math.min(text.length(), 1999)));
-        embed.setColor(BOT_COLOR);
-
-        event.getChannel().sendMessage(embed.build()).queue();
+//        StringBuilder text = new StringBuilder();
+//        int questsNotDoneSize = profile.tasksNotDone.size();
+//        double percentage = profile.tasksDone.size() / (double) (profile.tasksDone.size() + questsNotDoneSize);
+//        text.append(getProgressBar(percentage));
+//        text.append(" ");
+//        text.append((int) (percentage * 100));
+//        text.append("% of completed tasks");
+//        text.append(String.format("\n\n__*Total EP: %s*__\n", NumberFormat.getIntegerInstance().format(profile.totalEp)));
+//        text.append('\n');
+//        text.append("__*Uncompleted tasks:*__\n");
+//        int sizeToDisplay = Math.min(20, questsNotDoneSize);
+//        text.append(String.join(" **\u2022** ", profile.tasksNotDone.subList(0, sizeToDisplay)));
+//        if (sizeToDisplay < questsNotDoneSize) {
+//            text.append(String.format("...and **%d** more.", questsNotDoneSize - sizeToDisplay));
+//        }
+//        text.append('\n');
+//        EmbedBuilder embed = new EmbedBuilder();
+//        if (profileMember != null) {
+//            String nickname = profileMember.getEffectiveName();
+//            embed.setTitle(nickname);
+//        }
+//        embed.setDescription(text.substring(0, Math.min(text.length(), 1999)));
+//        embed.setColor(BOT_COLOR);
+//
+//        event.getChannel().sendMessage(embed.build()).queue();
     }
 
     private String getProgressBar(double percentage) {

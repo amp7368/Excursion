@@ -1,6 +1,5 @@
 package apple.excursion.discord.data.leaderboard;
 
-import apple.excursion.sheets.LeaderboardSheet;
 import apple.excursion.sheets.SheetsPlayerStats;
 
 import javax.annotation.Nullable;
@@ -16,19 +15,20 @@ public class Leaderboard {
     private static long totalEpOfEveryone = 0;
     private static GuildLeaderboardEntry noGuildsEntry = null;
 
-    public static void update() {
+    @Nullable
+    public static List<List<Object>> update() {
         leaderboardEntries = new ArrayList<>();
         leaderboardOfGuildEntries = new ArrayList<>();
-        List<List<Object>> everyone = null;
+        List<List<Object>> everyone;
         try {
-            everyone = LeaderboardSheet.getEveryone();
+            everyone = SheetsPlayerStats.getEveryone();
         } catch (IOException e) {
             e.printStackTrace();
-            System.exit(1);
+            return null; //todo msg appleptr16
         }
         if (everyone == null) {
             System.err.println("There is nobody in the spreadsheet or something else went wrong getting the leaderboard");
-            System.exit(1);
+            return null; //todo msg appleptr16
         }
         int endIndex = 0;
         for (Object header : everyone.get(1)) {
@@ -56,6 +56,7 @@ public class Leaderboard {
         }
         leaderboardOfGuildEntries.addAll(guildLeaderboardEntriesMap.values());
         leaderboardOfGuildEntries.sort((o1, o2) -> o2.points - o1.points);
+        return everyone;
     }
 
     public static long getTotalEp() {
