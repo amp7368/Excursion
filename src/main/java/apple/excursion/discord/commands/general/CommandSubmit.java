@@ -4,7 +4,7 @@ import apple.excursion.ExcursionMain;
 import apple.excursion.discord.DiscordBot;
 import apple.excursion.discord.commands.DoCommand;
 import apple.excursion.discord.reactions.SubmissionMessage;
-import apple.excursion.sheets.PlayerStats;
+import apple.excursion.sheets.SheetsPlayerStats;
 import apple.excursion.utils.Pair;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
@@ -99,17 +99,17 @@ public class CommandSubmit implements DoCommand {
         } else {
             // we have attachments
 
-            if (!PlayerStats.isQuest(questName)) {
+            if (!SheetsPlayerStats.isQuest(questName)) {
                 event.getChannel().sendMessage(String.format("'%s' is not a valid task name", questName)).queue();
                 return;
             }
             // verify discord nickname
-            PlayerStats.verifyDiscordNickname(submitter, event.getAuthor().getIdLong());
+            SheetsPlayerStats.verifyDiscordNickname(submitter, event.getAuthor().getIdLong());
             for (Member tag : tags) {
                 nickName = tag.getNickname();
                 if (nickName == null)
                     nickName = tag.getEffectiveName();
-                PlayerStats.verifyDiscordNickname(nickName, tag.getIdLong());
+                SheetsPlayerStats.verifyDiscordNickname(nickName, tag.getIdLong());
             }
             List<Pair<Long, String>> idToNameTemp = idToName;
             idToName = new ArrayList<>();

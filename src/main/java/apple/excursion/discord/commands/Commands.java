@@ -11,11 +11,12 @@ import static apple.excursion.discord.DiscordBot.PREFIX;
 
 
 public enum Commands {
-    LEADERBOARD(Arrays.asList("leaderboard", "lb"), "Gives a pageable leaderboard", "", new CommandLeaderboard()),
-    GUILD_LEADERBOARD(Arrays.asList("gleaderboard", "glb"), "Gives a pageable leaderboard for the guilds", "", new CommandGuildLeaderboard()),
+    LEADERBOARD(Arrays.asList("leaderboard", "lb"), "Gives an overall leaderboard", "", new CommandLeaderboard()),
+    GUILD_LEADERBOARD(Arrays.asList("gleaderboard", "glb"), "Gives a leaderboard for the guilds", "", new CommandGuildLeaderboard()),
     PROFILE(Collections.singletonList("profile"), "Gives the profile of the person who entered the command or the profile of the player_name", "[player_name]", new CommandProfile()),
     SUBMIT(Collections.singletonList("submit"), "Submits the attached evidence to be reviewed", "[url or attach image]", new CommandSubmit()),
-    HELP(Collections.singletonList("help"), "Gives this help message", "", new CommandHelp());
+    HELP(Collections.singletonList("help"), "Gives this help message", "", new CommandHelp()),
+    LEADERBOARD_IN_GUILD(Collections.singletonList("guild"), "Gives a leaderboard for a specific guild", "[tag/name]", new CommandLeaderboardInGuild());
 
     private final List<String> commandNames;
     private final String helpMessage;
