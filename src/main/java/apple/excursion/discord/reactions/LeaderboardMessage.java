@@ -10,7 +10,7 @@ import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 
 
 public class LeaderboardMessage implements ReactableMessage {
-    private final OverallLeaderboard leaderboard;
+    private final OverallLeaderboard leaderboard = AllProfiles.getOverallLeaderboard();
     private static final int ENTRIES_PER_PAGE = 20;
     private final Message message;
     private int page;
@@ -19,7 +19,6 @@ public class LeaderboardMessage implements ReactableMessage {
     public LeaderboardMessage(MessageChannel channel) {
         this.page = 0;
         this.message = channel.sendMessage(getMessage()).complete();
-        leaderboard = AllProfiles.getOverallLeaderboard();
         message.addReaction(AllReactables.Reactable.LEFT.getFirstEmoji()).queue();
         message.addReaction(AllReactables.Reactable.RIGHT.getFirstEmoji()).queue();
         message.addReaction(AllReactables.Reactable.TOP.getFirstEmoji()).queue();

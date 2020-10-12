@@ -18,7 +18,6 @@ public class CommandProfile implements DoCommand {
 
     @Override
     public void dealWithCommand(MessageReceivedEvent event) {
-        AllProfiles.update();
         Profile profile;
         final String[] eventContentSplit = event.getMessage().getContentStripped().split(" ", 2);
         if (eventContentSplit.length > 1) {

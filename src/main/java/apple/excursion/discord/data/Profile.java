@@ -1,6 +1,5 @@
 package apple.excursion.discord.data;
 
-import apple.excursion.discord.data.leaderboard.Leaderboard;
 import apple.excursion.sheets.SheetsPlayerStats;
 import apple.excursion.utils.GetFromObject;
 

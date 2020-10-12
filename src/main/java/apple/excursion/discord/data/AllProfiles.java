@@ -1,9 +1,11 @@
 package apple.excursion.discord.data;
 
+import apple.excursion.discord.data.answers.LeaderboardOfGuilds;
 import apple.excursion.discord.data.answers.OverallLeaderboard;
 import apple.excursion.sheets.SheetsPlayerStats;
 import apple.excursion.utils.GetFromObject;
 import apple.excursion.utils.Pair;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -119,11 +121,25 @@ public class AllProfiles {
     }
 
     public static OverallLeaderboard getOverallLeaderboard() {
+        update();
+        List<Profile> leaderboard = getCopy();
+        leaderboard.sort((o1, o2) -> o2.getTotalEp() - o1.getTotalEp());
+        return new OverallLeaderboard(leaderboard);
+    }
+
+    public static LeaderboardOfGuilds getLeaderboardOfGuilds() {
+        update();
+        List<Profile> leaderboard = getCopy();
+        return new LeaderboardOfGuilds(leaderboard);
+    }
+
+    @NotNull
+    private static List<Profile> getCopy() {
         List<Profile> leaderboard;
         synchronized (profileSync) {
             leaderboard = new ArrayList<>(profiles);
         }
-        leaderboard.sort((o1, o2) -> o2.getTotalEp() - o1.getTotalEp());
-        return new OverallLeaderboard(leaderboard);
+        return leaderboard;
     }
+
 }

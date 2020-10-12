@@ -1,7 +1,8 @@
 package apple.excursion.discord.reactions;
 
-import apple.excursion.discord.data.leaderboard.GuildLeaderboardEntry;
-import apple.excursion.discord.data.leaderboard.Leaderboard;
+import apple.excursion.discord.data.AllProfiles;
+import apple.excursion.discord.data.answers.LeaderboardOfGuilds;
+import apple.excursion.discord.data.answers.GuildLeaderboardEntry;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.User;
@@ -13,10 +14,10 @@ public class GuildLeaderboardMessage implements ReactableMessage {
     private final Message message;
     private int page;
     private long lastUpdated;
-
+    private LeaderboardOfGuilds leaderboard= AllProfiles.getLeaderboardOfGuilds();
     public GuildLeaderboardMessage(MessageChannel channel) {
         this.page = 0;
-        this.message = channel.sendMessage(getMessage()).complete();
+        this.message = channel.sendMessage(makeMessage()).complete();
         message.addReaction(AllReactables.Reactable.LEFT.getFirstEmoji()).queue();
         message.addReaction(AllReactables.Reactable.RIGHT.getFirstEmoji()).queue();
         message.addReaction(AllReactables.Reactable.TOP.getFirstEmoji()).queue();
@@ -24,7 +25,7 @@ public class GuildLeaderboardMessage implements ReactableMessage {
         AllReactables.add(this);
     }
 
-    private String getMessage() {
+    private String makeMessage() {
         StringBuilder leaderboardMessage = new StringBuilder();
         leaderboardMessage.append(String.format("```glsl\nExcursion Guild Leaderboards Page (%d)\n", page + 1));
         leaderboardMessage.append(getDash());
@@ -35,13 +36,13 @@ public class GuildLeaderboardMessage implements ReactableMessage {
         leaderboardMessage.append(String.format(" %-25s|", "Top Player"));
         leaderboardMessage.append(String.format(" %-9s|\n", "EP"));
 
-        int entriesLength = Leaderboard.leaderboardOfGuildEntries.size();
+        int entriesLength = leaderboard.leaderboard.size();
         for (int place = page * ENTRIES_PER_PAGE; place < ((page + 1) * ENTRIES_PER_PAGE) && place < entriesLength; place++) {
             StringBuilder stringToAdd = new StringBuilder();
             if (place % 5 == 0) {
                 stringToAdd.append(getDash());
             }
-            GuildLeaderboardEntry entry = Leaderboard.leaderboardOfGuildEntries.get(place);
+            GuildLeaderboardEntry entry = leaderboard.leaderboard.get(place);
             stringToAdd.append(String.format("|%4d|%-20s|%-3s| %9d | %-25s| %-9d|\n",
                     place + 1, entry.guildName, entry.guildTag,entry.points, entry.topPlayer.length()>25?entry.topPlayer.substring(0,22)+"...":entry.topPlayer, entry.topPlayerPoints));
 
@@ -53,8 +54,8 @@ public class GuildLeaderboardMessage implements ReactableMessage {
             }
         }
         leaderboardMessage.append(getDash());
-        leaderboardMessage.append(String.format("Total EP: %d EP\n",Leaderboard.getTotalEp()));
-        leaderboardMessage.append(String.format("Total EP guildless players: %d EP\n",Leaderboard.getNoGuildsEp()));
+        leaderboardMessage.append(String.format("Total EP: %d EP\n",leaderboard.getTotalEp()));
+        leaderboardMessage.append(String.format("Total EP guildless players: %d EP\n",leaderboard.getNoGuildsEp()));
         leaderboardMessage.append(getDash());
         leaderboardMessage.append("```");
         return leaderboardMessage.toString();
@@ -65,9 +66,9 @@ public class GuildLeaderboardMessage implements ReactableMessage {
     }
 
     public void forward() {
-        if ((Leaderboard.leaderboardOfGuildEntries.size() - 1) / ENTRIES_PER_PAGE >= page + 1) {
+        if ((leaderboard.leaderboard.size() - 1) / ENTRIES_PER_PAGE >= page + 1) {
             page++;
-            message.editMessage(getMessage()).queue();
+            message.editMessage(makeMessage()).queue();
         }
         this.lastUpdated = System.currentTimeMillis();
     }
@@ -75,14 +76,14 @@ public class GuildLeaderboardMessage implements ReactableMessage {
     public void backward() {
         if (page != 0) {
             page--;
-            message.editMessage(getMessage()).queue();
+            message.editMessage(makeMessage()).queue();
         }
         this.lastUpdated = System.currentTimeMillis();
     }
 
     private void top() {
         page = 0;
-        message.editMessage(getMessage()).queue();
+        message.editMessage(makeMessage()).queue();
         this.lastUpdated = System.currentTimeMillis();
     }
 
