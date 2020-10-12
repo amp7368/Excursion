@@ -1,7 +1,9 @@
-package apple.excursion.discord.reactions;
+package apple.excursion.discord.reactions.messages;
 
 import apple.excursion.discord.DiscordBot;
 import apple.excursion.discord.data.answers.SubmissionData;
+import apple.excursion.discord.reactions.AllReactables;
+import apple.excursion.discord.reactions.ReactableMessage;
 import apple.excursion.sheets.SheetsPlayerStats;
 import apple.excursion.utils.Pair;
 import net.dv8tion.jda.api.EmbedBuilder;

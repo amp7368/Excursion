@@ -9,8 +9,8 @@ import java.util.List;
 
 public class Profile {
     private static final int TOP_TASKS_SIZE = 5;
-    private List<Task> tasksNotDone = new ArrayList<>();
-    private List<TaskCompleted> tasksDone = new ArrayList<>();
+    private List<TaskSimple> tasksNotDone = new ArrayList<>();
+    private List<TaskSimpleCompleted> tasksDone = new ArrayList<>();
     private int totalEp = 0;
     private long discordId;
     private int row;
@@ -59,11 +59,11 @@ public class Profile {
         SheetsPlayerStats.rename(row, name);
     }
 
-    public void addNotDone(Task task) {
+    public void addNotDone(TaskSimple task) {
         this.tasksNotDone.add(task);
     }
 
-    public void addDone(TaskCompleted task) {
+    public void addDone(TaskSimpleCompleted task) {
         this.tasksDone.add(task);
         this.totalEp += task.pointsEarned;
     }
@@ -121,11 +121,11 @@ public class Profile {
         return tasksDone.size() + tasksNotDone.size();
     }
 
-    public List<Task> getTopTasks(String taskType) {
+    public List<TaskSimple> getTopTasks(String taskType) {
         taskType = taskType.toLowerCase();
-        List<Task> topTasks = new ArrayList<>();
+        List<TaskSimple> topTasks = new ArrayList<>();
         tasksNotDone.sort((o1, o2) -> o2.points - o1.points);
-        for (Task task : tasksNotDone) {
+        for (TaskSimple task : tasksNotDone) {
             if (task.category.equals(taskType)) {
                 topTasks.add(task);
                 if (topTasks.size() == TOP_TASKS_SIZE)
@@ -136,7 +136,7 @@ public class Profile {
     }
 
     public int getTaskPoints(String questName) {
-        for (TaskCompleted task : tasksDone) {
+        for (TaskSimpleCompleted task : tasksDone) {
             if (task.name.toLowerCase().equals(questName.toLowerCase())) {
                 return task.pointsEarned;
             }

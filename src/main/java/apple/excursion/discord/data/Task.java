@@ -1,27 +1,32 @@
 package apple.excursion.discord.data;
 
-import org.eclipse.jetty.util.ConcurrentHashSet;
+import apple.excursion.utils.GetFromObject;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import javax.annotation.Nullable;
+import java.util.List;
 
 public class Task {
-    public int points;
-    public String name;
-    public String category;
+    public String category; // is lowercase
+    public String taskName;
+    public String description;
+    @Nullable
+    public String coordinates;
+    public int ep;
+    public String createdBy;
+    public String repeatable;
+    @Nullable
+    public String images;
+    public boolean isFail = false;
 
-    public Task(int points, String name, String category) {
-        this.points = points;
-        this.name = name;
-        this.category = category.toLowerCase();
-        TaskCategory.taskTypes.add(this.category);
-    }
-
-    public static class TaskCategory {
-        private static final ConcurrentHashSet<String> taskTypes = new ConcurrentHashSet<>();
-
-        public static Collection<String> values() {
-            return new ArrayList<>(taskTypes);
-        }
+    public Task(List<Object> row) {
+        category = row.get(0).toString().toLowerCase();
+        taskName = row.get(1).toString();
+        description = row.get(2).toString();
+        coordinates = row.get(3) == null ? null : row.get(0).toString();
+        ep = GetFromObject.getInt(row.get(4));
+        createdBy = row.get(5).toString();
+        repeatable = row.get(6).toString();
+        images = row.size() < 8 ? null : row.get(7).toString();
+        isFail = GetFromObject.intFail(ep);
     }
 }

@@ -72,9 +72,9 @@ public class AllProfiles {
                         int pointsEarnedByPlayer = GetFromObject.getInt(profileTemp.getKey().next());
                         if (GetFromObject.intFail(pointsEarnedByPlayer) || pointsEarnedByPlayer == 0) {
                             // the player has not done this task
-                            profileTemp.getValue().addNotDone(new Task(questEp, questName, category));
+                            profileTemp.getValue().addNotDone(new TaskSimple(questEp, questName, category));
                         } else {
-                            profileTemp.getValue().addDone(new TaskCompleted(questEp, questName, category, pointsEarnedByPlayer));
+                            profileTemp.getValue().addDone(new TaskSimpleCompleted(questEp, questName, category, pointsEarnedByPlayer));
                         }
                     }
                 }

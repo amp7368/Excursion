@@ -3,8 +3,7 @@ package apple.excursion.discord.commands.general;
 import apple.excursion.discord.commands.DoCommand;
 import apple.excursion.discord.data.AllProfiles;
 import apple.excursion.discord.data.Profile;
-import apple.excursion.discord.data.Task;
-import apple.excursion.discord.data.TaskCompleted;
+import apple.excursion.discord.data.TaskSimple;
 import apple.excursion.discord.data.answers.GuildLeaderboardProfile;
 import apple.excursion.discord.data.answers.PlayerLeaderboardProfile;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -75,7 +74,7 @@ public class CommandProfile implements DoCommand {
             description.append(String.format("Tasks done: %d out of %d tasks\n", playerLeaderboardProfile.getCountTasksDone(), playerLeaderboardProfile.getCountTasksTotal()));
             description.append(String.format("Total EP: %d EP\n", playerLeaderboardProfile.getTotalEp()));
             description.append('\n');
-            for (String taskType : Task.TaskCategory.values()) {
+            for (String taskType : TaskSimple.TaskCategory.values()) {
                 description.append(String.format("**Uncompleted %s**\n", taskType));
                 description.append(playerLeaderboardProfile.getTopTasks(taskType).stream().map(task -> task.name).collect(Collectors.joining(	" **\u2022** ")));
                 description.append('\n');

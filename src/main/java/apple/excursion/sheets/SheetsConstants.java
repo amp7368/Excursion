@@ -11,8 +11,8 @@ import java.util.Arrays;
 import java.util.List;
 
 public class SheetsConstants {
-    public static final String spreadsheetId;
-    public static Sheets.Spreadsheets.Values sheetsValues = ExcursionMain.service.spreadsheets().values();
+    public static final String SPREADSHEET_ID;
+    public static Sheets.Spreadsheets.Values SHEETS_VALUES = ExcursionMain.service.spreadsheets().values();
 
     static {
         List<String> list = Arrays.asList(apple.excursion.ExcursionMain.class.getProtectionDomain().getCodeSource().getLocation().getPath().split("/"));
@@ -36,6 +36,6 @@ public class SheetsConstants {
             System.err.println("Please fill in the id for the sheet in '" + SHEET_ID_FILE_PATH + "'");
             System.exit(1);
         }
-        spreadsheetId = tempSpreadsheetId;
+        SPREADSHEET_ID = tempSpreadsheetId;
     }
 }

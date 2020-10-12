@@ -1,7 +1,7 @@
 package apple.excursion.discord.data.answers;
 
 import apple.excursion.discord.data.Profile;
-import apple.excursion.discord.data.Task;
+import apple.excursion.discord.data.TaskSimple;
 
 import java.util.List;
 
@@ -35,7 +35,7 @@ public class PlayerLeaderboardProfile {
         return profile.getTotalEp();
     }
 
-    public List<Task> getTopTasks(String taskType) {
+    public List<TaskSimple> getTopTasks(String taskType) {
         return profile.getTopTasks(taskType);
     }
 }

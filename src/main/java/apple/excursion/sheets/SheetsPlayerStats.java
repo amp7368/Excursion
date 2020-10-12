@@ -29,7 +29,7 @@ public class SheetsPlayerStats {
         quest = quest.toLowerCase();
         ValueRange missionsValueRange;
         try {
-            missionsValueRange = sheetsValues.get(spreadsheetId, MISSIONS_ROW_RANGE).execute();
+            missionsValueRange = SHEETS_VALUES.get(SPREADSHEET_ID, MISSIONS_ROW_RANGE).execute();
         } catch (IOException e) {
             return false;
         }
@@ -53,7 +53,7 @@ public class SheetsPlayerStats {
         int pointsToAdd = -1;
         int col = -1;
         try {
-            List<List<Object>> missions = sheetsValues.get(spreadsheetId, MISSIONS_ROW_RANGE).execute().getValues();
+            List<List<Object>> missions = SHEETS_VALUES.get(SPREADSHEET_ID, MISSIONS_ROW_RANGE).execute().getValues();
             Iterator<Object> questNameIterator = missions.get(0).iterator();
             Iterator<Object> questValuesIterator = missions.get(1).iterator();
 
@@ -75,14 +75,14 @@ public class SheetsPlayerStats {
             final String range = PLAYER_STATS_SHEET + "!" + addA1Notation(BASE_PLAYER_STATS_RANGE, col - 4, profile.getRow() - 4);
 
             int pointsThere;
-            List<List<Object>> pointsThereRaw = sheetsValues.get(spreadsheetId, range).execute().getValues();
+            List<List<Object>> pointsThereRaw = SHEETS_VALUES.get(SPREADSHEET_ID, range).execute().getValues();
             if (pointsThereRaw == null) pointsThere = 0;
             else if (pointsThereRaw.get(0) == null) pointsThere = 0;
             else pointsThere = GetFromObject.getInt(pointsThereRaw.get(0).get(0));
             if (GetFromObject.intFail(pointsThere))
                 throw new NumberFormatException("Bad number in player's mission value");
 
-            sheetsValues.update(spreadsheetId, range,
+            SHEETS_VALUES.update(SPREADSHEET_ID, range,
                     new ValueRange().setRange(range)
                             .setValues(Collections.singletonList(Collections.singletonList(String.valueOf(pointsThere + pointsToAdd))))
             ).setValueInputOption("USER_ENTERED").execute();
@@ -142,7 +142,7 @@ public class SheetsPlayerStats {
      * @throws IOException
      */
     public static int addProfile(long discordId, String discordName) throws IOException {
-        List<List<Object>> sheet = sheetsValues.get(spreadsheetId, PLAYER_STATS_SHEET).execute().getValues();
+        List<List<Object>> sheet = SHEETS_VALUES.get(SPREADSHEET_ID, PLAYER_STATS_SHEET).execute().getValues();
         int lastRow = 5;
         for (int i = sheet.size() - 1; i >= 0; i--) {
             final List<Object> row = sheet.get(i);
@@ -176,7 +176,7 @@ public class SheetsPlayerStats {
         profileRow.add(String.format("=COUNT(%s:%s)*1/121", profileStart, profileEnd));
         List<List<Object>> values = Collections.singletonList(profileRow);
         valueRange.setValues(values);
-        ExcursionMain.service.spreadsheets().batchUpdate(spreadsheetId,
+        ExcursionMain.service.spreadsheets().batchUpdate(SPREADSHEET_ID,
                 new BatchUpdateSpreadsheetRequest().setRequests(
                         Collections.singletonList(
                                 new Request().setInsertRange(
@@ -191,7 +191,7 @@ public class SheetsPlayerStats {
                         )
                 )
         ).execute();
-        sheetsValues.update(spreadsheetId, range, valueRange).setValueInputOption("USER_ENTERED").execute();
+        SHEETS_VALUES.update(SPREADSHEET_ID, range, valueRange).setValueInputOption("USER_ENTERED").execute();
         return lastRow;
     }
 
@@ -213,7 +213,7 @@ public class SheetsPlayerStats {
     }
 
     public static List<List<Object>> getEveryone() throws IOException {
-        return sheetsValues.get(spreadsheetId, EVERYONE_RANGE).execute().getValues();
+        return SHEETS_VALUES.get(SPREADSHEET_ID, EVERYONE_RANGE).execute().getValues();
     }
 
     public static void rename(int row, String realName) {
@@ -221,7 +221,7 @@ public class SheetsPlayerStats {
         final String range = String.format("%s!%s", PLAYER_STATS_SHEET, cell);
         ValueRange valueRange = new ValueRange().setRange(range).setValues(Collections.singletonList(Collections.singletonList(realName)));
         try {
-            sheetsValues.update(spreadsheetId, range, valueRange).setValueInputOption("USER_ENTERED").execute();
+            SHEETS_VALUES.update(SPREADSHEET_ID, range, valueRange).setValueInputOption("USER_ENTERED").execute();
         } catch (IOException ignored) {
         }
     }

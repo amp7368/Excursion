@@ -6,7 +6,7 @@ import apple.excursion.discord.commands.DoCommand;
 import apple.excursion.discord.data.AllProfiles;
 import apple.excursion.discord.data.answers.SubmissionData;
 import apple.excursion.discord.reactions.AllReactables;
-import apple.excursion.discord.reactions.SubmissionMessage;
+import apple.excursion.discord.reactions.messages.SubmissionMessage;
 import apple.excursion.sheets.SheetsPlayerStats;
 import apple.excursion.utils.Pair;
 import net.dv8tion.jda.api.JDA;
