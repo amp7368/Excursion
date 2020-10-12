@@ -34,13 +34,13 @@ public class LeaderboardMessage implements ReactableMessage {
         leaderboardMessage.append(String.format(" %-20s|", "Guild Name"));
         leaderboardMessage.append(String.format(" %4s|\n", "Tag "));
 
-        int entriesLength = Leaderboard.leaderBoardEntries.size();
+        int entriesLength = Leaderboard.leaderboardEntries.size();
         for (int place = page * ENTRIES_PER_PAGE; place < ((page + 1) * ENTRIES_PER_PAGE) && place < entriesLength; place++) {
             StringBuilder stringToAdd = new StringBuilder();
             if (place % 5 == 0) {
                 stringToAdd.append(getDash());
             }
-            LeaderboardEntry entry = Leaderboard.leaderBoardEntries.get(place);
+            LeaderboardEntry entry = Leaderboard.leaderboardEntries.get(place);
             stringToAdd.append(String.format("|%4d| %-31s| %8d | %-20s| %3s |\n",
                     place + 1, entry.name.length()>25?entry.name.substring(0,22)+"...":entry.name, entry.points, entry.guildName, entry.guildTag));
 
@@ -60,7 +60,7 @@ public class LeaderboardMessage implements ReactableMessage {
     }
 
     public void forward() {
-        if ((Leaderboard.leaderBoardEntries.size() - 1) / ENTRIES_PER_PAGE >= page + 1) {
+        if ((Leaderboard.leaderboardEntries.size() - 1) / ENTRIES_PER_PAGE >= page + 1) {
             page++;
             message.editMessage(getMessage()).queue();
         }

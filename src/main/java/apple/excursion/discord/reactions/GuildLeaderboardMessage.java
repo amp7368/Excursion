@@ -35,13 +35,13 @@ public class GuildLeaderboardMessage implements ReactableMessage {
         leaderboardMessage.append(String.format(" %-25s|", "Top Player"));
         leaderboardMessage.append(String.format(" %-9s|\n", "EP"));
 
-        int entriesLength = Leaderboard.guildLeaderboardEntries.size();
+        int entriesLength = Leaderboard.leaderboardOfGuildEntries.size();
         for (int place = page * ENTRIES_PER_PAGE; place < ((page + 1) * ENTRIES_PER_PAGE) && place < entriesLength; place++) {
             StringBuilder stringToAdd = new StringBuilder();
             if (place % 5 == 0) {
                 stringToAdd.append(getDash());
             }
-            GuildLeaderboardEntry entry = Leaderboard.guildLeaderboardEntries.get(place);
+            GuildLeaderboardEntry entry = Leaderboard.leaderboardOfGuildEntries.get(place);
             stringToAdd.append(String.format("|%4d|%-20s|%-3s| %9d | %-25s| %-9d|\n",
                     place + 1, entry.guildName, entry.guildTag,entry.points, entry.topPlayer.length()>25?entry.topPlayer.substring(0,22)+"...":entry.topPlayer, entry.topPlayerPoints));
 
@@ -53,8 +53,8 @@ public class GuildLeaderboardMessage implements ReactableMessage {
             }
         }
         leaderboardMessage.append(getDash());
-        leaderboardMessage.append(String.format("Total EP of everyone: %d EP\n",Leaderboard.getTotalEp()));
-        leaderboardMessage.append(String.format("Total EP of players without a guild: %d EP\n",Leaderboard.getNoGuildsEp()));
+        leaderboardMessage.append(String.format("Total EP: %d EP\n",Leaderboard.getTotalEp()));
+        leaderboardMessage.append(String.format("Total EP guildless players: %d EP\n",Leaderboard.getNoGuildsEp()));
         leaderboardMessage.append(getDash());
         leaderboardMessage.append("```");
         return leaderboardMessage.toString();
@@ -65,7 +65,7 @@ public class GuildLeaderboardMessage implements ReactableMessage {
     }
 
     public void forward() {
-        if ((Leaderboard.guildLeaderboardEntries.size() - 1) / ENTRIES_PER_PAGE >= page + 1) {
+        if ((Leaderboard.leaderboardOfGuildEntries.size() - 1) / ENTRIES_PER_PAGE >= page + 1) {
             page++;
             message.editMessage(getMessage()).queue();
         }

@@ -3,20 +3,22 @@ package apple.excursion.discord.data.leaderboard;
 import apple.excursion.sheets.LeaderboardSheet;
 import apple.excursion.sheets.SheetsPlayerStats;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
 public class Leaderboard {
-    public static List<LeaderboardEntry> leaderBoardEntries;
-    public static List<GuildLeaderboardEntry> guildLeaderboardEntries;
+    public static List<LeaderboardEntry> leaderboardEntries;
+    public static List<GuildLeaderboardEntry> leaderboardOfGuildEntries;
     private static long totalEpOfEveryone = 0;
     private static GuildLeaderboardEntry noGuildsEntry = null;
 
     public static void update() {
-        leaderBoardEntries = new ArrayList<>();
-        guildLeaderboardEntries = new ArrayList<>();
+        leaderboardEntries = new ArrayList<>();
+        leaderboardOfGuildEntries = new ArrayList<>();
         List<List<Object>> everyone = null;
         try {
             everyone = LeaderboardSheet.getEveryone();
@@ -35,11 +37,11 @@ public class Leaderboard {
             endIndex++;
         }
         for (int i = 4; i < everyone.size(); i++) {
-            leaderBoardEntries.add(new LeaderboardEntry(everyone.get(i), endIndex));
+            leaderboardEntries.add(new LeaderboardEntry(everyone.get(i), endIndex));
         }
-        leaderBoardEntries.sort((o1, o2) -> o2.points - o1.points);
+        leaderboardEntries.sort((o1, o2) -> o2.points - o1.points);
         HashMap<String, GuildLeaderboardEntry> guildLeaderboardEntriesMap = new HashMap<>();
-        for (LeaderboardEntry entry : leaderBoardEntries) {
+        for (LeaderboardEntry entry : leaderboardEntries) {
             guildLeaderboardEntriesMap.putIfAbsent(entry.guildName,
                     new GuildLeaderboardEntry(entry.guildName, entry.guildTag, entry.name, entry.points));
 
@@ -52,8 +54,8 @@ public class Leaderboard {
         if (noGuildsEntry != null) {
             noGuildsEntry.guildName = "No Guilds";
         }
-        guildLeaderboardEntries.addAll(guildLeaderboardEntriesMap.values());
-        guildLeaderboardEntries.sort((o1, o2) -> o2.points - o1.points);
+        leaderboardOfGuildEntries.addAll(guildLeaderboardEntriesMap.values());
+        leaderboardOfGuildEntries.sort((o1, o2) -> o2.points - o1.points);
     }
 
     public static long getTotalEp() {
@@ -62,5 +64,25 @@ public class Leaderboard {
 
     public static long getNoGuildsEp() {
         return noGuildsEntry.points;
+    }
+
+    @Nullable
+    public static GuildLeaderboardEntry getByTag(String tag) {
+        tag = tag.toLowerCase();
+        for (GuildLeaderboardEntry entry : leaderboardOfGuildEntries) {
+            if (entry.guildTag.toLowerCase().equals(tag))
+                return entry;
+        }
+        return null;
+    }
+
+    public static Collection<GuildLeaderboardEntry> getByName(String name) {
+        name = name.toLowerCase();
+        Collection<GuildLeaderboardEntry> results = new ArrayList<>();
+        for (GuildLeaderboardEntry entry : leaderboardOfGuildEntries) {
+            if (entry.guildName.contains(name))
+                results.add(entry);
+        }
+        return results;
     }
 }
