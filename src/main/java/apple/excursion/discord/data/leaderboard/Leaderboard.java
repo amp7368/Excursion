@@ -10,8 +10,8 @@ import java.util.HashMap;
 import java.util.List;
 
 public class Leaderboard {
-    public static List<LeaderboardEntry> leaderboardEntries;
-    public static List<GuildLeaderboardEntry> leaderboardOfGuildEntries;
+    private static List<LeaderboardEntry> leaderboardEntries;
+    private static List<GuildLeaderboardEntry> leaderboardOfGuildEntries;
     private static long totalEpOfEveryone = 0;
     private static GuildLeaderboardEntry noGuildsEntry = null;
 

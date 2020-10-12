@@ -82,4 +82,19 @@ public class Profile {
         return this.discordId == id;
     }
 
+    public int getTotalEp() {
+        return totalEp;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getGuild() {
+        return guild;
+    }
+
+    public String getGuildTag() {
+        return guildTag;
+    }
 }

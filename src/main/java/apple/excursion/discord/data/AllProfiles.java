@@ -1,5 +1,6 @@
 package apple.excursion.discord.data;
 
+import apple.excursion.discord.data.answers.OverallLeaderboard;
 import apple.excursion.sheets.SheetsPlayerStats;
 import apple.excursion.utils.GetFromObject;
 import apple.excursion.utils.Pair;
@@ -54,7 +55,8 @@ public class AllProfiles {
 
                 if (questNameCategoriesIterator.hasNext()) {
                     Object questNameCategory = questNameCategoriesIterator.next();
-                    if (questNameCategory != null && !questNameCategory.equals("")) category = questNameCategory.toString();
+                    if (questNameCategory != null && !questNameCategory.equals(""))
+                        category = questNameCategory.toString();
                 }
                 if (category == null) continue; // shouldn't really happen
 
@@ -114,5 +116,14 @@ public class AllProfiles {
                 return null;
             }
         }
+    }
+
+    public static OverallLeaderboard getOverallLeaderboard() {
+        List<Profile> leaderboard;
+        synchronized (profileSync) {
+            leaderboard = new ArrayList<>(profiles);
+        }
+        leaderboard.sort((o1, o2) -> o2.getTotalEp() - o1.getTotalEp());
+        return new OverallLeaderboard(leaderboard);
     }
 }
