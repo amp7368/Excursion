@@ -29,7 +29,6 @@ public class AllReactables {
 
     public synchronized static void dealWithReaction(@NotNull MessageReactionAddEvent event) {
         String reaction = event.getReactionEmote().getName();
-        System.out.println(reaction);
         for (Reactable reactable : Reactable.values()) {
             if (reactable.isEmoji(reaction)) {
                 ReactableMessage message = pageableMessages.get(event.getMessageIdLong());

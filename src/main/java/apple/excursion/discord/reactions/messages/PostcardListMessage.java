@@ -5,6 +5,8 @@ import apple.excursion.discord.data.Task;
 import apple.excursion.discord.reactions.AllReactables;
 import apple.excursion.discord.reactions.ReactableMessage;
 import apple.excursion.sheets.SheetsTasks;
+import apple.excursion.utils.PostcardDisplay;
+import apple.excursion.utils.Pretty;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.User;
@@ -16,23 +18,30 @@ import java.util.List;
 
 public class PostcardListMessage implements ReactableMessage {
     private static final int ENTRIES_PER_PAGE = 9;
-    private final Message message;
-    private final List<Task> allTasks = SheetsTasks.getTasks();
-    private final List<Task> dares;
-    private final List<Task> excursions;
-    private final List<Task> missions;
+    private Message message;
+    private final List<Task> allTasks;
+    private List<Task> dares;
+    private List<Task> excursions;
+    private List<Task> missions;
 
     private long lastUpdated = System.currentTimeMillis();
     private Category currentCategory = Category.ALL;
     private int page = 0;
 
+    private int taskLookingAt = -1;
+
     public PostcardListMessage(MessageChannel channel) {
+        allTasks = SheetsTasks.getTasks();
+        initialize(channel);
+    }
+
+    private void initialize(MessageChannel channel) {
         dares = new ArrayList<>(allTasks);
         excursions = new ArrayList<>(allTasks);
         missions = new ArrayList<>(allTasks);
-        dares.removeIf(task -> !task.category.equals(Category.DARES.name().toLowerCase()));
-        excursions.removeIf(task -> !task.category.equals(Category.EXCURSIONS.name().toLowerCase()));
-        missions.removeIf(task -> !task.category.equals(Category.MISSIONS.name().toLowerCase()));
+        dares.removeIf(task -> !task.category.equalsIgnoreCase(Category.DARE.name()));
+        excursions.removeIf(task -> !task.category.equalsIgnoreCase(Category.EXCURSION.name()));
+        missions.removeIf(task -> !task.category.equalsIgnoreCase(Category.MISSION.name()));
         dares.sort((t1, t2) -> t2.ep - t1.ep);
         excursions.sort((t1, t2) -> t2.ep - t1.ep);
         missions.sort((t1, t2) -> t2.ep - t1.ep);
@@ -53,43 +62,51 @@ public class PostcardListMessage implements ReactableMessage {
         AllReactables.add(this);
     }
 
+    public PostcardListMessage(MessageChannel channel, List<Task> allTasks) {
+        this.allTasks = allTasks;
+        initialize(channel);
+    }
+
     private String makeMessage() {
         StringBuilder text = new StringBuilder();
         text.append("```glsl\n");
-        text.append(String.format("%s List page (%d)\n", currentCategory.name(), page));
-        text.append(String.format("%-23s| %-4s| %s\n", "Name", "EP", "Description"));
+        text.append(String.format("%s List page (%d)\n", Pretty.upperCaseFirst(currentCategory.name()), page + 1));
+        text.append(String.format("%-23s| %-4s| %s\n", "Name", "EP", "Category"));
+        List<Task> tasks = getCurrentTasks();
+        int upper = Math.min((page + 1) * ENTRIES_PER_PAGE, tasks.size());
+        for (int i = page * ENTRIES_PER_PAGE, j = 0; i < upper; i++, j++) {
+            Task task = tasks.get(i);
+            text.append(String.format("%c: %-20s| %-4s|%s\n", (char) (65 + j),
+                    task.taskName,
+                    task.ep,
+                    Pretty.upperCaseFirst(task.category)
+            ));
+        }
+        text.append("```");
+        return text.toString();
+
+    }
+
+    private List<Task> getCurrentTasks() {
         List<Task> tasks;
         switch (currentCategory) {
             case ALL:
                 tasks = allTasks;
                 break;
-            case DARES:
+            case DARE:
                 tasks = dares;
                 break;
-            case MISSIONS:
+            case MISSION:
                 tasks = missions;
                 break;
-            case EXCURSIONS:
+            case EXCURSION:
                 tasks = excursions;
                 break;
             default:
                 tasks = Collections.emptyList();
                 break;
         }
-        int upper = Math.min((page + 1) * ENTRIES_PER_PAGE, tasks.size());
-        for (int i = page * ENTRIES_PER_PAGE; i < upper; i++) {
-            Task task = tasks.get(i);
-            text.append(String.format("%c: %-20s| %-4s| %s\n", (char) (65 + i),
-                    task.taskName,
-                    task.ep,
-                    task.description.length() > 38 ?
-                            task.description.replaceAll("\n", " ").substring(0, 35) + "..." :
-                            task.description.replaceAll("\n", " ")
-            ));
-        }
-        text.append("```");
-        return text.toString();
-
+        return tasks;
     }
 
     @Override
@@ -107,15 +124,15 @@ public class PostcardListMessage implements ReactableMessage {
                 event.getReaction().removeReaction(user).queue();
                 break;
             case EXCURSIONS:
-                setCategory(Category.EXCURSIONS);
+                setCategory(Category.EXCURSION);
                 event.getReaction().removeReaction(user).queue();
                 break;
             case MISSIONS:
-                setCategory(Category.MISSIONS);
+                setCategory(Category.MISSION);
                 event.getReaction().removeReaction(user).queue();
                 break;
             case DARES:
-                setCategory(Category.DARES);
+                setCategory(Category.DARE);
                 event.getReaction().removeReaction(user).queue();
                 break;
             case ALL_CATEGORIES:
@@ -123,40 +140,47 @@ public class PostcardListMessage implements ReactableMessage {
                 event.getReaction().removeReaction(user).queue();
                 break;
             case ALPHABET:
-
                 event.getReaction().removeReaction(user).queue();
+                this.lastUpdated = System.currentTimeMillis();
+                for (int i = 0; i < AllReactables.emojiAlphabet.size(); i++) {
+                    if (AllReactables.emojiAlphabet.get(i).equals(event.getReactionEmote().getName())) {
+                        // this is the reaction we're looking at
+                        this.lastUpdated = System.currentTimeMillis();
+
+                        if (taskLookingAt == i) {
+                            taskLookingAt = -1;
+                            message.editMessage(makeMessage()).queue();
+                            return;
+                        }
+
+                        List<Task> tasks = getCurrentTasks();
+                        if (i >= ENTRIES_PER_PAGE || i >= tasks.size()) {
+                            // they reacted too high
+                            return;
+                        }
+                        message.editMessage(PostcardDisplay.getMessage(tasks.get(i))).queue();
+                        taskLookingAt = i;
+                    }
+                }
                 break;
         }
     }
 
     private void setCategory(Category category) {
-        this.currentCategory = category;
+        this.currentCategory = this.currentCategory == category ? Category.ALL : category;
         this.page = 0;
+        this.taskLookingAt = -1;
         message.editMessage(makeMessage()).queue();
         this.lastUpdated = System.currentTimeMillis();
     }
 
     public void forward() {
-        List<Task> tasks;
-        switch (currentCategory) {
-            case ALL:
-                tasks = allTasks;
-                break;
-            case DARES:
-                tasks = dares;
-                break;
-            case MISSIONS:
-                tasks = missions;
-                break;
-            case EXCURSIONS:
-                tasks = excursions;
-                break;
-            default:
-                tasks = Collections.emptyList();
-                break;
-        }
+        List<Task> tasks = getCurrentTasks();
         if ((page + 1) * ENTRIES_PER_PAGE < tasks.size()) {
             ++page;
+            taskLookingAt = -1;
+            message.editMessage(makeMessage()).queue();
+        } else if (taskLookingAt != -1) {
             message.editMessage(makeMessage()).queue();
         }
         this.lastUpdated = System.currentTimeMillis();
@@ -170,9 +194,12 @@ public class PostcardListMessage implements ReactableMessage {
     public void backward() {
         if (page - 1 != -1) {
             --page;
+            taskLookingAt = -1;
             message.editMessage(makeMessage()).queue();
-            this.lastUpdated = System.currentTimeMillis();
+        } else if (taskLookingAt != -1) {
+            message.editMessage(makeMessage()).queue();
         }
+        this.lastUpdated = System.currentTimeMillis();
     }
 
     @Override
@@ -180,11 +207,11 @@ public class PostcardListMessage implements ReactableMessage {
         return lastUpdated;
     }
 
-    private enum Category {
-        DARES(AllReactables.Reactable.DARES),
-        EXCURSIONS(AllReactables.Reactable.EXCURSIONS),
+    public enum Category {
+        DARE(AllReactables.Reactable.DARES),
+        EXCURSION(AllReactables.Reactable.EXCURSIONS),
         ALL(AllReactables.Reactable.ALL_CATEGORIES),
-        MISSIONS(AllReactables.Reactable.MISSIONS);
+        MISSION(AllReactables.Reactable.MISSIONS);
 
         public final AllReactables.Reactable reactable;
 
