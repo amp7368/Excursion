@@ -76,7 +76,7 @@ public class PostcardListMessage implements ReactableMessage {
         int upper = Math.min((page + 1) * ENTRIES_PER_PAGE, tasks.size());
         for (int i = page * ENTRIES_PER_PAGE, j = 0; i < upper; i++, j++) {
             Task task = tasks.get(i);
-            text.append(String.format("%c: %-20s| %-4s|%s\n", (char) (65 + j),
+            text.append(String.format("%c: %-20s| %-4s| %s\n", (char) (65 + j),
                     task.taskName,
                     task.ep,
                     Pretty.upperCaseFirst(task.category)
@@ -208,15 +208,17 @@ public class PostcardListMessage implements ReactableMessage {
     }
 
     public enum Category {
-        DARE(AllReactables.Reactable.DARES),
-        EXCURSION(AllReactables.Reactable.EXCURSIONS),
-        ALL(AllReactables.Reactable.ALL_CATEGORIES),
-        MISSION(AllReactables.Reactable.MISSIONS);
+        DARE(AllReactables.Reactable.DARES,0xff9797),
+        EXCURSION(AllReactables.Reactable.EXCURSIONS,0xfaab5f),
+        ALL(AllReactables.Reactable.ALL_CATEGORIES,0xffffff),
+        MISSION(AllReactables.Reactable.MISSIONS,0xc3993e);
 
         public final AllReactables.Reactable reactable;
+        public int color;
 
-        Category(AllReactables.Reactable reactable) {
+        Category(AllReactables.Reactable reactable, int color) {
             this.reactable = reactable;
+            this.color = color;
         }
     }
 }

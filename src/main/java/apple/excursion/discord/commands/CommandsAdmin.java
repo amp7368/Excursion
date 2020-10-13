@@ -28,7 +28,7 @@ public enum CommandsAdmin {
     }
 
     public String getHelpMessage() {
-        return helpMessage;
+        return String.format("**%s%s %s** - %s", PREFIX, commandNames.get(0), usageMessage, helpMessage);
     }
 
     public String getUsageMessage() {

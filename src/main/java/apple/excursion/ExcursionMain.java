@@ -67,7 +67,6 @@ public class ExcursionMain {
 
     public static void main(String... args) throws IOException, GeneralSecurityException {
         System.out.println("Starting Excursion");
-
         // Build a new authorized API client service.
         final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
         service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))

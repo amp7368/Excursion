@@ -21,4 +21,8 @@ public class GuildLeaderboardProfile {
     public double getProgress() {
         return BigDecimal.valueOf(guild.points).divide(BigDecimal.valueOf(totalEpOfEveryone), 3, RoundingMode.DOWN).doubleValue();
     }
+
+    public long getTotalEp() {
+        return guild.points;
+    }
 }

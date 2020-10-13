@@ -15,6 +15,7 @@ public class CommandHelp implements DoCommand {
                 helpMessage.append(command.getHelpMessage());
                 helpMessage.append("\n");
             }
+            helpMessage.append("\n");
             helpMessage.append("***General Commands***\n");
         }
         for (Commands command : Commands.values()) {
