@@ -16,7 +16,7 @@ public class SheetsConstants {
 
     static {
         List<String> list = Arrays.asList(apple.excursion.ExcursionMain.class.getProtectionDomain().getCodeSource().getLocation().getPath().split("/"));
-        String SHEET_ID_FILE_PATH = String.join("/", list.subList(0, list.size() - 1)) + "/data/sheetId.data";
+        String SHEET_ID_FILE_PATH = String.join("/", list.subList(0, list.size() - 1)) + "/config/sheetId.data";
         File file = new File(SHEET_ID_FILE_PATH);
         if (!file.exists()) {
             try {

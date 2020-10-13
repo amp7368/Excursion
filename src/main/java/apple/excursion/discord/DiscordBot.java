@@ -32,7 +32,7 @@ public class DiscordBot extends ListenerAdapter {
 
     public DiscordBot() {
         List<String> list = Arrays.asList(ExcursionMain.class.getProtectionDomain().getCodeSource().getLocation().getPath().split("/"));
-        String BOT_TOKEN_FILE_PATH = String.join("/", list.subList(0, list.size() - 1)) + "/data/discordToken.data";
+        String BOT_TOKEN_FILE_PATH = String.join("/", list.subList(0, list.size() - 1)) + "/config/discordToken.data";
 
         File file = new File(BOT_TOKEN_FILE_PATH);
         if (!file.exists()) {

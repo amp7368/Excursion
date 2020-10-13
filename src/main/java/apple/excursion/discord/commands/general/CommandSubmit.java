@@ -28,7 +28,7 @@ public class CommandSubmit implements DoCommand {
 
     private static String getPath() {
         List<String> list = Arrays.asList(ExcursionMain.class.getProtectionDomain().getCodeSource().getLocation().getPath().split("/"));
-        return String.join("/", list.subList(0, list.size() - 1)) + "/data/reviewers.json";
+        return String.join("/", list.subList(0, list.size() - 1)) + "/config/reviewers.json";
     }
 
     public static final Color BOT_COLOR = new Color(0x4e80f7);
