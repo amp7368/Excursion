@@ -10,6 +10,7 @@ import java.sql.Statement;
 import java.util.Collection;
 
 public class InsertSubmissionDB {
+    // todo deal with this constant
     private static final String MONTH_NAME = "OCT_2020";
 
     public static void insertSubmission(SubmissionData data) throws SQLException {

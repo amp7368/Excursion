@@ -1,6 +1,8 @@
 package apple.excursion.discord.commands.general;
 
 import apple.excursion.ExcursionMain;
+import apple.excursion.database.GetDB;
+import apple.excursion.database.PlayerData;
 import apple.excursion.discord.DiscordBot;
 import apple.excursion.discord.commands.DoCommand;
 import apple.excursion.discord.data.AllProfiles;
@@ -20,6 +22,7 @@ import org.json.simple.parser.ParseException;
 import java.awt.*;
 import java.io.*;
 import java.net.URISyntaxException;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -113,9 +116,17 @@ public class CommandSubmit implements DoCommand {
             }
             idToName = idToName.stream().map(pair -> new Pair<>(pair.getKey(), "__" + pair.getValue() + "__")).collect(Collectors.toList());
 
-
+            List<PlayerData> playersData = new ArrayList<>();
+            for (Pair<Long, String> player : idToName) {
+                try {
+                    playersData.add(GetDB.getPlayerData(player.getKey()));
+                } catch (SQLException throwables) {
+                    //todo deal with error
+                    throwables.printStackTrace();
+                }
+            }
+            System.out.println(playersData.stream().map(PlayerData::toString).collect(Collectors.joining("\n-----------\n")));
             synchronized (reviewerSyncObject) {
-
                 SubmissionData submissionData = new SubmissionData(
                         attachment,
                         links,
@@ -127,7 +138,6 @@ public class CommandSubmit implements DoCommand {
                 for (User reviewer : reviewers) {
                     new SubmissionMessage(submissionData, reviewer);
                 }
-                //todo download submissionData
             }
             eventMessage.addReaction(AllReactables.Reactable.ACCEPT.getFirstEmoji()).queue();
         }
