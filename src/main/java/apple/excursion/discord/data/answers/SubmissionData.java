@@ -1,5 +1,6 @@
 package apple.excursion.discord.data.answers;
 
+import apple.excursion.database.PlayerData;
 import apple.excursion.discord.DiscordBot;
 import apple.excursion.discord.data.TaskSimple;
 import apple.excursion.discord.reactions.AllReactables;
@@ -35,15 +36,21 @@ public class SubmissionData {
     private final String submitter;
     private final long submitterId;
     private final List<Pair<Long, String>> allSubmitters;
+    public final String submissionHistoryMessage;
 
     public SubmissionData(List<Message.Attachment> attachments, List<String> links,
-                          TaskSimple task, String submitter, long submitterId, List<Pair<Long, String>> otherSubmitters) {
+                          TaskSimple task, String submitter, long submitterId, List<Pair<Long, String>> otherSubmitters, List<PlayerData> playersData) {
         this.attachmentsUrl = attachments.isEmpty() ? null : attachments.get(0).getUrl();
         this.links = links;
         this.task = task;
         this.submitter = submitter;
         this.submitterId = submitterId;
         this.allSubmitters = otherSubmitters;
+        submissionHistoryMessage = makeSubmissionHistoryMessage(playersData);
+    }
+
+    private String makeSubmissionHistoryMessage(List<PlayerData> playersData) {
+        return playersData.stream().map(playerData -> playerData.makeSubmissionHistoryMessage(task.name)).collect(Collectors.joining("\n\n"));
     }
 
     public void addMessage(Message message, User reviewer) {

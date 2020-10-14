@@ -1,5 +1,7 @@
 package apple.excursion.database;
 
+import apple.excursion.utils.Pair;
+
 import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -16,6 +18,7 @@ public class GetDB {
         String guildName = response.getString(3);
         String guildTag = response.getString(4);
         String[] submissionIds = response.getString(5).split(",");
+        response.close();
         List<OldSubmission> submissions = new ArrayList<>();
         for (String submissionId : submissionIds) {
             statement = VerifyDB.submissionDbConnection.createStatement();
@@ -25,8 +28,25 @@ public class GetDB {
             Long date = response.getLong(2);
             String taskName = response.getString(3);
             String links = response.getString(4);
-            String submitter = response.getString(5);
-            String otherSubmitters = response.getString(6);
+            String submitterId = response.getString(5);
+            String otherSubmittersIdsListAsString = response.getString(6);
+            response.close();
+
+            statement = VerifyDB.playerDbConnection.createStatement();
+            String[] otherSubmittersIds = otherSubmittersIdsListAsString == null ? null : otherSubmittersIdsListAsString.split(",");
+            List<Pair<String, String>> otherSubmitters = new ArrayList<>();
+            if (otherSubmittersIds != null)
+                for (String otherSubmitterId : otherSubmittersIds) {
+                    sql = getSqlPlayerGetName(otherSubmitterId);
+                    response = statement.executeQuery(sql);
+                    otherSubmitters.add(new Pair<>(otherSubmitterId, response.getString(1)));
+                    response.close();
+                }
+            sql = getSqlPlayerGetName(submitterId);
+            response = statement.executeQuery(sql);
+            Pair<String, String> submitter = new Pair<>(submitterId, response.getString(1));
+            response.close();
+
             submissions.add(new OldSubmission(
                     submissionIdInt,
                     date,
@@ -39,15 +59,22 @@ public class GetDB {
         return new PlayerData(id, playerName, guildName, guildTag, submissions);
     }
 
+
     private static String getSqlSubmissionGetAll(String submissionId) {
         return String.format("SELECT * " +
                 "FROM submissions " +
                 "WHERE id = %s;", submissionId);
     }
 
+    private static String getSqlPlayerGetName(String id) {
+        return String.format("SELECT player_name " +
+                "FROM players " +
+                "WHERE player_uid = '%s';", id);
+    }
+
     private static String getSqlPlayerGetAll(long id) {
         return String.format("SELECT * " +
                 "FROM players " +
-                "WHERE player_uid = '%d'", id);
+                "WHERE player_uid = '%d';", id);
     }
 }

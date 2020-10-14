@@ -52,14 +52,17 @@ public class SubmissionMessage implements ReactableMessage {
             text.append(data.getSubmittersNameAndIds().stream().map(Pair::getValue).collect(Collectors.joining(" and ")));
             text.append('.');
         }
+        text.append("\n");
         if (!data.getLinks().isEmpty()) {
-            text.append("\nAdditional links include:");
+            text.append("Additional links include:");
             for (String link : data.getLinks()) {
                 text.append("\n");
                 text.append(link);
             }
+            text.append("\n");
         }
-
+        text.append("\n");
+        text.append(data.submissionHistoryMessage);
         EmbedBuilder embed = new EmbedBuilder();
         embed.setColor(BOT_COLOR);
         embed.setTitle(data.getTaskName());

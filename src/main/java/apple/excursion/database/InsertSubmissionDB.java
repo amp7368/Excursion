@@ -35,6 +35,7 @@ public class InsertSubmissionDB {
                 statement = VerifyDB.playerDbConnection.createStatement();
                 ResultSet response = statement.executeQuery(existsSql);
                 boolean exists = 1 == response.getInt(1);
+                response.close();
                 if (exists) {
                     // if the player exist in the DB, then update their list of submissions
                     getSql = getSqlGetPlayerSubmissionIds(id);
@@ -59,6 +60,7 @@ public class InsertSubmissionDB {
                 response = statement.executeQuery(getSql);
                 String guildName = response.getString(1);
                 String guildTag = response.getString(2);
+                response.close();
                 statement.close();
                 if (guildName != null && guildTag != null) {
                     // check if the guild exists in the guild leaderboard
@@ -66,12 +68,14 @@ public class InsertSubmissionDB {
                     existsSql = getSqlExistsLbGuild(guildName, guildTag, MONTH_NAME);
                     response = statement.executeQuery(existsSql);
                     exists = 1 == response.getInt(1);
+                    response.close();
                     if (exists) {
                         // if the player exist in the DB, then update their score and submission count
                         getSql = getSqlGetLbGuild(guildName, guildTag, MONTH_NAME);
                         response = statement.executeQuery(getSql);
                         int score = response.getInt(1);
                         int count = response.getInt(2);
+                        response.close();
                         score += data.getTaskScore();
                         count++;
                         updateSql = getSqlUpdateLbGuild(guildName, guildTag, MONTH_NAME, score, count);
@@ -89,6 +93,7 @@ public class InsertSubmissionDB {
                 existsSql = getSqlExistsLbPlayer(id, MONTH_NAME);
                 response = statement.executeQuery(existsSql);
                 exists = 1 == response.getInt(1);
+                response.close();
 
                 if (exists) {
                     // if the player exist in the DB, then update their score and submission count
@@ -96,6 +101,7 @@ public class InsertSubmissionDB {
                     response = statement.executeQuery(getSql);
                     int score = response.getInt(1);
                     int count = response.getInt(2);
+                    response.close();
                     score += data.getTaskScore();
                     count++;
                     updateSql = getSqlUpdateLbPlayer(id, MONTH_NAME, score, count);

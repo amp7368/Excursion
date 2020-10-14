@@ -72,7 +72,7 @@ public class CommandSubmit implements DoCommand {
         }
         nickName = author.getEffectiveName();
         idToName.add(new Pair<>(author.getIdLong(), nickName));
-        String submitter = nickName;
+        String submitterName = nickName;
 
         Message eventMessage = event.getMessage();
         String content = eventMessage.getContentStripped();
@@ -82,7 +82,7 @@ public class CommandSubmit implements DoCommand {
             String other = pair.getValue();
             content = content.replace("@" + other, "");
         }
-        content = content.replace("@" + submitter, "").trim();
+        content = content.replace("@" + submitterName, "").trim();
 
         String[] contentArray = content.split(" ");
         StringBuilder questNameBuilder = new StringBuilder();
@@ -109,12 +109,12 @@ public class CommandSubmit implements DoCommand {
                 return;
             }
             // verify discord nickname
-            AllProfiles.getProfile(event.getAuthor().getIdLong(), submitter);
+            AllProfiles.getProfile(event.getAuthor().getIdLong(), submitterName);
             for (Member tag : tags) {
                 nickName = tag.getEffectiveName();
                 AllProfiles.getProfile(tag.getIdLong(), nickName);
             }
-            idToName = idToName.stream().map(pair -> new Pair<>(pair.getKey(), "__" + pair.getValue() + "__")).collect(Collectors.toList());
+            idToName = idToName.stream().map(pair -> new Pair<>(pair.getKey(), pair.getValue())).collect(Collectors.toList());
 
             List<PlayerData> playersData = new ArrayList<>();
             for (Pair<Long, String> player : idToName) {
@@ -125,15 +125,16 @@ public class CommandSubmit implements DoCommand {
                     throwables.printStackTrace();
                 }
             }
-            System.out.println(playersData.stream().map(PlayerData::toString).collect(Collectors.joining("\n-----------\n")));
+
             synchronized (reviewerSyncObject) {
                 SubmissionData submissionData = new SubmissionData(
                         attachment,
                         links,
                         task,
-                        submitter,
+                        submitterName,
                         author.getIdLong(),
-                        idToName
+                        idToName,
+                        playersData
                 );
                 for (User reviewer : reviewers) {
                     new SubmissionMessage(submissionData, reviewer);

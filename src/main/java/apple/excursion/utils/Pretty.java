@@ -1,5 +1,11 @@
 package apple.excursion.utils;
 
+
+import javax.swing.text.DateFormatter;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class Pretty {
     public static String upperCaseFirst(String s) {
         String[] split = s.split(" ");
@@ -13,5 +19,11 @@ public class Pretty {
             split[i] = new String(chars);
         }
         return String.join(" ", split);
+    }
+
+    public static String date(Long epochSeconds) {
+        SimpleDateFormat formatter = new SimpleDateFormat();
+                formatter.applyPattern("h:mm a 'on' EEE, MMMMMMMMM d");
+        return formatter.format(new Date(epochSeconds*1000));
     }
 }
