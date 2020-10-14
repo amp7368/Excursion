@@ -3,6 +3,7 @@ package apple.excursion.sheets;
 import apple.excursion.ExcursionMain;
 import apple.excursion.discord.data.AllProfiles;
 import apple.excursion.discord.data.Profile;
+import apple.excursion.discord.data.TaskSimple;
 import apple.excursion.utils.GetFromObject;
 import apple.excursion.utils.Pair;
 import com.google.api.services.sheets.v4.Sheets;
@@ -20,31 +21,31 @@ public class SheetsPlayerStats {
     private static final String PLAYER_STATS_SHEET = "PlayerStats";
     private static final String BASE_PLAYER_STATS_RANGE = "E5";
     private static final String EVERYONE_RANGE = "PlayerStats";
-    private static final String TASKS_DONE_ROW = "2";
     private static final int PLAYER_STATS_SHEET_ID = 0;
 
     public static final String TASKS_DONE_HEADER = "Tasks Done";
 
-    public static boolean isQuest(String quest) {
+    public static TaskSimple getTaskSimple(String quest) {
         quest = quest.toLowerCase();
         ValueRange missionsValueRange;
         try {
             missionsValueRange = SHEETS_VALUES.get(SPREADSHEET_ID, MISSIONS_ROW_RANGE).execute();
         } catch (IOException e) {
-            return false;
+            return null;
         }
-        List<Object> missionValues = missionsValueRange.getValues().get(0);
-        for (Object missionValue : missionValues) {
-            if (missionValue instanceof String) {
-                if (((String) missionValue).toLowerCase().equals(quest))
-                    return true;
+        Iterator<Object> missionValues = missionsValueRange.getValues().get(0).iterator();
+        Iterator<Object> missionScoreValues = missionsValueRange.getValues().get(1).iterator();
+        while (missionValues.hasNext() && missionScoreValues.hasNext()) {
+            String taskName = missionValues.next().toString();
+            if (taskName.equalsIgnoreCase(quest)) {
+                final int score = GetFromObject.getInt(missionScoreValues.next());
+                if (GetFromObject.intFail(score)) return null;
+                return new TaskSimple(score, taskName, "");
             }
-            if (missionValue.toString().equals(quest)) {
-                return true;
-            }
+            missionScoreValues.next();
         }
         // could not find a quest with that name
-        return false;
+        return null;
     }
 
     public synchronized static void submit(String questNameToAdd, long discordId, String discordName) throws IOException, NumberFormatException {

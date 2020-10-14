@@ -1,5 +1,6 @@
 package apple.excursion.discord.reactions.messages;
 
+import apple.excursion.database.InsertSubmissionDB;
 import apple.excursion.discord.DiscordBot;
 import apple.excursion.discord.data.answers.SubmissionData;
 import apple.excursion.discord.reactions.AllReactables;
@@ -13,7 +14,7 @@ import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 
 import java.io.IOException;
-import java.util.List;
+import java.sql.SQLException;
 import java.util.stream.Collectors;
 
 import static apple.excursion.discord.commands.general.CommandSubmit.BOT_COLOR;
@@ -44,11 +45,11 @@ public class SubmissionMessage implements ReactableMessage {
         text.append(data.getTaskName());
         text.append("*");
         text.append("\n");
-        if (data.getSubmittersIds().isEmpty()) {
+        if (data.getSubmittersNameAndIds().isEmpty()) {
             text.append("There are no other submitters.");
         } else {
             text.append("The evidence includes: ");
-            text.append(data.getSubmittersIds().stream().map(Pair::getValue).collect(Collectors.joining(" and ")));
+            text.append(data.getSubmittersNameAndIds().stream().map(Pair::getValue).collect(Collectors.joining(" and ")));
             text.append('.');
         }
         if (!data.getLinks().isEmpty()) {
@@ -70,11 +71,11 @@ public class SubmissionMessage implements ReactableMessage {
     }
 
 
-    public void acceptSubmit() {
+    public void acceptSubmit() throws SQLException {
         synchronized (data.sync) {
             if (data.isNotAccepted()) {
                 data.setAccepted();
-                for (Pair<Long, String> idToName : data.getSubmittersIds()) {
+                for (Pair<Long, String> idToName : data.getSubmittersNameAndIds()) {
                     try {
                         SheetsPlayerStats.submit(data.getTaskName(), idToName.getKey(), idToName.getValue());
                     } catch (IOException e) {
@@ -89,7 +90,7 @@ public class SubmissionMessage implements ReactableMessage {
                 }
             }
         }
-        // todo store info
+        InsertSubmissionDB.insertSubmission(data);
     }
 
     public void completeSubmit(boolean isAccepted, User reviewer) {
@@ -101,7 +102,12 @@ public class SubmissionMessage implements ReactableMessage {
     public void dealWithReaction(AllReactables.Reactable reactable, String reaction, MessageReactionAddEvent event) {
         switch (reactable) {
             case ACCEPT:
-                acceptSubmit();
+                try {
+                    acceptSubmit();
+                } catch (SQLException throwables) {
+                    // todo give error message
+                    throwables.printStackTrace();
+                }
                 completeSubmit(true, event.getUser());
                 break;
             case REJECT:

@@ -8,6 +8,7 @@ import apple.excursion.discord.reactions.*;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -70,13 +71,13 @@ public class DiscordBot extends ListenerAdapter {
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
 
-        if (event.getAuthor().isBot()) {
+        if (event.getAuthor().isBot() || event.getChannelType() != ChannelType.TEXT) {
             return;
         }
         // the author is not a bot
 
         String messageContent = event.getMessage().getContentStripped().toLowerCase();
-        // deal with the differenct commands
+        // deal with the different commands
         for (Commands command : Commands.values()) {
             if (command.isCommand(messageContent)) {
                 command.run(event);

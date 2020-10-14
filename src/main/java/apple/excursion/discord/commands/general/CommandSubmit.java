@@ -4,6 +4,7 @@ import apple.excursion.ExcursionMain;
 import apple.excursion.discord.DiscordBot;
 import apple.excursion.discord.commands.DoCommand;
 import apple.excursion.discord.data.AllProfiles;
+import apple.excursion.discord.data.TaskSimple;
 import apple.excursion.discord.data.answers.SubmissionData;
 import apple.excursion.discord.reactions.AllReactables;
 import apple.excursion.discord.reactions.messages.SubmissionMessage;
@@ -99,7 +100,8 @@ public class CommandSubmit implements DoCommand {
         } else {
             // we have attachments
 
-            if (!SheetsPlayerStats.isQuest(questName)) {
+            final TaskSimple task = SheetsPlayerStats.getTaskSimple(questName);
+            if (task == null) {
                 event.getChannel().sendMessage(String.format("'%s' is not a valid task name", questName)).queue();
                 return;
             }
@@ -117,8 +119,9 @@ public class CommandSubmit implements DoCommand {
                 SubmissionData submissionData = new SubmissionData(
                         attachment,
                         links,
-                        questName,
+                        task,
                         submitter,
+                        author.getIdLong(),
                         idToName
                 );
                 for (User reviewer : reviewers) {

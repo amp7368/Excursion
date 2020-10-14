@@ -1,6 +1,7 @@
 package apple.excursion.discord.data.answers;
 
 import apple.excursion.discord.DiscordBot;
+import apple.excursion.discord.data.TaskSimple;
 import apple.excursion.discord.reactions.AllReactables;
 import apple.excursion.utils.Pair;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -10,6 +11,7 @@ import net.dv8tion.jda.api.entities.PrivateChannel;
 import net.dv8tion.jda.api.entities.User;
 
 import javax.annotation.Nullable;
+import java.sql.Time;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -29,16 +31,18 @@ public class SubmissionData {
     @Nullable
     private final String attachmentsUrl;
     private final List<String> links;
-    private final String taskName;
+    private final TaskSimple task;
     private final String submitter;
+    private final long submitterId;
     private final List<Pair<Long, String>> allSubmitters;
 
     public SubmissionData(List<Message.Attachment> attachments, List<String> links,
-                          String taskName, String submitter, List<Pair<Long, String>> otherSubmitters) {
+                          TaskSimple task, String submitter, long submitterId, List<Pair<Long, String>> otherSubmitters) {
         this.attachmentsUrl = attachments.isEmpty() ? null : attachments.get(0).getUrl();
         this.links = links;
-        this.taskName = taskName;
+        this.task = task;
         this.submitter = submitter;
+        this.submitterId = submitterId;
         this.allSubmitters = otherSubmitters;
     }
 
@@ -58,10 +62,10 @@ public class SubmissionData {
     }
 
     public String getTaskName() {
-        return taskName;
+        return task.name;
     }
 
-    public List<Pair<Long, String>> getSubmittersIds() {
+    public List<Pair<Long, String>> getSubmittersNameAndIds() {
         return allSubmitters;
     }
 
@@ -94,7 +98,7 @@ public class SubmissionData {
             }
 
             EmbedBuilder embed = new EmbedBuilder();
-            embed.setTitle("You have submitted: " + taskName);
+            embed.setTitle("You have submitted: " + task.name);
             embed.setColor(BOT_COLOR);
             if (attachmentsUrl != null)
                 embed.setImage(attachmentsUrl);
@@ -131,5 +135,31 @@ public class SubmissionData {
                 }
             }
         }
+    }
+
+    public long getTime() {
+        return epochTimeOfSubmission;
+    }
+
+    @Nullable
+    public String getOtherSubmitters() {
+        if (allSubmitters.size() == 1) {
+            return null;
+        }
+        List<Long> otherSubmitters = new ArrayList<>();
+        for (Pair<Long, String> otherUserRaw : allSubmitters) {
+            if (!otherUserRaw.getKey().equals(submitterId)) {
+                otherSubmitters.add(otherUserRaw.getKey());
+            }
+        }
+        return otherSubmitters.stream().map(String::valueOf).collect(Collectors.joining(","));
+    }
+
+    public String getSubmitterId() {
+        return String.valueOf(submitterId);
+    }
+
+    public int getTaskScore() {
+        return task.points;
     }
 }
