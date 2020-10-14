@@ -63,7 +63,6 @@ public class VerifyDB {
             statement.execute(buildTableSql);
             statement.close();
 
-
             guildLbDbConnection = DriverManager.getConnection("jdbc:sqlite:" + GUILD_LB_DB);
             buildTableSql =
                     "CREATE TABLE IF NOT EXISTS " + "OCT_2020" + " ("

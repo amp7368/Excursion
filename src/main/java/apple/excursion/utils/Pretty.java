@@ -1,8 +1,5 @@
 package apple.excursion.utils;
 
-
-import javax.swing.text.DateFormatter;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -23,7 +20,7 @@ public class Pretty {
 
     public static String date(Long epochSeconds) {
         SimpleDateFormat formatter = new SimpleDateFormat();
-                formatter.applyPattern("h:mm a 'on' EEE, MMMMMMMMM d");
+                formatter.applyPattern("h:mm a 'EST' 'on' EEE, MMMMMMMMM d");
         return formatter.format(new Date(epochSeconds*1000));
     }
 }

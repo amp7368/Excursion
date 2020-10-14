@@ -1,5 +1,8 @@
 package apple.excursion.discord.reactions.messages;
 
+import apple.excursion.database.GetDB;
+import apple.excursion.database.OldSubmission;
+import apple.excursion.database.PlayerData;
 import apple.excursion.discord.data.AllProfiles;
 import apple.excursion.discord.data.Profile;
 import apple.excursion.discord.data.Task;
@@ -9,6 +12,7 @@ import apple.excursion.discord.data.answers.PlayerLeaderboardProfile;
 import apple.excursion.discord.reactions.AllReactables;
 import apple.excursion.discord.reactions.ReactableMessage;
 import apple.excursion.sheets.SheetsTasks;
+import apple.excursion.utils.Pair;
 import apple.excursion.utils.PostcardDisplay;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
@@ -19,6 +23,7 @@ import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 
 import javax.annotation.Nullable;
 import java.awt.*;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +32,7 @@ import java.util.Map;
 public class ProfileMessage implements ReactableMessage {
     private static final int NUM_OF_CHARS_PROGRESS = 20;
     private static final Color BOT_COLOR = new Color(0x4e80f7);
+    private static final int SUBMISSION_HISTORY_SIZE = 5;
     private Message message;
     private Profile profile;
     private GuildLeaderboardProfile guildProfile;
@@ -118,8 +124,24 @@ public class ProfileMessage implements ReactableMessage {
                 description.append('\n');
             }
         }
-        description.append("**Submission record:** (not implemented)\n");
-
+        description.append("**Submission record:** \n");
+        try {
+            PlayerData playerData = GetDB.getPlayerData(new Pair<>(profile.getId(), profile.getName()));
+            if (playerData.submissions.isEmpty()) {
+                description.append("There is no submission history");
+            } else {
+                List<OldSubmission> submissions = playerData.submissions;
+                int i = 0;
+                for (OldSubmission submission : submissions) {
+                    if (i++ == SUBMISSION_HISTORY_SIZE) break;
+                    description.append(submission.makeSubmissionHistoryMessage());
+                    description.append("\n");
+                }
+            }
+        } catch (SQLException throwables) {
+            // todo deal with errors
+            throwables.printStackTrace();
+        }
         embed.setDescription(description);
         embed.setColor(BOT_COLOR);
         return embed.build();

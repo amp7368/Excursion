@@ -50,7 +50,9 @@ public class SubmissionData {
     }
 
     private String makeSubmissionHistoryMessage(List<PlayerData> playersData) {
-        return playersData.stream().map(playerData -> playerData.makeSubmissionHistoryMessage(task.name)).collect(Collectors.joining("\n\n"));
+        List<PlayerData> playerDataTemp = new ArrayList<>(playersData);
+        playerDataTemp.removeIf(Objects::isNull);
+        return playerDataTemp.stream().map(playerData -> playerData.makeSubmissionHistoryMessage(task.name)).collect(Collectors.joining("\n\n"));
     }
 
     public void addMessage(Message message, User reviewer) {

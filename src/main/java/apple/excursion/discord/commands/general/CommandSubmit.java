@@ -119,7 +119,7 @@ public class CommandSubmit implements DoCommand {
             List<PlayerData> playersData = new ArrayList<>();
             for (Pair<Long, String> player : idToName) {
                 try {
-                    playersData.add(GetDB.getPlayerData(player.getKey()));
+                    playersData.add(GetDB.getPlayerData(player));
                 } catch (SQLException throwables) {
                     //todo deal with error
                     throwables.printStackTrace();

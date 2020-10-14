@@ -9,7 +9,7 @@ public class PlayerData {
     private final String name;
     private final String guildName;
     private final String guildTag;
-    private final List<OldSubmission> submissions;
+    public final List<OldSubmission> submissions;
 
     public PlayerData(long id, String playerName, String guildName, String guildTag, List<OldSubmission> submissions) {
         this.id = id;
@@ -17,13 +17,7 @@ public class PlayerData {
         this.guildName = guildName;
         this.guildTag = guildTag;
         this.submissions = submissions;
-    }
-
-    @Override
-    public String toString() {
-        return String.format("id: %d\nname: %s\nguildName: %s\nguildTag: %s\nsubmissions:\n%s",
-                id, name, guildName, guildTag,
-                submissions.stream().map(OldSubmission::toString).collect(Collectors.joining("\n")));
+        this.submissions.sort((o1, o2) -> (int) (o2.dateSubmitted-o1.dateSubmitted));
     }
 
     public String makeSubmissionHistoryMessage(String name) {

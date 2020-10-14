@@ -1,0 +1,185 @@
+package apple.excursion.database;
+
+import apple.excursion.discord.data.answers.SubmissionData;
+import apple.excursion.utils.Pair;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Collection;
+
+class GetSql {
+
+    // all the exists sql
+    @NotNull
+    static String getSqlExistsLbGuild(String guildName, String guildTag, String monthName) {
+        return String.format("SELECT COUNT(1) " +
+                        "FROM %s " +
+                        "WHERE (guild_name = '%s' AND guild_tag = '%s') " +
+                        "LIMIT 1;",
+                monthName, guildName, guildTag);
+    }
+
+    @NotNull
+    static String getSqlExistsLbPlayer(Pair<Long, String> id, String monthName) {
+        return "SELECT COUNT(1)" +
+                "FROM " + monthName + " "
+                + "WHERE player_uid = '"
+                + id.getKey()
+                + "' LIMIT 1;";
+    }
+
+    @NotNull
+    static String getSqlExistsPlayer(Long id) {
+        return "SELECT COUNT(1)" +
+                "FROM players " +
+                "WHERE player_uid = '"
+                + id
+                + "' LIMIT 1;";
+    }
+
+
+    // all the insert sql
+
+    @NotNull
+    static String getSqlInsertPlayers(Pair<Long, String> id, int submissionId) {
+        return "INSERT INTO players(player_uid, player_name, submission_ids) "
+                + "VALUES "
+                + String.format("('%d','%s','%s');",
+                id.getKey(),
+                id.getValue(),
+                submissionId == -1 ? "" : String.valueOf(submissionId)
+        );
+    }
+
+    @NotNull
+    static String getSqlInsertSubmission(SubmissionData data) {
+        final Collection<String> linksList = data.getLinks();
+        String links;
+        if (linksList.isEmpty())
+            links = null;
+        else
+            links = "'" + String.join(",", linksList) + "'";
+
+        return "INSERT INTO submissions(id, date_submitted, task_name, links, submitter, all_submitters) "
+                + "VALUES "
+                + String.format("(%d,'%s','%s',%s,'%s',%s);",
+                VerifyDB.currentSubmissionId,
+                data.getTime(),
+                data.getTaskName(),
+                links,
+                data.getSubmitterId(),
+                data.getOtherSubmitters() == null ? null : "'" + data.getOtherSubmitters() + "'"
+        );
+    }
+
+    @NotNull
+    static String getSqlInsertLbPlayers(Pair<Long, String> id, String monthName, int taskScore, int count) {
+        return String.format("INSERT INTO %s (player_uid, score, submissions_count) "
+                        + "VALUES ('%d', %d, %d);",
+                monthName, id.getKey(), taskScore, count
+        );
+    }
+
+    @NotNull
+    static String getSqlInsertLbGuild(String guildName, String guildTag, String monthName, int taskScore, int count) {
+        return String.format("INSERT INTO %s (guild_tag, guild_name, score, submissions_count) "
+                        + "VALUES ('%s', '%s', %d, %d);"
+                , monthName, guildTag, guildName, taskScore, count);
+    }
+
+
+    // all the get sql
+
+
+    @NotNull
+    static String getSqlSubmissionGetAll(String submissionId) {
+        return String.format("SELECT * " +
+                "FROM submissions " +
+                "WHERE id = %s;", submissionId);
+    }
+
+    @NotNull
+    static String getSqlGetPlayerName(String id) {
+        return String.format("SELECT player_name " +
+                "FROM players " +
+                "WHERE player_uid = '%s';", id);
+    }
+
+    @NotNull
+    static String getSqlGetPlayerAll(long id) {
+        return String.format("SELECT * " +
+                "FROM players " +
+                "WHERE player_uid = '%d';", id);
+    }
+
+    @NotNull
+    static String getSqlGetLbGuild(String guildName, String guildTag, String monthName) {
+        return String.format(
+                "SELECT score, submissions_count "
+                        + "FROM %s "
+                        + "WHERE (guild_name = '%s' AND guild_tag = '%s') " +
+                        "LIMIT 1;"
+                , monthName, guildName, guildTag
+        );
+    }
+
+    @NotNull
+    static String getSqlGetPlayerSubmissionIds(Pair<Long, String> id) {
+        return "SELECT submission_ids " +
+                "FROM players " +
+                "WHERE player_uid = '" + id.getKey() +
+                "' LIMIT 1";
+    }
+
+    @NotNull
+    static String getSqlGetPlayerGuild(Pair<Long, String> id) {
+        return "SELECT guild_name, guild_tag " +
+                "FROM players " +
+                "WHERE player_uid = '" + id.getKey() +
+                "' LIMIT 1;";
+    }
+
+    @NotNull
+    static String getSqlGetLbPlayer(Pair<Long, String> id, String monthName) {
+        return "SELECT score, submissions_count " +
+                "FROM " + monthName + " "
+                + "WHERE player_uid = '"
+                + id.getKey()
+                + "' LIMIT 1;";
+    }
+
+    // all the update sql
+    @NotNull
+    static String getSqlUpdatePlayerSubmissionIds(Pair<Long, String> id, String submission_ids) {
+        return "UPDATE players "
+                + "SET submission_ids = '"
+                + submission_ids
+                + "' WHERE player_uid = '"
+                + id.getKey()
+                + "';";
+    }
+
+    @NotNull
+    static String getSqlUpdateLbPlayer(Pair<Long, String> id, String monthName, int score, int count) {
+        return String.format("UPDATE %s "
+                        + "SET score = %d, submissions_count = %d "
+                        + "WHERE player_uid = '%d';"
+                , monthName, score, count, id.getKey());
+    }
+
+    @NotNull
+    static String getSqlUpdateLbGuild(String guildName, String guildTag, String monthName, int score, int count) {
+        return String.format("UPDATE %s "
+                        + "SET score = %d, submissions_count = %d "
+                        + "WHERE (guild_name = '%s' AND guild_tag = '%s');"
+                , monthName, score, count, guildName, guildTag
+        );
+    }
+
+    @NotNull
+    public static String updatePlayerName(Long id, String playerName) {
+        return String.format("UPDATE players " +
+                        "SET player_name = %s " +
+                        "WHERE player_uid = '%d'",
+                playerName, id);
+    }
+}

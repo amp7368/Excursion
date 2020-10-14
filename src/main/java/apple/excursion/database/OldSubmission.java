@@ -24,17 +24,12 @@ public class OldSubmission {
         this.otherSubmitters = otherSubmitters;
     }
 
-    @Override
-    public String toString() {
-        return String.valueOf(id);
-    }
-
     public String makeSubmissionHistoryMessage() {
         if (otherSubmitters == null || otherSubmitters.size() == 0) {
-            return String.format("%s submitted %s at **%s**",
+            return String.format("**%s** submitted __%s__ at *%s*",
                     submitter.getValue(), taskName, Pretty.date(dateSubmitted));
         }
-        return String.format("%s submitted %s with %s at **%s**",
+        return String.format("**%s** submitted __%s__ with **%s** at *%s*",
                 submitter,
                 taskName,
                 otherSubmitters.stream().map(Pair::getValue).collect(Collectors.joining(",and ")),
