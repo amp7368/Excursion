@@ -2,7 +2,7 @@ package apple.excursion.discord.commands.general;
 
 import apple.excursion.ExcursionMain;
 import apple.excursion.database.GetDB;
-import apple.excursion.database.PlayerData;
+import apple.excursion.database.objects.PlayerData;
 import apple.excursion.discord.DiscordBot;
 import apple.excursion.discord.commands.DoCommand;
 import apple.excursion.discord.data.AllProfiles;

@@ -1,4 +1,4 @@
-package apple.excursion.database;
+package apple.excursion.database.objects;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +17,7 @@ public class PlayerData {
         this.guildName = guildName;
         this.guildTag = guildTag;
         this.submissions = submissions;
-        this.submissions.sort((o1, o2) -> (int) (o2.dateSubmitted-o1.dateSubmitted));
+        this.submissions.sort((o1, o2) -> (int) (o2.dateSubmitted - o1.dateSubmitted));
     }
 
     public String makeSubmissionHistoryMessage(String name) {
@@ -28,9 +28,9 @@ public class PlayerData {
             }
         }
         return String.format(
-                "The last time(s) %s in [%s] has done this task:\n%s",
+                "The last time(s) %s %shas done this task:\n%s",
                 this.name,
-                guildTag,
+                guildTag == null ? "" : String.format("in [%s] ", guildTag),
                 submissionsThatMatch.stream().map(OldSubmission::makeSubmissionHistoryMessage).collect(Collectors.joining("\n")));
     }
 }

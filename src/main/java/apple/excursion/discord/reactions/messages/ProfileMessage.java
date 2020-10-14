@@ -1,8 +1,8 @@
 package apple.excursion.discord.reactions.messages;
 
 import apple.excursion.database.GetDB;
-import apple.excursion.database.OldSubmission;
-import apple.excursion.database.PlayerData;
+import apple.excursion.database.objects.OldSubmission;
+import apple.excursion.database.objects.PlayerData;
 import apple.excursion.discord.data.AllProfiles;
 import apple.excursion.discord.data.Profile;
 import apple.excursion.discord.data.Task;

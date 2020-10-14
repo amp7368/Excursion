@@ -69,6 +69,7 @@ public class ExcursionMain {
 
     public static void main(String... args) throws IOException, GeneralSecurityException, SQLException, ClassNotFoundException {
         System.out.println("Starting Excursion");
+        VerifyDB.connect();
         VerifyDB.verify();
         // Build a new authorized API client service.
         final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();

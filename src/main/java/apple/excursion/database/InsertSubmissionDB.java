@@ -6,13 +6,14 @@ import apple.excursion.utils.Pair;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class InsertSubmissionDB {
     // todo deal with this constant
-    private static final String MONTH_NAME = "OCT_2020";
-
     public static void insertSubmission(SubmissionData data) throws SQLException {
         synchronized (VerifyDB.syncDB) {
+            String monthName = getMonthName(data.getTime());
             String insertSql, updateSql, getSql, existsSql;
             Statement statement;
 
@@ -49,7 +50,7 @@ public class InsertSubmissionDB {
                 } else {
                     // if the player doesn't exist, give them a new row with their first submission
                     insertSql =
-                            GetSql.getSqlInsertPlayers(id,VerifyDB.currentSubmissionId);
+                            GetSql.getSqlInsertPlayers(id, null, null, VerifyDB.currentSubmissionId);
                     statement.execute(insertSql);
                 }
 
@@ -63,24 +64,35 @@ public class InsertSubmissionDB {
                 if (guildName != null && guildTag != null) {
                     // check if the guild exists in the guild leaderboard
                     statement = VerifyDB.guildLbDbConnection.createStatement();
-                    existsSql = GetSql.getSqlExistsLbGuild(guildName, guildTag, MONTH_NAME);
+                    existsSql = GetSql.getSqlExistsLbGuild(guildTag, monthName);
                     response = statement.executeQuery(existsSql);
                     exists = 1 == response.getInt(1);
                     response.close();
                     if (exists) {
                         // if the player exist in the DB, then update their score and submission count
-                        getSql = GetSql.getSqlGetLbGuild(guildName, guildTag, MONTH_NAME);
+                        getSql = GetSql.getSqlGetLbGuild(guildName, guildTag, monthName);
                         response = statement.executeQuery(getSql);
                         int score = response.getInt(1);
                         int count = response.getInt(2);
                         response.close();
                         score += data.getTaskScore();
                         count++;
-                        updateSql = GetSql.getSqlUpdateLbGuild(guildName, guildTag, MONTH_NAME, score, count);
+                        updateSql = GetSql.getSqlUpdateLbGuild(guildName, guildTag, monthName, score, count);
                         statement.execute(updateSql);
                     } else {
                         // if the player doesn't exist in the DB, then insert a new row
-                        insertSql = GetSql.getSqlInsertLbGuild(guildName, guildTag, MONTH_NAME, data.getTaskScore(), 1);
+                        insertSql = GetSql.getSqlInsertLbGuild(guildName, guildTag, monthName, data.getTaskScore(), 1);
+                        statement.execute(insertSql);
+                    }
+
+                    // check if the guild exists in the guild db
+                    statement = VerifyDB.guildDbConnection.createStatement();
+                    existsSql = GetSql.getSqlExistsGuild(guildTag);
+                    response = statement.executeQuery(existsSql);
+                    exists = 1 == response.getInt(1);
+                    response.close();
+                    if (!exists) {
+                        insertSql = GetSql.getSqlInsertGuild(guildName, guildTag);
                         statement.execute(insertSql);
                     }
                     statement.close();
@@ -88,30 +100,36 @@ public class InsertSubmissionDB {
 
                 // check if the player exists in the player leaderboard
                 statement = VerifyDB.playerLbDbConnection.createStatement();
-                existsSql = GetSql.getSqlExistsLbPlayer(id, MONTH_NAME);
+                existsSql = GetSql.getSqlExistsLbPlayer(id, monthName);
                 response = statement.executeQuery(existsSql);
                 exists = 1 == response.getInt(1);
                 response.close();
 
                 if (exists) {
                     // if the player exist in the DB, then update their score and submission count
-                    getSql = GetSql.getSqlGetLbPlayer(id, MONTH_NAME);
+                    getSql = GetSql.getSqlGetLbPlayer(id, monthName);
                     response = statement.executeQuery(getSql);
                     int score = response.getInt(1);
                     int count = response.getInt(2);
                     response.close();
                     score += data.getTaskScore();
                     count++;
-                    updateSql = GetSql.getSqlUpdateLbPlayer(id, MONTH_NAME, score, count);
+                    updateSql = GetSql.getSqlUpdateLbPlayer(id, monthName, score, count);
                     statement.execute(updateSql);
                 } else {
                     // if the player doesn't exist in the DB, then insert a new row
-                    insertSql = GetSql.getSqlInsertLbPlayers(id, MONTH_NAME, data.getTaskScore(), 1);
+                    insertSql = GetSql.getSqlInsertLbPlayers(id, monthName, data.getTaskScore(), 1);
                     statement.execute(insertSql);
                 }
                 statement.close();
             }
             VerifyDB.currentSubmissionId++;
         }
+    }
+
+    private static String getMonthName(long epochSeconds) {
+        SimpleDateFormat formatter = new SimpleDateFormat();
+        formatter.applyPattern("MMM_yyyy");
+        return formatter.format(new Date(epochSeconds * 1000));
     }
 }

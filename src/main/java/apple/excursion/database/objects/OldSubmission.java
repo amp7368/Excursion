@@ -1,4 +1,4 @@
-package apple.excursion.database;
+package apple.excursion.database.objects;
 
 
 import apple.excursion.utils.Pair;

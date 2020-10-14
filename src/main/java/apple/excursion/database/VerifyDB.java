@@ -15,10 +15,12 @@ public class VerifyDB {
     private static final String PLAYER_DB;
     private static final String GUILD_LB_DB;
     private static final String PLAYER_LB_DB;
+    private static final String GUILD_DB;
     public static Connection submissionDbConnection;
     public static Connection playerDbConnection;
     public static Connection guildLbDbConnection;
     public static Connection playerLbDbConnection;
+    public static Connection guildDbConnection;
 
     public static final Object syncDB = new Object();
     public static int currentSubmissionId;
@@ -30,13 +32,19 @@ public class VerifyDB {
         GUILD_LB_DB = DATABASE_FOLDER + "guildlb.db";
         PLAYER_DB = DATABASE_FOLDER + "player.db";
         SUBMISSION_DB = DATABASE_FOLDER + "submissions.db";
+        GUILD_DB = DATABASE_FOLDER + "guild.db";
     }
 
+    public static void connect() throws ClassNotFoundException, SQLException {
+        Class.forName("org.sqlite.JDBC");
+        submissionDbConnection = DriverManager.getConnection("jdbc:sqlite:" + SUBMISSION_DB);
+        guildLbDbConnection = DriverManager.getConnection("jdbc:sqlite:" + GUILD_LB_DB);
+        playerLbDbConnection = DriverManager.getConnection("jdbc:sqlite:" + PLAYER_LB_DB);
+        guildDbConnection = DriverManager.getConnection("jdbc:sqlite:" + GUILD_DB);
+    }
 
-    public static void verify() throws ClassNotFoundException, SQLException {
+    public static void verify() throws SQLException {
         synchronized (syncDB) {
-            Class.forName("org.sqlite.JDBC");
-            submissionDbConnection = DriverManager.getConnection("jdbc:sqlite:" + SUBMISSION_DB);
             String buildTableSql =
                     "CREATE TABLE IF NOT EXISTS submissions ("
                             + "	id INTEGER PRIMARY KEY NOT NULL UNIQUE,"
@@ -63,21 +71,18 @@ public class VerifyDB {
             statement.execute(buildTableSql);
             statement.close();
 
-            guildLbDbConnection = DriverManager.getConnection("jdbc:sqlite:" + GUILD_LB_DB);
             buildTableSql =
                     "CREATE TABLE IF NOT EXISTS " + "OCT_2020" + " ("
-                            + "	guild_tag TEXT NOT NULL,"
+                            + "	guild_tag TEXT NOT NULL PRIMARY KEY UNIQUE,"
                             + "	guild_name TEXT NOT NULL,"
                             + "	score INTEGER NOT NULL,"
-                            + "	submissions_count INTEGER NOT NULL,"
-                            + "PRIMARY KEY(guild_tag,guild_name)"
+                            + "	submissions_count INTEGER NOT NULL"
                             + ");";
             statement = guildLbDbConnection.createStatement();
             statement.execute(buildTableSql);
             statement.close();
 
 
-            playerLbDbConnection = DriverManager.getConnection("jdbc:sqlite:" + PLAYER_LB_DB);
             buildTableSql =
                     "CREATE TABLE IF NOT EXISTS " + "OCT_2020" + "("
                             + "	player_uid INTEGER PRIMARY KEY NOT NULL UNIQUE,"
@@ -85,6 +90,16 @@ public class VerifyDB {
                             + "	submissions_count INTEGER NOT NULL"
                             + ");";
             statement = playerLbDbConnection.createStatement();
+            statement.execute(buildTableSql);
+            statement.close();
+
+
+            buildTableSql =
+                    "CREATE TABLE IF NOT EXISTS guilds ("
+                            + "	guild_tag TEXT PRIMARY KEY NOT NULL UNIQUE,"
+                            + "	guild_name TEXT NOT NULL"
+                            + ");";
+            statement = guildDbConnection.createStatement();
             statement.execute(buildTableSql);
             statement.close();
         }

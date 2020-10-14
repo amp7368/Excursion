@@ -1,7 +1,11 @@
 package apple.excursion.database;
 
+import apple.excursion.database.objects.GuildData;
+import apple.excursion.database.objects.OldSubmission;
+import apple.excursion.database.objects.PlayerData;
 import apple.excursion.utils.Pair;
 
+import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -16,7 +20,7 @@ public class GetDB {
         // if the player doesn't exist
         if (response.isClosed()) {
             // add the player
-            sql = GetSql.getSqlInsertPlayers(id,-1);
+            sql = GetSql.getSqlInsertPlayers(id, null, null, -1);
             statement.execute(sql);
             response.close();
             statement.close();
@@ -79,4 +83,19 @@ public class GetDB {
     }
 
 
+    public static List<GuildData> getGuildList() throws SQLException {
+        String sql = GetSql.getSqlGetGuilds();
+        Statement statement = VerifyDB.guildDbConnection.createStatement();
+        ResultSet response = statement.executeQuery(sql);
+        List<GuildData> guildData = new ArrayList<>();
+        while (!response.isClosed()) {
+            String tag = response.getString(1);
+            String name = response.getString(2);
+            guildData.add(new GuildData(tag, name));
+            response.next();
+        }
+        response.close();
+        statement.close();
+        return guildData;
+    }
 }

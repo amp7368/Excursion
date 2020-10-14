@@ -10,12 +10,21 @@ class GetSql {
 
     // all the exists sql
     @NotNull
-    static String getSqlExistsLbGuild(String guildName, String guildTag, String monthName) {
+    static String getSqlExistsLbGuild(String guildTag, String monthName) {
         return String.format("SELECT COUNT(1) " +
                         "FROM %s " +
-                        "WHERE (guild_name = '%s' AND guild_tag = '%s') " +
+                        "WHERE guild_tag = '%s' " +
                         "LIMIT 1;",
-                monthName, guildName, guildTag);
+                monthName, guildTag);
+    }
+
+    @NotNull
+    public static String getSqlExistsGuild(String guildTag) {
+        return String.format("SELECT COUNT(1) " +
+                        "FROM guilds " +
+                        "WHERE guild_tag = '%s' " +
+                        "LIMIT 1;",
+                guildTag);
     }
 
     @NotNull
@@ -40,12 +49,14 @@ class GetSql {
     // all the insert sql
 
     @NotNull
-    static String getSqlInsertPlayers(Pair<Long, String> id, int submissionId) {
-        return "INSERT INTO players(player_uid, player_name, submission_ids) "
+    static String getSqlInsertPlayers(Pair<Long, String> id, String guildName, String guildTag, int submissionId) {
+        return "INSERT INTO players(player_uid, player_name, guild_name, guild_tag, submission_ids) "
                 + "VALUES "
-                + String.format("('%d','%s','%s');",
+                + String.format("('%d','%s',%s,%s,'%s');",
                 id.getKey(),
                 id.getValue(),
+                guildName==null?null:String.format("'%s'",guildName),
+                guildTag==null?null:String.format("'%s'",guildTag),
                 submissionId == -1 ? "" : String.valueOf(submissionId)
         );
     }
@@ -69,6 +80,13 @@ class GetSql {
                 data.getSubmitterId(),
                 data.getOtherSubmitters() == null ? null : "'" + data.getOtherSubmitters() + "'"
         );
+    }
+
+    @NotNull
+    public static String getSqlInsertGuild(String guildName, String guildTag) {
+        return String.format("INSERT INTO guilds (guild_name, guild_tag) "
+                        + "VALUES ('%s', '%s');",
+                guildName, guildTag);
     }
 
     @NotNull
@@ -102,6 +120,11 @@ class GetSql {
         return String.format("SELECT player_name " +
                 "FROM players " +
                 "WHERE player_uid = '%s';", id);
+    }
+
+    @NotNull
+    public static String getSqlGetGuilds() {
+        return "SELECT * FROM guilds;";
     }
 
     @NotNull
@@ -181,5 +204,13 @@ class GetSql {
                         "SET player_name = %s " +
                         "WHERE player_uid = '%d'",
                 playerName, id);
+    }
+
+    @NotNull
+    public static String getSqlUpdatePlayerGuild(long id, String name, String tag) {
+        return String.format("UPDATE players " +
+                        "SET guild_name = '%s', guild_tag = '%s' " +
+                        "WHERE player_uid = '%d'",
+                name, tag, id);
     }
 }
