@@ -17,7 +17,7 @@ import static apple.excursion.sheets.SheetsUtils.addA1Notation;
 
 public class SheetsPlayerStats {
     private static final String MISSIONS_ROW_RANGE = "PlayerStats!E2:3";
-    private static final String ID_COL_RANGE = "PlayerStats!A5:A";
+    private static final String ID_COL_RANGE = "PlayerStats!A:A";
     private static final String PLAYER_STATS_SHEET = "PlayerStats";
     private static final String BASE_PLAYER_STATS_RANGE = "E5";
     private static final String EVERYONE_RANGE = "PlayerStats";
@@ -94,45 +94,6 @@ public class SheetsPlayerStats {
 
     }
 
-    private static Pair<String, Integer> getCellToUpdate(String spreadsheetId, Sheets.Spreadsheets.Values values, String submissionName, long discordId, String discordName) throws IOException {
-//        ValueRange missionsValueRange = values.get(spreadsheetId, MISSIONS_ROW_RANGE).execute();
-//        List<Object> missionValues = missionsValueRange.getValues().get(0);
-//        // find the submission id
-//        int submissionIndex = -1;
-//        int missionValuesLength = missionValues.size();
-//        for (int i = 0; i < missionValuesLength; i++) {
-//            if (missionValues.get(i).toString().toLowerCase().equals(submissionName.toLowerCase())) {
-//                submissionIndex = i;
-//                break;
-//            }
-//        }
-//        if (submissionIndex == -1) {
-//            // could not find a quest with that name
-//            return null;
-//        }
-//        int idIndex = getRowFromDiscord(spreadsheetId, values, String.valueOf(discordId));
-//        if (idIndex == -1) {
-//            // could not find a person with that id
-//            addProfile(discordId, discordName, nextRow);
-//            idIndex = getRowFromDiscord(spreadsheetId, values, String.valueOf(discordId));
-//            return null;
-//        }
-//        String cellRange = addA1Notation(BASE_PLAYER_STATS_RANGE, submissionIndex, idIndex);
-//
-//        String cellWithValueRange = addA1Notation(BASE_PLAYER_STATS_RANGE, submissionIndex, -2);
-//        cellWithValueRange = String.format("%s!%s", PLAYER_STATS_SHEET, cellWithValueRange);
-//        ValueRange newValueRange = values.get(spreadsheetId, cellWithValueRange).execute();
-//        Object newValueObject = newValueRange.getValues().get(0).get(0);
-//        int newValue;
-//        try {
-//            newValue = Integer.parseInt((String) newValueObject);
-//        } catch (NumberFormatException exception) {
-//            exception.printStackTrace();
-//            newValue = -1;
-//        }
-//        return new Pair<>(String.format("%s!%s", PLAYER_STATS_SHEET, cellRange), newValue);
-        return null;
-    }
 
     /**
      * adds a profile to the sheet
@@ -196,9 +157,10 @@ public class SheetsPlayerStats {
         return lastRow;
     }
 
-    private static int getRowFromDiscord(String spreadsheetId, Sheets.Spreadsheets.Values values, String discordId) throws IOException {
-        ValueRange idValueRange = values.get(spreadsheetId, ID_COL_RANGE).execute();
+    private static int getRowFromDiscord(String discordId) throws IOException {
+        ValueRange idValueRange = SHEETS_VALUES.get(SPREADSHEET_ID, ID_COL_RANGE).execute();
         List<List<Object>> idValues = idValueRange.getValues();
+        if (idValues == null) return -1;
         int idIndex = -1;
         int idValuesLength = idValues.size();
         for (int i = 0; i < idValuesLength; i++) {
@@ -223,6 +185,29 @@ public class SheetsPlayerStats {
         ValueRange valueRange = new ValueRange().setRange(range).setValues(Collections.singletonList(Collections.singletonList(realName)));
         try {
             SHEETS_VALUES.update(SPREADSHEET_ID, range, valueRange).setValueInputOption("USER_ENTERED").execute();
+        } catch (IOException ignored) {
+        }
+    }
+
+    public static void updateGuild(String guildName, String guildTag, long id, String playerName) throws IOException {
+        int row = getRowFromDiscord(String.valueOf(id));
+        if (row == -1) {
+            row = addProfile(id, playerName);
+        }
+        // row now refers to the row where the player is
+        String cell = addA1Notation("C1", 0, row);
+        final String range = String.format("%s!%s:%s", PLAYER_STATS_SHEET, cell, addA1Notation(cell, 1, 0));
+        ValueRange valueRange = new ValueRange().setRange(range).setValues(Collections.singletonList(Arrays.asList(guildName, guildTag)));
+        try {
+            SHEETS_VALUES.update(SPREADSHEET_ID, range, valueRange).setValueInputOption("USER_ENTERED").execute();
+            Request sortRequest = new Request().setSortRange(new SortRangeRequest().setRange(
+                    new GridRange().setStartRowIndex(4).setStartColumnIndex(0).setSheetId(PLAYER_STATS_SHEET_ID)
+            ).setSortSpecs(Arrays.asList(
+                    new SortSpec().setSortOrder("DESCENDING").setDimensionIndex(3),
+                    new SortSpec().setSortOrder("DESCENDING").setDimensionIndex(0))));
+            ExcursionMain.service.spreadsheets().batchUpdate(
+                    SPREADSHEET_ID,
+                    new BatchUpdateSpreadsheetRequest().setRequests(Collections.singletonList(sortRequest))).execute();
         } catch (IOException ignored) {
         }
     }
