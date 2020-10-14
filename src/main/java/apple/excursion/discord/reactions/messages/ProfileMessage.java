@@ -14,6 +14,7 @@ import apple.excursion.discord.reactions.ReactableMessage;
 import apple.excursion.sheets.SheetsTasks;
 import apple.excursion.utils.Pair;
 import apple.excursion.utils.PostcardDisplay;
+import apple.excursion.utils.Pretty;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -30,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 
 public class ProfileMessage implements ReactableMessage {
-    private static final int NUM_OF_CHARS_PROGRESS = 20;
     private static final Color BOT_COLOR = new Color(0x4e80f7);
     private static final int SUBMISSION_HISTORY_SIZE = 5;
     private Message message;
@@ -67,7 +67,7 @@ public class ProfileMessage implements ReactableMessage {
                 return;
             }
         }
-        guildProfile = AllProfiles.getLeaderboardOfGuilds().getGuildProfile(profile.getGuild());
+        guildProfile = AllProfiles.getLeaderboardOfGuilds().getGuildProfile(profile.getGuildTag());
         playerLeaderboardProfile = AllProfiles.getOverallLeaderboard().getPlayerProfile(profile.getId());
         for (String taskType : TaskSimple.TaskCategory.values())
             topTasks.put(taskType, playerLeaderboardProfile.getTopTasks(taskType));
@@ -95,7 +95,7 @@ public class ProfileMessage implements ReactableMessage {
             description.append(String.format("Member of %s [%s]\n", profile.getGuild(), profile.getGuildTag()));
             description.append('\n');
             description.append(String.format("Guild rank: #%d\n", guildProfile.getRank()));
-            description.append(getProgressBar(guildProfile.getProgress()));
+            description.append(Pretty.getProgressBar(guildProfile.getProgress()));
             description.append('\n');
             description.append(String.format("Guild EP: %d EP", guildProfile.getTotalEp()));
             description.append('\n');
@@ -107,7 +107,7 @@ public class ProfileMessage implements ReactableMessage {
             // todo message if player is null
         } else {
             description.append(String.format("Player rank #%d\n", playerLeaderboardProfile.getRank()));
-            description.append(getProgressBar(playerLeaderboardProfile.getProgress()));
+            description.append(Pretty.getProgressBar(playerLeaderboardProfile.getProgress()));
             description.append('\n');
             description.append(String.format("%d out of %d tasks done\n", playerLeaderboardProfile.getCountTasksDone(), playerLeaderboardProfile.getCountTasksTotal()));
             description.append(String.format("Total EP: %d EP\n", playerLeaderboardProfile.getTotalEp()));
@@ -145,15 +145,6 @@ public class ProfileMessage implements ReactableMessage {
         embed.setDescription(description);
         embed.setColor(BOT_COLOR);
         return embed.build();
-    }
-
-    private String getProgressBar(double percentage) {
-        StringBuilder result = new StringBuilder();
-        int length = (int) (percentage * NUM_OF_CHARS_PROGRESS);
-        result.append("\u2588".repeat(Math.max(0, length)));
-        length = NUM_OF_CHARS_PROGRESS - length;
-        result.append("\u2591".repeat(Math.max(0, length)));
-        return result.toString();
     }
 
     @Override

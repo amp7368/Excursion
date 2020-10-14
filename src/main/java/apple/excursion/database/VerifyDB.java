@@ -65,7 +65,8 @@ public class VerifyDB {
                             + "	player_name TEXT NOT NULL,"
                             + "	guild_name TEXT,"
                             + "	guild_tag TEXT,"
-                            + "	submission_ids TEXT NOT NULL"
+                            + "	submission_ids TEXT NOT NULL,"
+                            + "	score SCORE NOT NULL"
                             + ");";
             statement = playerDbConnection.createStatement();
             statement.execute(buildTableSql);
@@ -97,7 +98,8 @@ public class VerifyDB {
             buildTableSql =
                     "CREATE TABLE IF NOT EXISTS guilds ("
                             + "	guild_tag TEXT PRIMARY KEY NOT NULL UNIQUE,"
-                            + "	guild_name TEXT NOT NULL"
+                            + "	guild_name TEXT NOT NULL, "
+                            + "	submissions TEXT NOT NULL"
                             + ");";
             statement = guildDbConnection.createStatement();
             statement.execute(buildTableSql);

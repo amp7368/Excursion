@@ -6,18 +6,21 @@ import java.util.stream.Collectors;
 
 public class PlayerData {
     private final long id;
-    private final String name;
+    public final String name;
     private final String guildName;
     private final String guildTag;
     public final List<OldSubmission> submissions;
+    public final int score;
 
-    public PlayerData(long id, String playerName, String guildName, String guildTag, List<OldSubmission> submissions) {
+    public PlayerData(long id, String playerName, String guildName, String guildTag, List<OldSubmission> submissions,int score) {
         this.id = id;
         this.name = playerName;
         this.guildName = guildName;
         this.guildTag = guildTag;
         this.submissions = submissions;
-        this.submissions.sort((o1, o2) -> (int) (o2.dateSubmitted - o1.dateSubmitted));
+        if (submissions != null)
+            this.submissions.sort((o1, o2) -> (int) (o2.dateSubmitted - o1.dateSubmitted));
+        this.score = score;
     }
 
     public String makeSubmissionHistoryMessage(String name) {

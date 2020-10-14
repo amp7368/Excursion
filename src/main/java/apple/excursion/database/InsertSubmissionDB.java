@@ -37,15 +37,17 @@ public class InsertSubmissionDB {
                 response.close();
                 if (exists) {
                     // if the player exist in the DB, then update their list of submissions
-                    getSql = GetSql.getSqlGetPlayerSubmissionIds(id);
-                    String submission_ids = statement.executeQuery(getSql).getString(1);
+                    getSql = GetSql.getSqlGetPlayerSubmissionIdsAndScore(id);
+                    response = statement.executeQuery(getSql);
+                    String submission_ids = response.getString(1);
+                    int score = response.getInt(2);
                     if (submission_ids.equals("")) {
                         // this shouldn't happen unless someone manually writes to the DB
                         submission_ids = String.valueOf(VerifyDB.currentSubmissionId);
                     } else {
                         submission_ids += "," + VerifyDB.currentSubmissionId;
                     }
-                    updateSql = GetSql.getSqlUpdatePlayerSubmissionIds(id, submission_ids);
+                    updateSql = GetSql.getSqlUpdatePlayerSubmissionIdsAndScore(id, submission_ids, score);
                     statement.execute(updateSql);
                 } else {
                     // if the player doesn't exist, give them a new row with their first submission
@@ -95,6 +97,16 @@ public class InsertSubmissionDB {
                         insertSql = GetSql.getSqlInsertGuild(guildName, guildTag);
                         statement.execute(insertSql);
                     }
+                    getSql = GetSql.getSqlGetGuildSubmissions(guildTag);
+                    response = statement.executeQuery(getSql);
+                    String submissions = response.getString(1);
+                    if (submissions.isBlank()) {
+                        submissions = String.valueOf(VerifyDB.currentSubmissionId);
+                    } else {
+                        submissions += "," + VerifyDB.currentSubmissionId;
+                    }
+                    updateSql = GetSql.getSqlUpdateGuildSubmissions(guildTag, submissions);
+                    statement.execute(updateSql);
                     statement.close();
                 }
 

@@ -5,7 +5,6 @@ import apple.excursion.database.objects.OldSubmission;
 import apple.excursion.database.objects.PlayerData;
 import apple.excursion.utils.Pair;
 
-import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -24,7 +23,7 @@ public class GetDB {
             statement.execute(sql);
             response.close();
             statement.close();
-            return new PlayerData(id.getKey(), id.getValue(), null, null, new ArrayList<>());
+            return new PlayerData(id.getKey(), id.getValue(), null, null, new ArrayList<>(), 0);
         }
         String playerName = response.getString(2);
 
@@ -37,49 +36,58 @@ public class GetDB {
 
         String guildName = response.getString(3);
         String guildTag = response.getString(4);
-        String[] submissionIds = response.getString(5).split(",");
+        String submissionIds = response.getString(5);
+        int score = response.getInt(6);
         response.close();
         statement.close();
         List<OldSubmission> submissions = new ArrayList<>();
-        for (String submissionId : submissionIds) {
-            statement = VerifyDB.submissionDbConnection.createStatement();
-            sql = GetSql.getSqlSubmissionGetAll(submissionId);
-            response = statement.executeQuery(sql);
-            int submissionIdInt = response.getInt(1);
-            Long date = response.getLong(2);
-            String taskName = response.getString(3);
-            String links = response.getString(4);
-            String submitterId = response.getString(5);
-            String otherSubmittersIdsListAsString = response.getString(6);
-            response.close();
-            statement.close();
+        if (!submissionIds.isBlank())
+            for (String submissionId : submissionIds.split(",")) {
+                submissions.add(getOldSubmission(submissionId));
+            }
+        return new PlayerData(id.getKey(), playerName, guildName, guildTag, submissions, score);
+    }
 
-            statement = VerifyDB.playerDbConnection.createStatement();
-            String[] otherSubmittersIds = otherSubmittersIdsListAsString == null ? null : otherSubmittersIdsListAsString.split(",");
-            List<Pair<String, String>> otherSubmitters = new ArrayList<>();
-            if (otherSubmittersIds != null)
-                for (String otherSubmitterId : otherSubmittersIds) {
-                    sql = GetSql.getSqlGetPlayerName(otherSubmitterId);
-                    response = statement.executeQuery(sql);
-                    otherSubmitters.add(new Pair<>(otherSubmitterId, response.getString(1)));
-                    response.close();
-                }
-            sql = GetSql.getSqlGetPlayerName(submitterId);
-            response = statement.executeQuery(sql);
-            Pair<String, String> submitter = new Pair<>(submitterId, response.getString(1));
-            response.close();
-            statement.close();
+    public static OldSubmission getOldSubmission(String submissionId) throws SQLException {
+        Statement statement;
+        ResultSet response;
+        String sql;
+        statement = VerifyDB.submissionDbConnection.createStatement();
+        sql = GetSql.getSqlSubmissionGetAll(submissionId);
+        response = statement.executeQuery(sql);
+        int submissionIdInt = response.getInt(1);
+        Long date = response.getLong(2);
+        String taskName = response.getString(3);
+        String links = response.getString(4);
+        String submitterId = response.getString(5);
+        String otherSubmittersIdsListAsString = response.getString(6);
+        response.close();
+        statement.close();
 
-            submissions.add(new OldSubmission(
-                    submissionIdInt,
-                    date,
-                    taskName,
-                    links,
-                    submitter,
-                    otherSubmitters
-            ));
-        }
-        return new PlayerData(id.getKey(), playerName, guildName, guildTag, submissions);
+        statement = VerifyDB.playerDbConnection.createStatement();
+        String[] otherSubmittersIds = otherSubmittersIdsListAsString == null ? null : otherSubmittersIdsListAsString.split(",");
+        List<Pair<String, String>> otherSubmitters = new ArrayList<>();
+        if (otherSubmittersIds != null)
+            for (String otherSubmitterId : otherSubmittersIds) {
+                sql = GetSql.getSqlGetPlayerName(otherSubmitterId);
+                response = statement.executeQuery(sql);
+                otherSubmitters.add(new Pair<>(otherSubmitterId, response.getString(1)));
+                response.close();
+            }
+        sql = GetSql.getSqlGetPlayerName(submitterId);
+        response = statement.executeQuery(sql);
+        Pair<String, String> submitter = new Pair<>(submitterId, response.getString(1));
+        response.close();
+        statement.close();
+
+        return new OldSubmission(
+                submissionIdInt,
+                date,
+                taskName,
+                links,
+                submitter,
+                otherSubmitters
+        );
     }
 
 
@@ -91,11 +99,45 @@ public class GetDB {
         while (!response.isClosed()) {
             String tag = response.getString(1);
             String name = response.getString(2);
-            guildData.add(new GuildData(tag, name));
+            String submissionsListAsString = response.getString(3);
+            List<OldSubmission> submissions = new ArrayList<>();
+            if (!submissionsListAsString.isBlank())
+                for (String submission : submissionsListAsString.split(",")) {
+                    submissions.add(GetDB.getOldSubmission(submission));
+                }
+            guildData.add(new GuildData(tag, name, submissions));
             response.next();
         }
         response.close();
         statement.close();
         return guildData;
+    }
+
+
+    public static List<PlayerData> getPlayersInGuild(String tag) throws SQLException {
+        String sql = GetSql.getSqlGetPlayersInGuild(tag);
+        Statement statement = VerifyDB.playerDbConnection.createStatement();
+        ResultSet response = statement.executeQuery(sql);
+        List<PlayerData> players = new ArrayList<>();
+        response.next();
+        while (!response.isClosed()) {
+            long playerId = response.getLong(1);
+            String playerName = response.getString(2);
+            String guildName = response.getString(3);
+            String guildTag = response.getString(4);
+            int score = response.getInt(6);
+            players.add(new PlayerData(
+                    playerId,
+                    playerName,
+                    guildName,
+                    guildTag,
+                    null,
+                    score
+            )); // submissions is normally not null, but for this situation we don't need them
+            response.next();
+        }
+        response.close();
+        statement.close();
+        return players;
     }
 }

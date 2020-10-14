@@ -50,13 +50,13 @@ class GetSql {
 
     @NotNull
     static String getSqlInsertPlayers(Pair<Long, String> id, String guildName, String guildTag, int submissionId) {
-        return "INSERT INTO players(player_uid, player_name, guild_name, guild_tag, submission_ids) "
+        return "INSERT INTO players(player_uid, player_name, guild_name, guild_tag, submission_ids, score) "
                 + "VALUES "
-                + String.format("('%d','%s',%s,%s,'%s');",
+                + String.format("('%d','%s',%s,%s,'%s',0);",
                 id.getKey(),
                 id.getValue(),
-                guildName==null?null:String.format("'%s'",guildName),
-                guildTag==null?null:String.format("'%s'",guildTag),
+                guildName == null ? null : String.format("'%s'", guildName),
+                guildTag == null ? null : String.format("'%s'", guildTag),
                 submissionId == -1 ? "" : String.valueOf(submissionId)
         );
     }
@@ -84,9 +84,9 @@ class GetSql {
 
     @NotNull
     public static String getSqlInsertGuild(String guildName, String guildTag) {
-        return String.format("INSERT INTO guilds (guild_name, guild_tag) "
-                        + "VALUES ('%s', '%s');",
-                guildName, guildTag);
+        return String.format("INSERT INTO guilds (guild_name, guild_tag, submissions) "
+                        + "VALUES ('%s', '%s','%s');",
+                guildName, guildTag, "");
     }
 
     @NotNull
@@ -146,8 +146,8 @@ class GetSql {
     }
 
     @NotNull
-    static String getSqlGetPlayerSubmissionIds(Pair<Long, String> id) {
-        return "SELECT submission_ids " +
+    static String getSqlGetPlayerSubmissionIdsAndScore(Pair<Long, String> id) {
+        return "SELECT submission_ids, score " +
                 "FROM players " +
                 "WHERE player_uid = '" + id.getKey() +
                 "' LIMIT 1";
@@ -172,13 +172,10 @@ class GetSql {
 
     // all the update sql
     @NotNull
-    static String getSqlUpdatePlayerSubmissionIds(Pair<Long, String> id, String submission_ids) {
-        return "UPDATE players "
-                + "SET submission_ids = '"
-                + submission_ids
-                + "' WHERE player_uid = '"
-                + id.getKey()
-                + "';";
+    static String getSqlUpdatePlayerSubmissionIdsAndScore(Pair<Long, String> id, String submission_ids,int score) {
+        return String.format("UPDATE players " +
+                "SET submission_ids = '%s', score = %d " +
+                "WHERE player_uid = '%s'",submission_ids,score,id.getKey());
     }
 
     @NotNull
@@ -212,5 +209,26 @@ class GetSql {
                         "SET guild_name = '%s', guild_tag = '%s' " +
                         "WHERE player_uid = '%d'",
                 name, tag, id);
+    }
+
+    @NotNull
+    public static String getSqlUpdateGuildSubmissions(String guildTag, String submissions) {
+        return String.format("UPDATE guilds " +
+                "SET submissions = '%s' " +
+                "WHERE guild_tag = '%s'", submissions, guildTag);
+    }
+
+    @NotNull
+    public static String getSqlGetGuildSubmissions(String guildTag) {
+        return String.format("SELECT submissions " +
+                "FROM guilds " +
+                "WHERE guild_tag = '%s'", guildTag);
+    }
+
+    @NotNull
+    public static String getSqlGetPlayersInGuild(String tag) {
+        return String.format("SELECT * " +
+                "FROM players " +
+                "WHERE guild_tag = '%s'", tag);
     }
 }

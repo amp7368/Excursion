@@ -12,6 +12,7 @@ public class LeaderboardOfGuilds {
     public List<GuildLeaderboardEntry> leaderboard;
     private GuildLeaderboardEntry noGuildsEntry;
     private long totalEp;
+    private long topEp = -1;
 
     public LeaderboardOfGuilds(List<Profile> profiles) {
         Map<String, GuildLeaderboardEntry> leaderboard = new HashMap<>();
@@ -26,6 +27,7 @@ public class LeaderboardOfGuilds {
         this.leaderboard = new ArrayList<>(leaderboard.values());
         for (GuildLeaderboardEntry entry : this.leaderboard) {
             totalEp += entry.points;
+            if (entry.points > topEp) topEp = entry.points;
         }
         totalEp += noGuildsEntry.points;
         this.leaderboard.sort((o1, o2) -> (int) (o2.points - o1.points));
@@ -40,12 +42,10 @@ public class LeaderboardOfGuilds {
     }
 
     @Nullable
-    public GuildLeaderboardProfile getGuildProfile(String guild) {
-
-        guild = guild.toLowerCase();
+    public GuildLeaderboardProfile getGuildProfile(String guildTag) {
         int rank = 1;
         for (GuildLeaderboardEntry entry : leaderboard) {
-            if (entry.guildName.toLowerCase().equals(guild))
+            if (entry.guildTag.equals(guildTag))
                 return new GuildLeaderboardProfile(entry, totalEp, rank);
             rank++;
         }
