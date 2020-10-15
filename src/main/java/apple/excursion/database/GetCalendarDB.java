@@ -13,12 +13,45 @@ import java.util.*;
 public class GetCalendarDB {
     private static final Collection<MonthWithTasks> tasksInMonths = new ArrayList<>();
 
-    public synchronized static List<DailyTaskWithDate> getWeek(Calendar weekDesired) throws SQLException {
-        final YearMonth yearMonth = YearMonth.of(weekDesired.get(Calendar.YEAR), weekDesired.get(Calendar.MONTH) + 1);
-        return getWeekFromMonthWithTasks(weekDesired, yearMonth);
+    public static List<String> getTasksToday(Calendar day) {
+        List<DailyTaskWithDate> tasks = getWeek(day);
+        int dayOfWeek = day.get(Calendar.DAY_OF_WEEK) ;
+        if (DailyTaskWithDate.isWeekend(dayOfWeek-1)) { // because of sunday
+            List<DailyTaskWithDate> weekend = new ArrayList<>();
+            if (dayOfWeek == Calendar.SUNDAY) {
+                // go backwards from sunday
+                weekend.add(tasks.get(6));
+                if (tasks.get(5).month.equals(weekend.get(0).month)) {
+                    weekend.add(tasks.get(5));
+                    if (tasks.get(4).month.equals(weekend.get(0).month))
+                        weekend.add(tasks.get(4));
+                }
+            } else if (dayOfWeek == Calendar.SATURDAY) {
+                weekend.add(tasks.get(5));
+                if (tasks.get(6).month.equals(weekend.get(0).month))
+                    weekend.add(tasks.get(6));
+                if (tasks.get(4).month.equals(weekend.get(0).month))
+                    weekend.add(tasks.get(4));
+            } else if (dayOfWeek == Calendar.FRIDAY) {
+                weekend.add(tasks.get(4));
+                if (tasks.get(5).month.equals(weekend.get(0).month)) {
+                    weekend.add(tasks.get(5));
+                    if (tasks.get(6).month.equals(weekend.get(0).month))
+                        weekend.add(tasks.get(6));
+                }
+            }
+            List<String> taskNames = new ArrayList<>();
+            for (DailyTaskWithDate task : weekend) {
+                taskNames.addAll(task.tasks);
+            }
+            return taskNames;
+        } else {
+            return tasks.get(dayOfWeek - 2).tasks; // because of sunday
+        }
     }
 
-    private static List<DailyTaskWithDate> getWeekFromMonthWithTasks(Calendar calendar, YearMonth yearMonth) {
+    public synchronized static List<DailyTaskWithDate> getWeek(Calendar calendar) {
+        final YearMonth yearMonth = YearMonth.of(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH) + 1);
         List<DailyTaskWithDate> tasks = new ArrayList<>();
         int lengthOfMonth = yearMonth.lengthOfMonth();
         int lengthOfLastMonth = 0;
@@ -71,7 +104,9 @@ public class GetCalendarDB {
                             lowerMonth.tasks[lastMonthLower],
                             dayOfWeek + 1,
                             dayOfMonth + 1,
-                            lowerMonth.prettyFullMonthName
+                            lowerMonth.prettyFullMonthName,
+                            lowerMonth.monthInt,
+                            lowerMonth.yearInt
                     ));
                 }
             }
@@ -85,7 +120,9 @@ public class GetCalendarDB {
                             upperMonth.tasks[lower],
                             dayOfWeek + 1,
                             dayOfMonth + 1,
-                            upperMonth.prettyFullMonthName
+                            upperMonth.prettyFullMonthName,
+                            upperMonth.monthInt,
+                            upperMonth.yearInt
                     ));
                 }
             }
@@ -101,7 +138,9 @@ public class GetCalendarDB {
                             lowerMonth.tasks[lower],
                             dayOfWeek + 1,
                             dayOfMonth + 1,
-                            lowerMonth.prettyFullMonthName
+                            lowerMonth.prettyFullMonthName,
+                            lowerMonth.monthInt,
+                            lowerMonth.yearInt
                     ));
                 }
             }
@@ -116,7 +155,9 @@ public class GetCalendarDB {
                                 upperMonth.tasks[upperMonthLower],
                                 dayOfWeek + 1,
                                 dayOfMonth + 1,
-                                upperMonth.prettyFullMonthName
+                                upperMonth.prettyFullMonthName,
+                                upperMonth.monthInt,
+                                upperMonth.yearInt
                         ));
                     }
                 }
@@ -137,12 +178,12 @@ public class GetCalendarDB {
             }
         }
         try {
-            return new MonthWithTasks(monthName, yearMonth.lengthOfMonth(), yearMonth.getMonth().name());
+            return new MonthWithTasks(monthName, yearMonth.lengthOfMonth(), yearMonth.getMonth().name(), yearMonth.getMonthValue(), yearMonth.getYear());
         } catch (SQLException e) {
             // this is fine. the month was just not filled in
             try {
                 VerifyDB.verifyCalendar(monthName, yearMonth.lengthOfMonth());
-                return new MonthWithTasks(monthName, yearMonth.lengthOfMonth(), yearMonth.getMonth().name());
+                return new MonthWithTasks(monthName, yearMonth.lengthOfMonth(), yearMonth.getMonth().name(), yearMonth.getMonthValue(), yearMonth.getYear());
             } catch (SQLException e1) {
                 return null;
             }
@@ -151,13 +192,17 @@ public class GetCalendarDB {
 
     private static class MonthWithTasks {
         private static final long OLD_CACHE = 1000 * 60 * 60 * 2; //2 hrs
+        private int monthInt;
+        private int yearInt;
         private long lastUpdated = System.currentTimeMillis();
         private final String monthName;
         private final List<String>[] tasks;
         private final String prettyFullMonthName;
 
-        private MonthWithTasks(String monthName, int daysThisMonth, String prettyFullMonthName) throws SQLException {
+        private MonthWithTasks(String monthName, int daysThisMonth, String prettyFullMonthName, int monthInt, int yearInt) throws SQLException {
             this.monthName = monthName;
+            this.monthInt = monthInt;
+            this.yearInt = yearInt;
             this.prettyFullMonthName = Pretty.upperCaseFirst(prettyFullMonthName);
             this.tasks = new List[daysThisMonth];
             String sql = GetSql.getSqlGetCalendar(monthName);

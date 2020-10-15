@@ -1,12 +1,14 @@
 package apple.excursion.discord.commands.general;
 
 import apple.excursion.ExcursionMain;
+import apple.excursion.database.GetCalendarDB;
 import apple.excursion.database.GetDB;
 import apple.excursion.database.objects.PlayerData;
 import apple.excursion.discord.DiscordBot;
 import apple.excursion.discord.commands.DoCommand;
 import apple.excursion.discord.data.AllProfiles;
 import apple.excursion.discord.data.TaskSimple;
+import apple.excursion.discord.data.answers.DailyTaskWithDate;
 import apple.excursion.discord.data.answers.SubmissionData;
 import apple.excursion.discord.reactions.AllReactables;
 import apple.excursion.discord.reactions.messages.SubmissionMessage;
@@ -125,7 +127,7 @@ public class CommandSubmit implements DoCommand {
                     throwables.printStackTrace();
                 }
             }
-
+            SubmissionData.TaskSubmissionType taskType = getTaskType(task.name);
             synchronized (reviewerSyncObject) {
                 SubmissionData submissionData = new SubmissionData(
                         attachment,
@@ -135,7 +137,7 @@ public class CommandSubmit implements DoCommand {
                         author.getIdLong(),
                         idToName,
                         playersData,
-                        SubmissionData.TaskSubmissionType.NORMAL
+                        taskType
                 );
                 for (User reviewer : reviewers) {
                     new SubmissionMessage(submissionData, reviewer);
@@ -143,6 +145,13 @@ public class CommandSubmit implements DoCommand {
             }
             eventMessage.addReaction(AllReactables.Reactable.ACCEPT.getFirstEmoji()).queue();
         }
+    }
+
+    private SubmissionData.TaskSubmissionType getTaskType(String name) {
+        List<String> today = GetCalendarDB.getTasksToday(Calendar.getInstance());
+        for (String taskName : today)
+            if (taskName.equalsIgnoreCase(name)) return SubmissionData.TaskSubmissionType.DAILY;
+        return SubmissionData.TaskSubmissionType.NORMAL;
     }
 
     private static List<User> loadReviewers(JDA client) throws IOException, ParseException {

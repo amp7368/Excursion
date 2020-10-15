@@ -142,7 +142,6 @@ public class VerifyDB {
                         "WHERE month_name = '%s' " +
                         "LIMIT 1;",
                 monthName);
-        System.out.println(sql);
         Statement statement = calendarDbConnection.createStatement();
         ResultSet response = statement.executeQuery(sql);
         final boolean exists = response.getInt(1) == 1;

@@ -12,6 +12,7 @@ public class Profile {
     private List<TaskSimple> tasksNotDone = new ArrayList<>();
     private List<TaskSimpleCompleted> tasksDone = new ArrayList<>();
     private int totalEp = 0;
+    private int soulJuice = 0;
     private long discordId;
     private int row;
     private String name;
@@ -32,6 +33,14 @@ public class Profile {
         if (next == null) return;
         name = next.toString();
 
+        if (!profileRow.hasNext()) return;
+        next = profileRow.next();
+        if (next == null || next.toString().isBlank()) soulJuice = 0;
+        else {
+            soulJuice = GetFromObject.getInt(next);
+            if (GetFromObject.intFail(soulJuice))
+                return;
+        }
         if (!profileRow.hasNext()) return;
         next = profileRow.next();
         if (next == null) return;

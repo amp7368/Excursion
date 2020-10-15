@@ -1,15 +1,16 @@
 package apple.excursion.discord.reactions.messages;
 
 import apple.excursion.database.GetCalendarDB;
+import apple.excursion.discord.data.Task;
 import apple.excursion.discord.data.answers.DailyTaskWithDate;
 import apple.excursion.discord.reactions.AllReactables;
 import apple.excursion.discord.reactions.ReactableMessage;
+import apple.excursion.sheets.SheetsTasks;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Iterator;
@@ -19,6 +20,7 @@ public class DailyTaskListMessage implements ReactableMessage {
     private final Message message;
     Calendar calendar = Calendar.getInstance();
     private long lastUpdated = System.currentTimeMillis();
+    private List<Task> tasks = SheetsTasks.getTasks();
 
     public DailyTaskListMessage(MessageChannel channel) {
         message = channel.sendMessage(makeMessage()).complete();
@@ -29,14 +31,8 @@ public class DailyTaskListMessage implements ReactableMessage {
     }
 
     private String makeMessage() {
-        List<DailyTaskWithDate> week = null;
-        try {
-            week = GetCalendarDB.getWeek(calendar);
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
-        if (week == null)
-            return "Something went wrong"; // todo give better message
+        Calendar now = Calendar.getInstance();
+        List<DailyTaskWithDate> week = GetCalendarDB.getWeek(calendar);
         StringBuilder text = new StringBuilder();
         text.append("```glsl\n");
         text.append(String.format("%20s   %-23s%s\n", "", "Daily Tasks", "EP"));
@@ -57,9 +53,13 @@ public class DailyTaskListMessage implements ReactableMessage {
                 addWeekendInfo(text, weekend);
             }
             text.append("\n");
-            text.append(String.format("%s %d %s\n", day.dayOfWeek, day.dayOfMonth, day.month));
+            if (day.isToday(now)) {
+                text.append(String.format("%s %d %s\n### Today ###\n", day.dayOfWeek, day.dayOfMonth, day.month));
+            } else {
+                text.append(String.format("%s %d %s\n", day.dayOfWeek, day.dayOfMonth, day.month));
+            }
             for (String task : day.tasks) {
-                text.append(String.format("%20s   %-23s%s\n", "", task, "###"));
+                text.append(String.format("%20s   %-23s%s\n", "", task, getTaskScore(task)));
             }
         }
         // deal with weekend
@@ -69,14 +69,27 @@ public class DailyTaskListMessage implements ReactableMessage {
         return text.toString();
     }
 
+    private String getTaskScore(String taskName) {
+        for (Task task : tasks) {
+            if (task.taskName.equalsIgnoreCase(taskName)) {
+                return String.valueOf(task.ep);
+            }
+        }
+        return "???";
+    }
+
     private void addWeekendInfo(StringBuilder messageText, List<DailyTaskWithDate> weekend) {
+        Calendar now = Calendar.getInstance();
         if (weekend.isEmpty()) return;
         messageText.append("\n");
         if (weekend.size() == 1) {
             DailyTaskWithDate day = weekend.get(0);
-            messageText.append(String.format("%s %d %s\n", day.dayOfWeek, day.dayOfMonth, day.month));
+            if (day.isToday(now))
+                messageText.append(String.format("%s %d %s\n### Today ###\n", day.dayOfWeek, day.dayOfMonth, day.month));
+            else
+                messageText.append(String.format("%s %d %s\n", day.dayOfWeek, day.dayOfMonth, day.month));
             for (String task : day.tasks) {
-                messageText.append(String.format("%20s   %-23s%s\n", "", task, "###"));
+                messageText.append(String.format("%20s   %-23s%s\n", "", task, getTaskScore(task)));
             }
             return;
         }
@@ -93,30 +106,30 @@ public class DailyTaskListMessage implements ReactableMessage {
                 lastMonthWeekend.add(day);
             dayIterator.remove();
         }
-        for(DailyTaskWithDate day:firstMonthWeekend){
+        for (DailyTaskWithDate day : firstMonthWeekend) {
             messageText.append(String.format("%s %d %s\n", day.dayOfWeek, day.dayOfMonth, day.month));
         }
-        for(DailyTaskWithDate day:firstMonthWeekend){
+        for (DailyTaskWithDate day : firstMonthWeekend) {
             for (String task : day.tasks) {
-                messageText.append(String.format("%20s   %-23s%s\n", "", task, "###"));
+                messageText.append(String.format("%20s   %-23s%s\n", "", task, getTaskScore(task)));
             }
         }
-        if(lastMonthWeekend.isEmpty())
+        if (lastMonthWeekend.isEmpty())
             return;
         if (lastMonthWeekend.size() == 1) {
             DailyTaskWithDate day = lastMonthWeekend.get(0);
             messageText.append(String.format("%s %d %s\n", day.dayOfWeek, day.dayOfMonth, day.month));
             for (String task : day.tasks) {
-                messageText.append(String.format("%20s   %-23s%s\n", "", task, "###"));
+                messageText.append(String.format("%20s   %-23s%s\n", "", task, getTaskScore(task)));
             }
             return;
         }
-        for(DailyTaskWithDate day:lastMonthWeekend){
+        for (DailyTaskWithDate day : lastMonthWeekend) {
             messageText.append(String.format("%s %d %s\n", day.dayOfWeek, day.dayOfMonth, day.month));
         }
-        for(DailyTaskWithDate day:lastMonthWeekend){
+        for (DailyTaskWithDate day : lastMonthWeekend) {
             for (String task : day.tasks) {
-                messageText.append(String.format("%20s   %-23s%s\n", "", task, "###"));
+                messageText.append(String.format("%20s   %-23s%s\n", "", task, getTaskScore(task)));
             }
         }
     }
@@ -127,7 +140,7 @@ public class DailyTaskListMessage implements ReactableMessage {
         if (user == null) return;
         switch (reactable) {
             case LEFT:
-                calendar.add(Calendar.DAY_OF_MONTH, -calendar.get(Calendar.DAY_OF_MONTH) - 1);
+                calendar.add(Calendar.WEEK_OF_YEAR, -1);
                 lastUpdated = System.currentTimeMillis();
                 message.editMessage(makeMessage()).queue();
                 event.getReaction().removeReaction(user).queue();

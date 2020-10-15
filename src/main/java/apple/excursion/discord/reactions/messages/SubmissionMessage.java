@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 import static apple.excursion.discord.commands.general.CommandSubmit.BOT_COLOR;
 
 public class SubmissionMessage implements ReactableMessage {
+    private static final int SOUL_JUICE_FOR_DAILY = 1;
     private SubmissionData data;
     private User thisReviewer;
 
@@ -65,7 +66,10 @@ public class SubmissionMessage implements ReactableMessage {
         text.append(data.submissionHistoryMessage);
         EmbedBuilder embed = new EmbedBuilder();
         embed.setColor(BOT_COLOR);
-        embed.setTitle(data.getTaskName());
+        if (data.getType() == SubmissionData.TaskSubmissionType.DAILY) {
+            embed.setTitle(data.getTaskName() + " - Daily Task");
+        } else
+            embed.setTitle(data.getTaskName());
         embed.setDescription(text);
         if (data.getAttachment() != null)
             embed.setImage(data.getAttachment());
@@ -80,7 +84,14 @@ public class SubmissionMessage implements ReactableMessage {
                 data.setAccepted();
                 for (Pair<Long, String> idToName : data.getSubmittersNameAndIds()) {
                     try {
-                        SheetsPlayerStats.submit(data.getTaskName(), idToName.getKey(), idToName.getValue());
+                        int soulJuice;
+                        if (data.getType() == SubmissionData.TaskSubmissionType.NORMAL)
+                            soulJuice = 0;
+                        else if (data.getType() == SubmissionData.TaskSubmissionType.DAILY)
+                            soulJuice = SOUL_JUICE_FOR_DAILY;
+                        else
+                            soulJuice = 0;
+                        SheetsPlayerStats.submit(data.getTaskName(), idToName.getKey(), idToName.getValue(), soulJuice);
                     } catch (IOException e) {
                         final User user = DiscordBot.client.getUserById(idToName.getKey());
                         if (user == null) continue;
