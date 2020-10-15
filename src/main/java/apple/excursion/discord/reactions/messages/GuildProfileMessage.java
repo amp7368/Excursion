@@ -8,16 +8,16 @@ import apple.excursion.discord.reactions.AllReactables;
 import apple.excursion.discord.reactions.ReactableMessage;
 import apple.excursion.utils.Pretty;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 
 import java.util.List;
 
 public class GuildProfileMessage implements ReactableMessage {
-    private static final int ENTRIES_PER_PAGE = 15;
+    private static final int ENTRIES_PER_PAGE = 10;
     private final GuildData matchedGuild;
     private final List<PlayerData> players;
     private final GuildLeaderboardProfile guildProfile;
@@ -37,51 +37,50 @@ public class GuildProfileMessage implements ReactableMessage {
         AllReactables.add(this);
     }
 
-    private Message makeMessage() {
-        MessageBuilder message = new MessageBuilder();
-        StringBuilder text = new StringBuilder();
-        text.append("```glsl\n");
-        text.append(String.format("%s [%s] Leaderboards Page (%d)\n", matchedGuild.name, matchedGuild.tag, page));
-        text.append(getDash());
-        text.append(String.format("|%3s| %-31s| %-8s|\n", "", "Name", "Total EP"));
-        int upper = Math.min(((page + 1) * ENTRIES_PER_PAGE), players.size());
-        for (int place = page * ENTRIES_PER_PAGE; place < upper; place++) {
-            if (place % 5 == 0) {
-                text.append(getDash());
-            }
-            PlayerData player = players.get(place);
-            text.append(String.format("|%3s| %-31s| %-8s|", place + 1, player.name, player.score));
-            text.append("\n");
-        }
-        text.append("```");
+    private MessageEmbed makeMessage() {
 
-        message.setContent(text.toString());
 
 
         EmbedBuilder embed = new EmbedBuilder();
         embed.setTitle(String.format("%s [%s]", matchedGuild.name, matchedGuild.tag));
-        StringBuilder description = new StringBuilder();
-        description.append(String.format("Guild rank : #%d\n\n", guildProfile.getRank()));
-        description.append(Pretty.getProgressBar(guildProfile.getProgress()));
-        description.append("\n\n");
-        description.append(String.format("Guild EP: %d EP", guildProfile.getTotalEp()));
-        description.append("\n\n");
+        StringBuilder header = new StringBuilder();
+        header.append(String.format("Guild rank : #%d\n", guildProfile.getRank()));
+        header.append(Pretty.getProgressBar(guildProfile.getProgress()));
+        header.append("\n\n");
+        header.append(String.format("Guild EP: %d EP", guildProfile.getTotalEp()));
+
+        StringBuilder body = new StringBuilder();
+        body.append("```glsl\n");
+        body.append(String.format("%s [%s] Leaderboards Page (%d)\n", matchedGuild.name, matchedGuild.tag, page));
+        body.append(getDash());
+        body.append(String.format("|%3s| %-31s| %-8s|\n", "", "Name", "Total EP"));
+        int upper = Math.min(((page + 1) * ENTRIES_PER_PAGE), players.size());
+        for (int place = page * ENTRIES_PER_PAGE; place < upper; place++) {
+            if (place % 5 == 0) {
+                body.append(getDash());
+            }
+            PlayerData player = players.get(place);
+            body.append(String.format("|%3s| %-31s| %-8s|", place + 1, player.name, player.score));
+            body.append("\n");
+        }
+        body.append("```");
+
+        StringBuilder footer = new StringBuilder();
         if (matchedGuild.submissions.isEmpty()) {
-            description.append("**There is no submission history**\n");
+            footer.append("**There is no submission history**\n");
         } else {
-            description.append("**Submission History:** \n");
+            footer.append("**Submission History:** \n");
             for (OldSubmission submission : matchedGuild.submissions) {
-                description.append(submission.makeSubmissionHistoryMessage());
-                description.append('\n');
+                footer.append(submission.makeSubmissionHistoryMessage());
+                footer.append('\n');
             }
         }
-        embed.setDescription(description.toString());
-        message.setEmbed(embed.build());
-        return message.build();
+        embed.setDescription(header.toString() + "\n\n" + body.toString() + "\n\n" + footer.toString());
+        return embed.build();
     }
 
     private String getDash() {
-        return "-".repeat(40) + "\n";
+        return "-".repeat(48) + "\n";
     }
 
     public void forward() {
