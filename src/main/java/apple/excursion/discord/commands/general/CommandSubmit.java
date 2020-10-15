@@ -134,7 +134,8 @@ public class CommandSubmit implements DoCommand {
                         submitterName,
                         author.getIdLong(),
                         idToName,
-                        playersData
+                        playersData,
+                        SubmissionData.TaskSubmissionType.NORMAL
                 );
                 for (User reviewer : reviewers) {
                     new SubmissionMessage(submissionData, reviewer);

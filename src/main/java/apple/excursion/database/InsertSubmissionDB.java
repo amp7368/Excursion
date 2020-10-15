@@ -12,7 +12,11 @@ import java.util.Date;
 public class InsertSubmissionDB {
     // todo deal with this constant
     public static void insertSubmission(SubmissionData data) throws SQLException {
+        VerifyDB.verify();
         synchronized (VerifyDB.syncDB) {
+            if(data.isDaily()){
+                VerifyDB.verifyCalendar();
+            }
             String monthName = getMonthName(data.getTime());
             String insertSql, updateSql, getSql, existsSql;
             Statement statement;

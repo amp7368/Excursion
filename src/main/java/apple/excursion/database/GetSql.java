@@ -1,12 +1,20 @@
 package apple.excursion.database;
 
+import apple.excursion.discord.data.Task;
 import apple.excursion.discord.data.answers.SubmissionData;
 import apple.excursion.utils.Pair;
+import com.google.common.collect.HashBiMap;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 class GetSql {
+    private static final HashBiMap<Character, Character> incompatibleToCompatible = HashBiMap.create();
+
+    static {
+        incompatibleToCompatible.put('\'', '$');
+    }
 
     // all the exists sql
     @NotNull
@@ -47,6 +55,17 @@ class GetSql {
 
 
     // all the insert sql
+
+
+    @NotNull
+    public static String getSqlInsertDailyTask(String monthName, int dayOfMonth, Collection<Task> todayTasks) {
+        return String.format("INSERT INTO %s (date, task_names) " +
+                        "VALUES (%d, '%s'); ",
+                monthName,
+                dayOfMonth,
+                todayTasks.stream().map(task -> convertTaskNameToSql(task.taskName)).collect(Collectors.joining(","))
+        );
+    }
 
     @NotNull
     static String getSqlInsertPlayers(Pair<Long, String> id, String guildName, String guildTag, int submissionId) {
@@ -146,6 +165,13 @@ class GetSql {
     }
 
     @NotNull
+    public static String getSqlGetPlayersInGuild(String tag) {
+        return String.format("SELECT * " +
+                "FROM players " +
+                "WHERE guild_tag = '%s'", tag);
+    }
+
+    @NotNull
     static String getSqlGetPlayerSubmissionIdsAndScore(Pair<Long, String> id) {
         return "SELECT submission_ids, score " +
                 "FROM players " +
@@ -170,12 +196,15 @@ class GetSql {
                 + "' LIMIT 1;";
     }
 
+
     // all the update sql
+
+
     @NotNull
-    static String getSqlUpdatePlayerSubmissionIdsAndScore(Pair<Long, String> id, String submission_ids,int score) {
+    static String getSqlUpdatePlayerSubmissionIdsAndScore(Pair<Long, String> id, String submission_ids, int score) {
         return String.format("UPDATE players " +
                 "SET submission_ids = '%s', score = %d " +
-                "WHERE player_uid = '%s'",submission_ids,score,id.getKey());
+                "WHERE player_uid = '%s'", submission_ids, score, id.getKey());
     }
 
     @NotNull
@@ -225,10 +254,19 @@ class GetSql {
                 "WHERE guild_tag = '%s'", guildTag);
     }
 
+
+    // helper methods
     @NotNull
-    public static String getSqlGetPlayersInGuild(String tag) {
-        return String.format("SELECT * " +
-                "FROM players " +
-                "WHERE guild_tag = '%s'", tag);
+    public static String convertTaskNameToSql(@NotNull String taskName) {
+        char[] chars = taskName.toCharArray();
+        for (int i = 0; i < chars.length; i++) {
+            char c = chars[i];
+            Character newC;
+            if ((newC = incompatibleToCompatible.get(c)) != null) {
+                chars[i] = newC;
+            }
+        }
+        return new String(chars);
     }
+
 }
