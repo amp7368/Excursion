@@ -7,9 +7,11 @@ public class DailyTaskWithDate {
     public final String dayOfWeek;
     public final int dayOfMonth;
     public final String month;
+    private final int dayOfWeekInt;
 
     public DailyTaskWithDate(List<String> tasks, int dayOfWeek, int dayOfMonth, String month) {
         this.tasks = tasks;
+        this.dayOfWeekInt = dayOfWeek;
         switch (dayOfWeek) {
             case 1:
                 this.dayOfWeek = "Monday";
@@ -38,5 +40,8 @@ public class DailyTaskWithDate {
         }
         this.dayOfMonth = dayOfMonth;
         this.month = month;
+    }
+    public boolean isWeekend(){
+        return dayOfWeekInt == 5 || dayOfWeekInt == 6 || dayOfWeekInt ==7;
     }
 }

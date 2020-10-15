@@ -30,7 +30,7 @@ public class OldSubmission {
                     submitter.getValue(), taskName, Pretty.date(dateSubmitted));
         }
         return String.format("**%s** submitted __%s__ with **%s** at *%s*",
-                submitter,
+                submitter.getValue(),
                 taskName,
                 otherSubmitters.stream().map(Pair::getValue).collect(Collectors.joining(",and ")),
                 Pretty.date(dateSubmitted));

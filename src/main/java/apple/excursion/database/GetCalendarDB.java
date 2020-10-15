@@ -1,7 +1,9 @@
 package apple.excursion.database;
 
 import apple.excursion.discord.data.answers.DailyTaskWithDate;
+import apple.excursion.utils.Pretty;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -9,51 +11,142 @@ import java.time.YearMonth;
 import java.util.*;
 
 public class GetCalendarDB {
-    private static final Object sync = new Object();
-    private static final Collection<MonthWithTasks> calendar = new ArrayList<>();
+    private static final Collection<MonthWithTasks> tasksInMonths = new ArrayList<>();
 
-    public static List<DailyTaskWithDate> getWeek(Calendar weekDesired) throws SQLException {
+    public synchronized static List<DailyTaskWithDate> getWeek(Calendar weekDesired) throws SQLException {
         final YearMonth yearMonth = YearMonth.of(weekDesired.get(Calendar.YEAR), weekDesired.get(Calendar.MONTH) + 1);
-        int daysThisMonth = yearMonth.lengthOfMonth();
-        String monthName = VerifyDB.getMonthFromDate(weekDesired.getTimeInMillis());
-        for (MonthWithTasks monthWithTasks : calendar) {
-            if (monthWithTasks.monthName.equals(monthName)) {
-                // we already have this month
-                monthWithTasks.lastUpdated = System.currentTimeMillis();
-                return getWeekFromMonthWithTasks(weekDesired, monthWithTasks, yearMonth);
-            }
-        }
-        final MonthWithTasks monthWithTasks = new MonthWithTasks(monthName, daysThisMonth);
-        calendar.add(monthWithTasks);
-        calendar.removeIf(MonthWithTasks::isOld);
-        return getWeekFromMonthWithTasks(weekDesired, monthWithTasks, yearMonth);
+        return getWeekFromMonthWithTasks(weekDesired, yearMonth);
     }
 
-    private static List<DailyTaskWithDate> getWeekFromMonthWithTasks(Calendar calendar, MonthWithTasks monthWithTasks, YearMonth yearMonth) {
+    private static List<DailyTaskWithDate> getWeekFromMonthWithTasks(Calendar calendar, YearMonth yearMonth) {
         List<DailyTaskWithDate> tasks = new ArrayList<>();
+        int lengthOfMonth = yearMonth.lengthOfMonth();
+        int lengthOfLastMonth = 0;
         int dayOfWeekInCalendar = calendar.get(Calendar.DAY_OF_WEEK) - 2; // what day of the week it is (-1 for first day of week being monday. -1 to make it 0 index)
         int firstDayOfWeek = calendar.get(Calendar.DAY_OF_MONTH) - dayOfWeekInCalendar - 1; // the first day of the week in this month (-1 to make it 0 index)
         int lastDayOfWeek = firstDayOfWeek + 7; // the last day of the week for this week (+7 for days in a week. +1 for exclusiveness -1 for 0 index)
         int dayOfWeek, dayOfMonth, lower, upper;
-        if (firstDayOfWeek < 0) {
-            dayOfWeek = -firstDayOfWeek;
-            lower = 0;
-            dayOfMonth = 0;
+        dayOfWeek = 0;
+        lower = firstDayOfWeek;
+        dayOfMonth = firstDayOfWeek;
+        upper = lastDayOfWeek;
+
+        // unless the month does not have any tasks,
+        // lower month is guaranteed, but upper month might be null because there may only be one month in a week
+        @Nullable MonthWithTasks lowerMonth, upperMonth;
+        if (lower < 0) {
+            // get this month (upper month)
+            upperMonth = getMonthWithTask(calendar.toInstant().toEpochMilli(), yearMonth);
+
+            // get last month
+            Calendar lastMonthCalendar = (Calendar) calendar.clone();
+            lastMonthCalendar.add(Calendar.MONTH, -1);
+            YearMonth tempYearMonth = yearMonth.minusMonths(1);
+            lowerMonth = getMonthWithTask(lastMonthCalendar.toInstant().toEpochMilli(), tempYearMonth);
+            lengthOfLastMonth = tempYearMonth.lengthOfMonth();
         } else {
-            dayOfWeek = 0;
-            lower = firstDayOfWeek;
-            dayOfMonth = firstDayOfWeek;
+            // get this month
+            lowerMonth = getMonthWithTask(calendar.toInstant().toEpochMilli(), yearMonth);
+
+            // get next month if we need it
+            if (upper > lengthOfMonth) {
+                Calendar nextMonthCalendar = (Calendar) calendar.clone();
+                nextMonthCalendar.add(Calendar.MONTH, 1);
+
+                YearMonth tempYearMonth = yearMonth.plusMonths(1);
+                upperMonth = getMonthWithTask(nextMonthCalendar.toInstant().toEpochMilli(), tempYearMonth);
+            } else {
+                upperMonth = null;
+            }
         }
-        upper = Math.min(lastDayOfWeek, yearMonth.lengthOfMonth());
-        for (; lower < upper; lower++, dayOfWeek++, dayOfMonth++) {
-            tasks.add(new DailyTaskWithDate(
-                    monthWithTasks.tasks[lower],
-                    dayOfWeek + 1,
-                    dayOfMonth + 1,
-                    yearMonth.getMonth().name()
-            ));
+        if (lower < 0) {
+            int lastMonthLower = lower + lengthOfLastMonth;
+            dayOfMonth = dayOfMonth + lengthOfLastMonth;
+            if (lowerMonth == null) {
+                for (; lower < 0; lower++, lastMonthLower++, dayOfWeek++, dayOfMonth++)
+                    tasks.add(null);
+            } else {
+                for (; lower < 0; lower++, lastMonthLower++, dayOfWeek++, dayOfMonth++) {
+                    tasks.add(new DailyTaskWithDate(
+                            lowerMonth.tasks[lastMonthLower],
+                            dayOfWeek + 1,
+                            dayOfMonth + 1,
+                            lowerMonth.prettyFullMonthName
+                    ));
+                }
+            }
+            dayOfMonth = 0;
+            if (upperMonth == null) {
+                for (; lower < upper; lower++, dayOfWeek++, dayOfMonth++)
+                    tasks.add(null);
+            } else {
+                for (; lower < upper; lower++, dayOfWeek++, dayOfMonth++) {
+                    tasks.add(new DailyTaskWithDate(
+                            upperMonth.tasks[lower],
+                            dayOfWeek + 1,
+                            dayOfMonth + 1,
+                            upperMonth.prettyFullMonthName
+                    ));
+                }
+            }
+        } else {
+            int lowerMonthUpper = Math.min(upper, lengthOfMonth);
+            if (lowerMonth == null) {
+                for (; lower < lowerMonthUpper; lower++, dayOfWeek++, dayOfMonth++) {
+                    tasks.add(null);
+                }
+            } else {
+                for (; lower < lowerMonthUpper; lower++, dayOfWeek++, dayOfMonth++) {
+                    tasks.add(new DailyTaskWithDate(
+                            lowerMonth.tasks[lower],
+                            dayOfWeek + 1,
+                            dayOfMonth + 1,
+                            lowerMonth.prettyFullMonthName
+                    ));
+                }
+            }
+            dayOfMonth = 0;
+            if (lower != upper) {
+                if (upperMonth == null) {
+                    for (; lower < upper; lower++, dayOfWeek++, dayOfMonth++)
+                        tasks.add(null);
+                } else {
+                    for (int upperMonthLower = 0; lower < upper; lower++, upperMonthLower++, dayOfWeek++, dayOfMonth++) {
+                        tasks.add(new DailyTaskWithDate(
+                                upperMonth.tasks[upperMonthLower],
+                                dayOfWeek + 1,
+                                dayOfMonth + 1,
+                                upperMonth.prettyFullMonthName
+                        ));
+                    }
+                }
+            }
         }
         return tasks;
+    }
+
+
+    @Nullable
+    private static MonthWithTasks getMonthWithTask(long epochMillis, YearMonth yearMonth) {
+        String monthName = VerifyDB.getMonthFromDate(epochMillis);
+        for (MonthWithTasks monthWithTasks : tasksInMonths) {
+            if (monthWithTasks.monthName.equals(monthName)) {
+                // we already have this month
+                monthWithTasks.lastUpdated = System.currentTimeMillis();
+                return monthWithTasks;
+            }
+        }
+        try {
+            return new MonthWithTasks(monthName, yearMonth.lengthOfMonth(), yearMonth.getMonth().name());
+        } catch (SQLException e) {
+            // this is fine. the month was just not filled in
+            try {
+                VerifyDB.verifyCalendar(monthName, yearMonth.lengthOfMonth());
+                return new MonthWithTasks(monthName, yearMonth.lengthOfMonth(), yearMonth.getMonth().name());
+            } catch (SQLException e1) {
+                return null;
+            }
+        }
     }
 
     private static class MonthWithTasks {
@@ -61,9 +154,11 @@ public class GetCalendarDB {
         private long lastUpdated = System.currentTimeMillis();
         private final String monthName;
         private final List<String>[] tasks;
+        private final String prettyFullMonthName;
 
-        private MonthWithTasks(String monthName, int daysThisMonth) throws SQLException {
+        private MonthWithTasks(String monthName, int daysThisMonth, String prettyFullMonthName) throws SQLException {
             this.monthName = monthName;
+            this.prettyFullMonthName = Pretty.upperCaseFirst(prettyFullMonthName);
             this.tasks = new List[daysThisMonth];
             String sql = GetSql.getSqlGetCalendar(monthName);
             Statement statement = VerifyDB.calendarDbConnection.createStatement();
