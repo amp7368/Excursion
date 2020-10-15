@@ -16,7 +16,6 @@ public class InsertSubmissionDB {
         synchronized (VerifyDB.syncDB) {
             if (data.getType() == SubmissionData.TaskSubmissionType.DAILY) {
                 VerifyDB.verifyCalendar();
-                return;
             }
             String monthName = getMonthName(data.getTime());
             String insertSql, updateSql, getSql, existsSql;

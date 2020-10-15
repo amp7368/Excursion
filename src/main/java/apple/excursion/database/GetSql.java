@@ -89,15 +89,16 @@ class GetSql {
         else
             links = "'" + String.join(",", linksList) + "'";
 
-        return "INSERT INTO submissions(id, date_submitted, task_name, links, submitter, all_submitters) "
+        return "INSERT INTO submissions(id, date_submitted, task_name, links, submitter, all_submitters, submission_type) "
                 + "VALUES "
-                + String.format("(%d,'%s','%s',%s,'%s',%s);",
+                + String.format("(%d,'%s','%s',%s,'%s',%s,'%s');",
                 VerifyDB.currentSubmissionId,
                 data.getTime(),
                 data.getTaskName(),
                 links,
                 data.getSubmitterId(),
-                data.getOtherSubmitters() == null ? null : "'" + data.getOtherSubmitters() + "'"
+                data.getOtherSubmitters() == null ? null : "'" + data.getOtherSubmitters() + "'",
+                data.getType().name()
         );
     }
 

@@ -61,6 +61,7 @@ public class GetDB {
         String links = response.getString(4);
         String submitterId = response.getString(5);
         String otherSubmittersIdsListAsString = response.getString(6);
+        String submissionType = response.getString(7);
         response.close();
         statement.close();
 
@@ -86,7 +87,8 @@ public class GetDB {
                 taskName,
                 links,
                 submitter,
-                otherSubmitters
+                otherSubmitters,
+                submissionType
         );
     }
 

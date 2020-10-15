@@ -178,6 +178,7 @@ public class SubmissionData {
 
     public enum TaskSubmissionType {
         DAILY,
-        NORMAL
+        NORMAL,
+        IDK
     }
 }

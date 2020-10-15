@@ -67,7 +67,8 @@ public class VerifyDB {
                         + "	task_name TEXT NOT NULL,"
                         + "	links TEXT,"
                         + "	submitter TEXT NOT NULL,"
-                        + "	all_submitters TEXT"
+                        + "	all_submitters TEXT,"
+                        + "	submission_type TEXT NOT NULL"
                         + ");";
         Statement statement = submissionDbConnection.createStatement();
         statement.execute(buildTableSql);
