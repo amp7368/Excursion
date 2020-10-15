@@ -1,201 +1,166 @@
 package apple.excursion.sheets;
 
+import apple.excursion.ExcursionMain;
+import apple.excursion.discord.data.AllProfiles;
+import apple.excursion.discord.data.Profile;
+import apple.excursion.discord.data.TaskSimple;
+import apple.excursion.utils.GetFromObject;
 import apple.excursion.utils.Pair;
 import com.google.api.services.sheets.v4.Sheets;
-import com.google.api.services.sheets.v4.model.ValueRange;
+import com.google.api.services.sheets.v4.model.*;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+
+import static apple.excursion.sheets.SheetsConstants.*;
+import static apple.excursion.sheets.SheetsUtils.addA1Notation;
 
 public class SheetsPlayerStats {
-    private static final String MISSIONS_ROW_RANGE = "PlayerStats!E2:2";
-    private static final String ID_COL_RANGE = "PlayerStats!A5:A";
-    private static final String PLAYER_INFO_RANGE = "PlayerStats!A5:D";
+    private static final String MISSIONS_ROW_RANGE = "PlayerStats!E2:3";
+    private static final String ID_COL_RANGE = "PlayerStats!A:A";
     private static final String PLAYER_STATS_SHEET = "PlayerStats";
     private static final String BASE_PLAYER_STATS_RANGE = "E5";
+    private static final String EVERYONE_RANGE = "PlayerStats";
+    private static final int PLAYER_STATS_SHEET_ID = 0;
 
-    private static final String TOTAL_EP_EARNED_FORMULA = "=SUM(C%d:%s)";
     public static final String TASKS_DONE_HEADER = "Tasks Done";
-    private static final String TOTAL_TASKS_FORMULA = "=COUNT(C%d:%s)*1/98";
 
-    public static boolean isQuest(String quest) {
+    public static TaskSimple getTaskSimple(String quest) {
         quest = quest.toLowerCase();
         ValueRange missionsValueRange;
         try {
-            missionsValueRange = SheetsConstants.sheetsValues.get(SheetsConstants.spreadsheetId, MISSIONS_ROW_RANGE).execute();
+            missionsValueRange = SHEETS_VALUES.get(SPREADSHEET_ID, MISSIONS_ROW_RANGE).execute();
         } catch (IOException e) {
-            return false;
+            return null;
         }
-        List<Object> missionValues = missionsValueRange.getValues().get(0);
-        for (Object missionValue : missionValues) {
-            if (missionValue instanceof String) {
-                if (((String) missionValue).toLowerCase().equals(quest))
-                    return true;
+        Iterator<Object> missionValues = missionsValueRange.getValues().get(0).iterator();
+        Iterator<Object> missionScoreValues = missionsValueRange.getValues().get(1).iterator();
+        while (missionValues.hasNext() && missionScoreValues.hasNext()) {
+            String taskName = missionValues.next().toString();
+            if (taskName.equalsIgnoreCase(quest)) {
+                final int score = GetFromObject.getInt(missionScoreValues.next());
+                if (GetFromObject.intFail(score)) return null;
+                return new TaskSimple(score, taskName, "");
             }
-            if (missionValue.toString().equals(quest)) {
-                return true;
-            }
+            missionScoreValues.next();
         }
         // could not find a quest with that name
-        return false;
+        return null;
     }
 
-    public static void verifyDiscordNickname(String nickname, long id) {
+    public synchronized static void submit(String questNameToAdd, long discordId, String discordName) throws IOException, NumberFormatException {
+        Profile profile = AllProfiles.getProfile(discordId, discordName);
+        if (profile == null) throw new IOException("Error making a new profile");
+        int pointsToAdd = -1;
+        int col = -1;
         try {
-            int row = getRowFromDiscord(SheetsConstants.spreadsheetId, SheetsConstants.sheetsValues, String.valueOf(id));
-            if (row == -1) {
-                addNewRow(SheetsConstants.spreadsheetId, SheetsConstants.sheetsValues, String.valueOf(id), nickname);
-                row = getRowFromDiscord(SheetsConstants.spreadsheetId, SheetsConstants.sheetsValues, String.valueOf(id));
-                setFormulas(SheetsConstants.spreadsheetId, SheetsConstants.sheetsValues, row);
-            }
-            String cell = addA1Notation("B5", 0, row);
-            ValueRange valueRange = SheetsConstants.sheetsValues.get(SheetsConstants.spreadsheetId, String.format("%s!%s", PLAYER_STATS_SHEET, cell)).execute();
+            List<List<Object>> missions = SHEETS_VALUES.get(SPREADSHEET_ID, MISSIONS_ROW_RANGE).execute().getValues();
+            Iterator<Object> questNameIterator = missions.get(0).iterator();
+            Iterator<Object> questValuesIterator = missions.get(1).iterator();
 
-            List<List<Object>> currentValue = valueRange.getValues();
-            if (!currentValue.isEmpty()) {
-                List<Object> currentValueInside = currentValue.get(0);
-                if (!currentValueInside.isEmpty()) {
-                    if (currentValueInside.get(0).equals(nickname))
-                        return; // nickname is already good
+            for (int i = 4; true; i++) {
+                String questName;
+                if ((questName = questNameIterator.next().toString()).equals(TASKS_DONE_HEADER)) {
+                    break;
                 }
-            }
-
-            List<List<Object>> valueToWrite = new ArrayList<>();
-            List<Object> insideArray = new ArrayList<>();
-            insideArray.add(nickname);
-            valueToWrite.add(insideArray);
-            valueRange.setValues(valueToWrite);
-            SheetsConstants.sheetsValues.update(SheetsConstants.spreadsheetId, String.format("%s!%s", PLAYER_STATS_SHEET, cell), valueRange).setValueInputOption("USER_ENTERED").execute();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static void setFormulas(String spreadsheetId, Sheets.Spreadsheets.Values sheetsValues, int row) throws IOException {
-        final List<List<Object>> headerValues = sheetsValues.get(spreadsheetId, MISSIONS_ROW_RANGE).execute().getValues();
-        int totalEpEarnedCol = -1;
-        int totalTasksCol = -1;
-        for (List<Object> headerValuesInside : headerValues) {
-            int headerValuesLength = headerValuesInside.size();
-            for (int i = 0; i < headerValuesLength; i++) {
-                Object headerValueInside = headerValuesInside.get(i);
-                if (headerValueInside.equals(TASKS_DONE_HEADER)) {
-                    totalEpEarnedCol = i;
-                    totalTasksCol = i + 1;
-                }
-            }
-        }
-        if (totalEpEarnedCol == -1) {
-            // couldn't find the correct headers
-            throw new IOException("bad headers");
-        }
-        // we have the correct cols
-        String totalEpEarnedRange = addA1Notation(BASE_PLAYER_STATS_RANGE, totalEpEarnedCol, row);
-        String totalTasksRange = addA1Notation(BASE_PLAYER_STATS_RANGE, totalTasksCol, row);
-        String lastRange = addA1Notation(totalEpEarnedRange, -1, 0);
-        List<List<Object>> formulaValues = Collections.singletonList(Arrays.asList(
-                String.format(TOTAL_EP_EARNED_FORMULA, row + 5, lastRange),
-                String.format(TOTAL_TASKS_FORMULA, row + 5, lastRange)
-        ));
-        String formulasRange = String.format("%s!%s:%s", PLAYER_STATS_SHEET, totalEpEarnedRange, totalTasksRange);
-        ValueRange formulasValueRange = new ValueRange();
-        formulasValueRange.setRange(formulasRange);
-        formulasValueRange.setValues(formulaValues);
-        sheetsValues.update(spreadsheetId, formulasRange, formulasValueRange).setValueInputOption("USER_ENTERED").execute();
-        int a = 3;
-    }
-
-    public static void submit(String spreadsheetId, Sheets.Spreadsheets.Values values, String submissionName, String discordId, String discordName) {
-        try {
-            Pair<String, Integer> cellToUpdate = getCellToUpdate(spreadsheetId, values, submissionName, discordId, discordName);
-            if (cellToUpdate == null) {
-                System.err.println("could not get the cell to update");
-                return;
-            }
-            ValueRange valueRange = values.get(spreadsheetId, cellToUpdate.getKey()).execute();
-            List<List<Object>> currentValue = valueRange.getValues();
-            int oldValue = 0;
-            if (currentValue != null && !currentValue.isEmpty()) {
-                List<Object> currentValueInside = currentValue.get(0);
-                if (!currentValueInside.isEmpty()) {
-                    Object currentValueInsideInside = currentValueInside.get(0);
-                    if (currentValueInsideInside instanceof String) {
-                        try {
-                            oldValue = Integer.parseInt((String) currentValueInsideInside);
-                        } catch (NumberFormatException ignored) {
-                        }
-                    } else if (currentValueInsideInside instanceof Integer) {
-                        oldValue = (Integer) currentValueInsideInside;
+                int questValue = GetFromObject.getInt(questValuesIterator.next());
+                if (questName.equals(questNameToAdd)) {
+                    if (GetFromObject.intFail(questValue)) {
+                        throw new NumberFormatException("Bad number in mission value");
                     }
+                    pointsToAdd = questValue;
+                    col = i;
+                    break;
                 }
             }
-            List<List<Object>> valueToWrite = new ArrayList<>();
-            List<Object> insideArray = new ArrayList<>();
-            insideArray.add(cellToUpdate.getValue() + oldValue);
-            valueToWrite.add(insideArray);
-            valueRange.setValues(valueToWrite);
-            values.update(spreadsheetId, cellToUpdate.getKey(), valueRange).setValueInputOption("USER_ENTERED").execute();
+            final String range = PLAYER_STATS_SHEET + "!" + addA1Notation(BASE_PLAYER_STATS_RANGE, col - 4, profile.getRow() - 4);
+
+            int pointsThere;
+            List<List<Object>> pointsThereRaw = SHEETS_VALUES.get(SPREADSHEET_ID, range).execute().getValues();
+            if (pointsThereRaw == null) pointsThere = 0;
+            else if (pointsThereRaw.get(0) == null) pointsThere = 0;
+            else pointsThere = GetFromObject.getInt(pointsThereRaw.get(0).get(0));
+            if (GetFromObject.intFail(pointsThere))
+                throw new NumberFormatException("Bad number in player's mission value");
+
+            SHEETS_VALUES.update(SPREADSHEET_ID, range,
+                    new ValueRange().setRange(range)
+                            .setValues(Collections.singletonList(Collections.singletonList(String.valueOf(pointsThere + pointsToAdd))))
+            ).setValueInputOption("USER_ENTERED").execute();
+
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }
 
     }
 
-    private static Pair<String, Integer> getCellToUpdate(String spreadsheetId, Sheets.Spreadsheets.Values values, String submissionName, String discordId, String discordName) throws IOException {
-        ValueRange missionsValueRange = values.get(spreadsheetId, MISSIONS_ROW_RANGE).execute();
-        List<Object> missionValues = missionsValueRange.getValues().get(0);
-        // find the submission id
-        int submissionIndex = -1;
-        int missionValuesLength = missionValues.size();
-        for (int i = 0; i < missionValuesLength; i++) {
-            if (missionValues.get(i).toString().toLowerCase().equals(submissionName.toLowerCase())) {
-                submissionIndex = i;
+
+    /**
+     * adds a profile to the sheet
+     *
+     * @param discordId   the id of the player
+     * @param discordName
+     * @return
+     * @throws IOException
+     */
+    public static int addProfile(long discordId, String discordName) throws IOException {
+        List<List<Object>> sheet = SHEETS_VALUES.get(SPREADSHEET_ID, PLAYER_STATS_SHEET).execute().getValues();
+        int lastRow = 5;
+        for (int i = sheet.size() - 1; i >= 0; i--) {
+            final List<Object> row = sheet.get(i);
+            if (row.size() >= 2 && row.get(1) != null && !row.get(1).toString().isBlank()) {
+                lastRow = i + 1;
                 break;
             }
         }
-        if (submissionIndex == -1) {
-            // could not find a quest with that name
-            return null;
+        int lastCol = -1;
+        int i = 0;
+        for (Object col : sheet.get(1)) {
+            if (col != null && col.toString().equals(TASKS_DONE_HEADER))
+                lastCol = i - 1;
+            i++;
         }
-        int idIndex = getRowFromDiscord(spreadsheetId, values, discordId);
-        if (idIndex == -1) {
-            // could not find a person with that id
-            addNewRow(spreadsheetId, values, discordId, discordName);
-            idIndex = getRowFromDiscord(spreadsheetId, values, discordId);
-            return null;
-        }
-        String cellRange = addA1Notation(BASE_PLAYER_STATS_RANGE, submissionIndex, idIndex);
 
-        String cellWithValueRange = addA1Notation(BASE_PLAYER_STATS_RANGE, submissionIndex, -2);
-        cellWithValueRange = String.format("%s!%s", PLAYER_STATS_SHEET, cellWithValueRange);
-        ValueRange newValueRange = values.get(spreadsheetId, cellWithValueRange).execute();
-        Object newValueObject = newValueRange.getValues().get(0).get(0);
-        int newValue;
-        try {
-            newValue = Integer.parseInt((String) newValueObject);
-        } catch (NumberFormatException exception) {
-            exception.printStackTrace();
-            newValue = -1;
-        }
-        return new Pair<>(String.format("%s!%s", PLAYER_STATS_SHEET, cellRange), newValue);
-
-    }
-
-    private static void addNewRow(String spreadsheetId, Sheets.Spreadsheets.Values sheets, String discordId, String discordName) throws IOException {
         ValueRange valueRange = new ValueRange();
-        valueRange.setRange(PLAYER_INFO_RANGE);
-        List<List<Object>> values = Collections.singletonList(Arrays.asList(discordId, discordName, "", ""));
+        String range = String.format("%s!%s:%s", PLAYER_STATS_SHEET, addA1Notation("A1", 0, lastRow), addA1Notation("A1", lastCol + 3, lastRow));
+        valueRange.setRange(range);
+        List<Object> profileRow = new ArrayList<>();
+        profileRow.add(String.valueOf(discordId));
+        profileRow.add(discordName);
+        profileRow.add("");
+        profileRow.add("");
+        for (i = 3; i < lastCol; i++)
+            profileRow.add("");
+        final String profileStart = addA1Notation("A1", 4, lastRow);
+        final String profileEnd = addA1Notation("A1", lastCol, lastRow);
+        profileRow.add(String.format("=COUNT(%s:%s)&\" done\"", profileStart, profileEnd));
+        profileRow.add(String.format("=SUM(%s:%s)", profileStart, profileEnd));
+        profileRow.add(String.format("=COUNT(%s:%s)*1/121", profileStart, profileEnd));
+        List<List<Object>> values = Collections.singletonList(profileRow);
         valueRange.setValues(values);
-
-        sheets.append(spreadsheetId, PLAYER_INFO_RANGE, valueRange).setValueInputOption("USER_ENTERED").setInsertDataOption("INSERT_ROWS").execute();
+        ExcursionMain.service.spreadsheets().batchUpdate(SPREADSHEET_ID,
+                new BatchUpdateSpreadsheetRequest().setRequests(
+                        Collections.singletonList(
+                                new Request().setInsertRange(
+                                        new InsertRangeRequest().setRange(
+                                                new GridRange().setSheetId(PLAYER_STATS_SHEET_ID)
+                                                        .setStartColumnIndex(0)
+                                                        .setEndColumnIndex(lastCol)
+                                                        .setStartRowIndex(lastRow)
+                                                        .setEndRowIndex(lastRow + 1)
+                                        ).setShiftDimension("ROWS")
+                                )
+                        )
+                )
+        ).execute();
+        SHEETS_VALUES.update(SPREADSHEET_ID, range, valueRange).setValueInputOption("USER_ENTERED").execute();
+        return lastRow;
     }
 
-    private static int getRowFromDiscord(String spreadsheetId, Sheets.Spreadsheets.Values values, String discordId) throws IOException {
-        ValueRange idValueRange = values.get(spreadsheetId, ID_COL_RANGE).execute();
+    private static int getRowFromDiscord(String discordId) throws IOException {
+        ValueRange idValueRange = SHEETS_VALUES.get(SPREADSHEET_ID, ID_COL_RANGE).execute();
         List<List<Object>> idValues = idValueRange.getValues();
+        if (idValues == null) return -1;
         int idIndex = -1;
         int idValuesLength = idValues.size();
         for (int i = 0; i < idValuesLength; i++) {
@@ -210,52 +175,40 @@ public class SheetsPlayerStats {
         return idIndex;
     }
 
-    public static String addA1Notation(String base, int col, int row) {
-        char[] baseChar = base.toCharArray();
-        int baseCol = 0;
-        int i = 0;
-        int baseCharLength = baseChar.length;
-        for (; i < baseCharLength && Character.isLetter(baseChar[i]); i++) {
-            baseCol *= 26;
-            baseCol += baseChar[i] - 64;
-        }
-        StringBuilder baseRow = new StringBuilder();
-        for (; i < baseCharLength && Character.isDigit(baseChar[i]); i++) {
-            baseRow.append(baseChar[i]);
-        }
-        if (!baseRow.toString().equals(""))
-            row = row + Integer.parseInt(baseRow.toString());
-        return getExcelColumnName(col + baseCol) + row;
+    public static List<List<Object>> getEveryone() throws IOException {
+        return SHEETS_VALUES.get(SPREADSHEET_ID, EVERYONE_RANGE).execute().getValues();
     }
 
-    private static String getExcelColumnName(int columnNumber) {
-        int dividend = columnNumber;
-        StringBuilder columnName = new StringBuilder();
-        int modulo;
-
-        while (dividend > 0) {
-            modulo = (dividend - 1) % 26;
-            columnName.insert(0, ((char) (65 + modulo)));
-            dividend = (dividend - modulo) / 26;
-        }
-
-        return columnName.toString();
-    }
-
-    public static List<List<Object>> getQuestsList() {
+    public static void rename(int row, String realName) {
+        String cell = addA1Notation("B1", 0, row);
+        final String range = String.format("%s!%s", PLAYER_STATS_SHEET, cell);
+        ValueRange valueRange = new ValueRange().setRange(range).setValues(Collections.singletonList(Collections.singletonList(realName)));
         try {
-            return SheetsConstants.sheetsValues.get(SheetsConstants.spreadsheetId, MISSIONS_ROW_RANGE).execute().getValues();
-        } catch (IOException e) {
-            return null;
+            SHEETS_VALUES.update(SPREADSHEET_ID, range, valueRange).setValueInputOption("USER_ENTERED").execute();
+        } catch (IOException ignored) {
         }
     }
 
-    public static List<List<Object>> getPlayerQuestsList(String discordId) {
+    public static void updateGuild(String guildName, String guildTag, long id, String playerName) throws IOException {
+        int row = getRowFromDiscord(String.valueOf(id));
+        if (row == -1) {
+            row = addProfile(id, playerName);
+        }
+        // row now refers to the row where the player is
+        String cell = addA1Notation("C1", 0, row);
+        final String range = String.format("%s!%s:%s", PLAYER_STATS_SHEET, cell, addA1Notation(cell, 1, 0));
+        ValueRange valueRange = new ValueRange().setRange(range).setValues(Collections.singletonList(Arrays.asList(guildName, guildTag)));
         try {
-            int row = getRowFromDiscord(SheetsConstants.spreadsheetId, SheetsConstants.sheetsValues, discordId);
-            return SheetsConstants.sheetsValues.get(SheetsConstants.spreadsheetId, String.format("%s!E%d:%d", PLAYER_STATS_SHEET, row + 5, row + 5)).execute().getValues();
-        } catch (IOException e) {
-            return null;
+            SHEETS_VALUES.update(SPREADSHEET_ID, range, valueRange).setValueInputOption("USER_ENTERED").execute();
+            Request sortRequest = new Request().setSortRange(new SortRangeRequest().setRange(
+                    new GridRange().setStartRowIndex(4).setStartColumnIndex(0).setSheetId(PLAYER_STATS_SHEET_ID)
+            ).setSortSpecs(Arrays.asList(
+                    new SortSpec().setSortOrder("DESCENDING").setDimensionIndex(3),
+                    new SortSpec().setSortOrder("DESCENDING").setDimensionIndex(0))));
+            ExcursionMain.service.spreadsheets().batchUpdate(
+                    SPREADSHEET_ID,
+                    new BatchUpdateSpreadsheetRequest().setRequests(Collections.singletonList(sortRequest))).execute();
+        } catch (IOException ignored) {
         }
     }
 }

@@ -1,7 +1,8 @@
 package apple.excursion;
 
+import apple.excursion.database.VerifyDB;
 import apple.excursion.discord.DiscordBot;
-import apple.excursion.discord.data.leaderboard.Leaderboard;
+import apple.excursion.discord.data.AllProfiles;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
@@ -21,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.security.GeneralSecurityException;
+import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 
@@ -65,15 +67,16 @@ public class ExcursionMain {
         return user;
     }
 
-    public static void main(String... args) throws IOException, GeneralSecurityException {
+    public static void main(String... args) throws IOException, GeneralSecurityException, SQLException, ClassNotFoundException {
         System.out.println("Starting Excursion");
-
+        VerifyDB.connect();
+        VerifyDB.verify();
         // Build a new authorized API client service.
         final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
         service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
                 .setApplicationName(APPLICATION_NAME)
                 .build();
-        Leaderboard.update();
+        AllProfiles.update();
         DiscordBot bot = new DiscordBot();
         try {
             bot.enableDiscord();
