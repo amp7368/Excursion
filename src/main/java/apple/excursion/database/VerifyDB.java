@@ -3,10 +3,6 @@ package apple.excursion.database;
 import apple.excursion.ExcursionMain;
 import apple.excursion.discord.data.Task;
 import apple.excursion.sheets.SheetsTasks;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
-import com.google.common.collect.Maps;
-import org.jetbrains.annotations.NotNull;
 
 import java.sql.*;
 import java.text.SimpleDateFormat;
@@ -28,7 +24,7 @@ public class VerifyDB {
     public static Connection guildLbDbConnection;
     public static Connection playerLbDbConnection;
     public static Connection guildDbConnection;
-    private static Connection calendarDbConnection;
+    public static Connection calendarDbConnection;
 
     public static final Object syncDB = new Object();
     public static int currentSubmissionId;
@@ -195,8 +191,12 @@ public class VerifyDB {
     }
 
     private static String getMonth() {
+        return getMonthFromDate(System.currentTimeMillis());
+    }
+
+    public static String getMonthFromDate(Long epochMilliseconds) {
         SimpleDateFormat formatter = new SimpleDateFormat();
         formatter.applyPattern("MMM'_'yyyy");
-        return formatter.format(new Date(System.currentTimeMillis())).toUpperCase();
+        return formatter.format(new Date(epochMilliseconds)).toUpperCase();
     }
 }

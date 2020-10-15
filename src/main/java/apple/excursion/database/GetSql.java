@@ -126,6 +126,10 @@ class GetSql {
 
     // all the get sql
 
+    @NotNull
+    public static String getSqlGetCalendar(String monthYear) {
+        return "SELECT * FROM " + monthYear;
+    }
 
     @NotNull
     static String getSqlSubmissionGetAll(String submissionId) {
@@ -257,7 +261,7 @@ class GetSql {
 
     // helper methods
     @NotNull
-    public static String convertTaskNameToSql(@NotNull String taskName) {
+    private static String convertTaskNameToSql(@NotNull String taskName) {
         char[] chars = taskName.toCharArray();
         for (int i = 0; i < chars.length; i++) {
             char c = chars[i];
@@ -269,4 +273,16 @@ class GetSql {
         return new String(chars);
     }
 
+    @NotNull
+    public static String convertTaskNameFromSql(@NotNull String taskName) {
+        char[] chars = taskName.toCharArray();
+        for (int i = 0; i < chars.length; i++) {
+            char c = chars[i];
+            Character newC;
+            if ((newC = incompatibleToCompatible.inverse().get(c)) != null) {
+                chars[i] = newC;
+            }
+        }
+        return new String(chars);
+    }
 }
