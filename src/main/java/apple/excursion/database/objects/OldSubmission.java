@@ -37,11 +37,15 @@ public class OldSubmission {
 
     public String makeSubmissionHistoryMessage() {
         if (otherSubmitters == null || otherSubmitters.size() == 0) {
-            return String.format("**%s** submitted __%s__ at *%s*",
-                    submitter.getValue(), taskName, Pretty.date(dateSubmitted));
+            return String.format("**%s** submitted %s__%s__ at *%s*",
+                    submitter.getValue(),
+                    submissionType == SubmissionData.TaskSubmissionType.DAILY ? "**daily task** " : "",
+                    taskName,
+                    Pretty.date(dateSubmitted));
         }
-        return String.format("**%s** submitted __%s__ with **%s** at *%s*",
+        return String.format("**%s** submitted %s__%s__ with **%s** at *%s*",
                 submitter.getValue(),
+                submissionType == SubmissionData.TaskSubmissionType.DAILY ? "**daily task** " : "",
                 taskName,
                 otherSubmitters.stream().map(Pair::getValue).collect(Collectors.joining(",and ")),
                 Pretty.date(dateSubmitted));

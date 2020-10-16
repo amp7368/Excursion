@@ -60,8 +60,11 @@ public class AllProfiles {
                     if (questNameCategory != null && !questNameCategory.equals(""))
                         category = questNameCategory.toString();
                 }
-                if (category == null) continue; // shouldn't really happen
-
+                if (category == null){
+                    questNameIterator.next();
+                    questEpIterator.next();
+                    continue;
+                }
                 String questName = questNameIterator.next().toString();
                 if (questName.equals(SheetsPlayerStats.TASKS_DONE_HEADER)) break; //we're done collecting data
 

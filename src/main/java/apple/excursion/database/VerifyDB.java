@@ -190,47 +190,6 @@ public class VerifyDB {
         statement.close();
     }
 
-    public static void verifyCalendar(String monthName,int daysThisMonth) throws SQLException {
-        Statement statement = calendarDbConnection.createStatement();
-        // make a new calendar
-        String sql = "CREATE TABLE IF NOT EXISTS " + monthName + " ( " +
-                "date INTEGER PRIMARY KEY NOT NULL UNIQUE," +
-                "task_names TEXT NOT NULL );";
-        statement.execute(sql);
-
-        // record the calendar db name
-        sql = "INSERT INTO calendar(month_name) "
-                + "VALUES "
-                + String.format("('%s');",
-                monthName
-        );
-        statement.execute(sql);
-
-        List<Task> tasks = SheetsTasks.getTasks();
-        int size = tasks.size();
-        Random random = new Random();
-        List<Collection<Task>> dailyTasks = new ArrayList<>();
-        // fill in calendar
-        int randomNext;
-        for (int i = 0; i < daysThisMonth; i++) {
-            Collection<Task> todayTasks = new ArrayList<>();
-            Collection<Integer> todayNumbers = new ArrayList<>();
-            for (int j = 0; j < TASKS_PER_DAY; j++) {
-                //noinspection StatementWithEmptyBody
-                while (todayNumbers.contains(randomNext = random.nextInt())) ;
-                todayNumbers.add(randomNext);
-                todayTasks.add(tasks.get(random.nextInt(size)));
-            }
-            dailyTasks.add(todayTasks);
-        }
-        for (int i = 0; i < daysThisMonth; i++) {
-            Collection<Task> todayTasks = dailyTasks.get(i);
-            sql = GetSql.getSqlInsertDailyTask(monthName, i + 1, todayTasks);
-            statement.addBatch(sql);
-        }
-        statement.executeBatch();
-    }
-
     private static String getMonth() {
         return getMonthFromDate(System.currentTimeMillis());
     }

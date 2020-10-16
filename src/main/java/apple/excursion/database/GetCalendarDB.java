@@ -51,6 +51,11 @@ public class GetCalendarDB {
     }
 
     public synchronized static List<DailyTaskWithDate> getWeek(Calendar calendar) {
+        try {
+            VerifyDB.verifyCalendar();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
         final YearMonth yearMonth = YearMonth.of(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH) + 1);
         List<DailyTaskWithDate> tasks = new ArrayList<>();
         int lengthOfMonth = yearMonth.lengthOfMonth();
@@ -182,7 +187,6 @@ public class GetCalendarDB {
         } catch (SQLException e) {
             // this is fine. the month was just not filled in
             try {
-                VerifyDB.verifyCalendar(monthName, yearMonth.lengthOfMonth());
                 return new MonthWithTasks(monthName, yearMonth.lengthOfMonth(), yearMonth.getMonth().name(), yearMonth.getMonthValue(), yearMonth.getYear());
             } catch (SQLException e1) {
                 return null;
@@ -192,8 +196,8 @@ public class GetCalendarDB {
 
     private static class MonthWithTasks {
         private static final long OLD_CACHE = 1000 * 60 * 60 * 2; //2 hrs
-        private int monthInt;
-        private int yearInt;
+        private final int monthInt;
+        private final int yearInt;
         private long lastUpdated = System.currentTimeMillis();
         private final String monthName;
         private final List<String>[] tasks;

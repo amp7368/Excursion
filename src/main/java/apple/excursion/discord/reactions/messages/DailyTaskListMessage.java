@@ -20,7 +20,9 @@ public class DailyTaskListMessage implements ReactableMessage {
     private final Message message;
     Calendar calendar = Calendar.getInstance();
     private long lastUpdated = System.currentTimeMillis();
-    private List<Task> tasks = SheetsTasks.getTasks();
+    private final List<Task> tasks = SheetsTasks.getTasks();
+    private final int originalMonth = calendar.get(Calendar.MONTH);
+    private final int originalYear = calendar.get(Calendar.MONTH);
 
     public DailyTaskListMessage(MessageChannel channel) {
         message = channel.sendMessage(makeMessage()).complete();
@@ -141,14 +143,18 @@ public class DailyTaskListMessage implements ReactableMessage {
         switch (reactable) {
             case LEFT:
                 calendar.add(Calendar.WEEK_OF_YEAR, -1);
-                lastUpdated = System.currentTimeMillis();
                 message.editMessage(makeMessage()).queue();
+                lastUpdated = System.currentTimeMillis();
                 event.getReaction().removeReaction(user).queue();
                 break;
             case RIGHT:
                 calendar.add(Calendar.WEEK_OF_YEAR, 1);
+                if (originalMonth > calendar.get(Calendar.MONTH) || originalYear > calendar.get(Calendar.YEAR)) {
+                    calendar.add(Calendar.WEEK_OF_YEAR, -1);
+                } else {
+                    message.editMessage(makeMessage()).queue();
+                }
                 lastUpdated = System.currentTimeMillis();
-                message.editMessage(makeMessage()).queue();
                 event.getReaction().removeReaction(user).queue();
                 break;
             case TOP:
