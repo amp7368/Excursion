@@ -22,7 +22,6 @@ public class SubmissionData {
     private boolean isAccepted = false;
     private boolean isCompleted = false;
 
-    private String acceptor;
     private final Map<Long, Long> reviewerIdToMessageId = new HashMap<>();
     private final List<Message> reviewerMessages = new ArrayList<>();
     private final long epochTimeOfSubmission = Instant.now().getEpochSecond();
@@ -35,16 +34,19 @@ public class SubmissionData {
     private final long submitterId;
     private final List<Pair<Long, String>> allSubmitters;
     public final String submissionHistoryMessage;
+    private TaskSubmissionType taskSubmissionType;
 
     public SubmissionData(List<Message.Attachment> attachments, List<String> links,
-                          TaskSimple task, String submitter, long submitterId, List<Pair<Long, String>> otherSubmitters, List<PlayerData> playersData) {
+                          TaskSimple task, String submitter, long submitterId, List<Pair<Long, String>> otherSubmitters,
+                          List<PlayerData> playersData, TaskSubmissionType taskType) {
         this.attachmentsUrl = attachments.isEmpty() ? null : attachments.get(0).getUrl();
         this.links = links;
         this.task = task;
         this.submitter = submitter;
         this.submitterId = submitterId;
         this.allSubmitters = otherSubmitters;
-        submissionHistoryMessage = makeSubmissionHistoryMessage(playersData);
+        this.taskSubmissionType = taskType;
+        this.submissionHistoryMessage = makeSubmissionHistoryMessage(playersData);
     }
 
     private String makeSubmissionHistoryMessage(List<PlayerData> playersData) {
@@ -168,5 +170,15 @@ public class SubmissionData {
 
     public int getTaskScore() {
         return task.points;
+    }
+
+    public TaskSubmissionType getType() {
+        return taskSubmissionType;
+    }
+
+    public enum TaskSubmissionType {
+        DAILY,
+        NORMAL,
+        IDK
     }
 }

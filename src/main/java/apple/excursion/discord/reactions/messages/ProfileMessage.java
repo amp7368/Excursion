@@ -3,6 +3,7 @@ package apple.excursion.discord.reactions.messages;
 import apple.excursion.database.GetDB;
 import apple.excursion.database.objects.OldSubmission;
 import apple.excursion.database.objects.PlayerData;
+import apple.excursion.discord.DiscordBot;
 import apple.excursion.discord.data.AllProfiles;
 import apple.excursion.discord.data.Profile;
 import apple.excursion.discord.data.Task;
@@ -62,11 +63,13 @@ public class ProfileMessage implements ReactableMessage {
             }
         } else {
             profile = AllProfiles.getProfile(event.getAuthor().getIdLong(), event.getMember().getEffectiveName());
+            event.getMember().getRoles();
             if (profile == null) {
                 event.getChannel().sendMessage("There was an error making a new profile for you").queue();
                 return;
             }
         }
+
         guildProfile = AllProfiles.getLeaderboardOfGuilds().getGuildProfile(profile.getGuildTag());
         playerLeaderboardProfile = AllProfiles.getOverallLeaderboard().getPlayerProfile(profile.getId());
         for (String taskType : TaskSimple.TaskCategory.values())

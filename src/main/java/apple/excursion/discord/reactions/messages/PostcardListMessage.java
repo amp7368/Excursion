@@ -71,12 +71,12 @@ public class PostcardListMessage implements ReactableMessage {
         StringBuilder text = new StringBuilder();
         text.append("```glsl\n");
         text.append(String.format("%s List page (%d)\n", Pretty.upperCaseFirst(currentCategory.name()), page + 1));
-        text.append(String.format("%-23s| %-4s| %s\n", "Name", "EP", "Category"));
+        text.append(String.format("%-27s| %-4s| %s\n", "Name", "EP", "Category"));
         List<Task> tasks = getCurrentTasks();
         int upper = Math.min((page + 1) * ENTRIES_PER_PAGE, tasks.size());
         for (int i = page * ENTRIES_PER_PAGE, j = 0; i < upper; i++, j++) {
             Task task = tasks.get(i);
-            text.append(String.format("%c: %-20s| %-4s| %s\n", (char) (65 + j),
+            text.append(String.format("%c: %-24s| %-4s| %s\n", (char) (65 + j),
                     task.taskName,
                     task.ep,
                     Pretty.upperCaseFirst(task.category)

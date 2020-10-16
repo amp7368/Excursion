@@ -1,6 +1,7 @@
 package apple.excursion.discord.commands;
 
 import apple.excursion.discord.commands.admin.CommandAddReviewer;
+import apple.excursion.discord.commands.admin.CommandRemoveReviewer;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 import java.util.Collections;
@@ -13,7 +14,7 @@ public enum CommandsAdmin {
     ADD_REVIEWER(Collections.singletonList("add_reviewer"), "Adds a reviewer to the list of reviewers",
             "[@mention]", new CommandAddReviewer()),
     REMOVE_REVIEWER(Collections.singletonList("remove_reviewer"), "Removes a reviewer from the list of reviewers",
-            "[@mention]", new CommandAddReviewer());
+            "[@mention]", new CommandRemoveReviewer());
 
     private final List<String> commandNames;
     private final String helpMessage;

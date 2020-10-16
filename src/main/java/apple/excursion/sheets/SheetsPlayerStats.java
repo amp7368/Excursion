@@ -16,10 +16,10 @@ import static apple.excursion.sheets.SheetsConstants.*;
 import static apple.excursion.sheets.SheetsUtils.addA1Notation;
 
 public class SheetsPlayerStats {
-    private static final String MISSIONS_ROW_RANGE = "PlayerStats!E2:3";
+    private static final String MISSIONS_ROW_RANGE = "PlayerStats!F2:3";
     private static final String ID_COL_RANGE = "PlayerStats!A:A";
     private static final String PLAYER_STATS_SHEET = "PlayerStats";
-    private static final String BASE_PLAYER_STATS_RANGE = "E5";
+    private static final String BASE_PLAYER_STATS_RANGE = "F5";
     private static final String EVERYONE_RANGE = "PlayerStats";
     private static final int PLAYER_STATS_SHEET_ID = 0;
 
@@ -48,7 +48,7 @@ public class SheetsPlayerStats {
         return null;
     }
 
-    public synchronized static void submit(String questNameToAdd, long discordId, String discordName) throws IOException, NumberFormatException {
+    public synchronized static void submit(String questNameToAdd, long discordId, String discordName, int soulJuiceToAdd) throws IOException, NumberFormatException {
         Profile profile = AllProfiles.getProfile(discordId, discordName);
         if (profile == null) throw new IOException("Error making a new profile");
         int pointsToAdd = -1;
@@ -73,7 +73,7 @@ public class SheetsPlayerStats {
                     break;
                 }
             }
-            final String range = PLAYER_STATS_SHEET + "!" + addA1Notation(BASE_PLAYER_STATS_RANGE, col - 4, profile.getRow() - 4);
+            String range = PLAYER_STATS_SHEET + "!" + addA1Notation(BASE_PLAYER_STATS_RANGE, col - 4, profile.getRow() - 4);
 
             int pointsThere;
             List<List<Object>> pointsThereRaw = SHEETS_VALUES.get(SPREADSHEET_ID, range).execute().getValues();
@@ -87,7 +87,19 @@ public class SheetsPlayerStats {
                     new ValueRange().setRange(range)
                             .setValues(Collections.singletonList(Collections.singletonList(String.valueOf(pointsThere + pointsToAdd))))
             ).setValueInputOption("USER_ENTERED").execute();
-
+            if (soulJuiceToAdd != 0) {
+                range = PLAYER_STATS_SHEET + "!" + addA1Notation("A1", 2, profile.getRow());
+                pointsThereRaw = SHEETS_VALUES.get(SPREADSHEET_ID, range).execute().getValues();
+                if (pointsThereRaw == null) pointsThere = 0;
+                else if (pointsThereRaw.get(0) == null) pointsThere = 0;
+                else pointsThere = GetFromObject.getInt(pointsThereRaw.get(0).get(0));
+                if (GetFromObject.intFail(pointsThere))
+                    throw new NumberFormatException("Bad number in player's soulJuice value");
+                SHEETS_VALUES.update(SPREADSHEET_ID, range,
+                        new ValueRange().setRange(range)
+                                .setValues(Collections.singletonList(Collections.singletonList(String.valueOf(pointsThere + soulJuiceToAdd))))
+                ).setValueInputOption("USER_ENTERED").execute();
+            }
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }
@@ -131,7 +143,7 @@ public class SheetsPlayerStats {
         profileRow.add("");
         for (i = 3; i < lastCol; i++)
             profileRow.add("");
-        final String profileStart = addA1Notation("A1", 4, lastRow);
+        final String profileStart = addA1Notation("A1", 5, lastRow);
         final String profileEnd = addA1Notation("A1", lastCol, lastRow);
         profileRow.add(String.format("=COUNT(%s:%s)&\" done\"", profileStart, profileEnd));
         profileRow.add(String.format("=SUM(%s:%s)", profileStart, profileEnd));
@@ -195,7 +207,7 @@ public class SheetsPlayerStats {
             row = addProfile(id, playerName);
         }
         // row now refers to the row where the player is
-        String cell = addA1Notation("C1", 0, row);
+        String cell = addA1Notation("D1", 0, row);
         final String range = String.format("%s!%s:%s", PLAYER_STATS_SHEET, cell, addA1Notation(cell, 1, 0));
         ValueRange valueRange = new ValueRange().setRange(range).setValues(Collections.singletonList(Arrays.asList(guildName, guildTag)));
         try {

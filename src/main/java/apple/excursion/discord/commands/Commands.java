@@ -15,6 +15,7 @@ public enum Commands {
     LEADERBOARD_IN_GUILD(Arrays.asList("gleaderboard", "glb"), "Gives a leaderboard for a specific guild or the overall guild leaderboard", "[(optional) tag/name]", new CommandGuildLeaderboard()),
     PROFILE(Collections.singletonList("profile"), "Gives the profile of the person who entered the command or the profile of the player_name", "[player_name]", new CommandProfile()),
     POSTCARD(Collections.singletonList("postcard"), "Gives a list of postcards or searches for taskName", "[(optional) postcard name)]", new CommandPostcard()),
+    CALENDAR(Collections.singletonList("calendar"), "Gives a list of daily tasks", "", new CommandCalendar()),
     SUBMIT(Collections.singletonList("submit"), "Submits the attached evidence to be reviewed", "[url or attach image]", new CommandSubmit()),
     GUILD(Collections.singletonList("guild"), "Change your guild", "[guild tag]", new CommandGuild()),
     HELP(Collections.singletonList("help"), "Gives this help message", "", new CommandHelp());
