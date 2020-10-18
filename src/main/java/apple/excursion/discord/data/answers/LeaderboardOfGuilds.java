@@ -63,4 +63,18 @@ public class LeaderboardOfGuilds {
     public GuildLeaderboardEntry get(int i) {
         return leaderboard.get(i);
     }
+
+    public GuildLeaderboardEntry get(String tag, String name) {
+        for (GuildLeaderboardEntry guildLeaderboardEntry : leaderboard) {
+            if (guildLeaderboardEntry.guildTag.equals(tag)) {
+                return guildLeaderboardEntry;
+            }
+        }
+        for (GuildLeaderboardEntry guild : leaderboard) {
+            if (guild.guildName.equals(name)) {
+                return guild;
+            }
+        }
+        return null;
+    }
 }

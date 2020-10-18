@@ -1,9 +1,8 @@
 package apple.excursion.discord.reactions.messages;
 
-import apple.excursion.database.objects.GuildData;
 import apple.excursion.database.objects.OldSubmission;
 import apple.excursion.database.objects.PlayerData;
-import apple.excursion.discord.data.answers.GuildLeaderboardProfile;
+import apple.excursion.discord.data.answers.GuildLeaderboardEntry;
 import apple.excursion.discord.reactions.AllReactables;
 import apple.excursion.discord.reactions.ReactableMessage;
 import apple.excursion.utils.Pretty;
@@ -18,18 +17,18 @@ import java.util.List;
 
 public class GuildProfileMessage implements ReactableMessage {
     private static final int ENTRIES_PER_PAGE = 10;
-    private final GuildData matchedGuild;
+    private final GuildLeaderboardEntry matchedGuild;
     private final List<PlayerData> players;
-    private final GuildLeaderboardProfile guildProfile;
     private final Message message;
+    private final List<OldSubmission> submissions;
     private int page = 0;
     private long lastUpdated = System.currentTimeMillis();
 
-    public GuildProfileMessage(GuildData matchedGuild, List<PlayerData> players, GuildLeaderboardProfile guildProfile, MessageChannel channel) {
+    public GuildProfileMessage(List<OldSubmission> submissions, GuildLeaderboardEntry matchedGuild, List<PlayerData> players, MessageChannel channel) {
         this.matchedGuild = matchedGuild;
         this.players = players;
-        this.guildProfile = guildProfile;
-        players.sort((o1, o2) -> o2.score - o1.score);
+        this.submissions = submissions;
+        this.players.sort((o1, o2) -> o2.score - o1.score);
         this.message = channel.sendMessage(makeMessage()).complete();
         message.addReaction(AllReactables.Reactable.LEFT.getFirstEmoji()).queue();
         message.addReaction(AllReactables.Reactable.RIGHT.getFirstEmoji()).queue();
@@ -40,18 +39,17 @@ public class GuildProfileMessage implements ReactableMessage {
     private MessageEmbed makeMessage() {
 
 
-
         EmbedBuilder embed = new EmbedBuilder();
-        embed.setTitle(String.format("%s [%s]", matchedGuild.name, matchedGuild.tag));
+        embed.setTitle(String.format("%s [%s]", matchedGuild.guildName, matchedGuild.guildTag));
         StringBuilder header = new StringBuilder();
-        header.append(String.format("Guild rank : #%d\n", guildProfile.getRank()));
-        header.append(Pretty.getProgressBar(guildProfile.getProgress()));
+        header.append(String.format("Guild rank : #%d\n", matchedGuild.rank));
+        header.append(Pretty.getProgressBar(matchedGuild.getProgress()));
         header.append("\n\n");
-        header.append(String.format("Guild EP: %d EP", guildProfile.getTotalEp()));
+        header.append(String.format("Guild EP: %d EP", matchedGuild.score));
 
         StringBuilder body = new StringBuilder();
         body.append("```glsl\n");
-        body.append(String.format("%s [%s] Leaderboards Page (%d)\n", matchedGuild.name, matchedGuild.tag, page));
+        body.append(String.format("%s [%s] Leaderboards Page (%d)\n", matchedGuild.guildName, matchedGuild.guildTag, page));
         body.append(getDash());
         body.append(String.format("|%3s| %-31s| %-8s|\n", "", "Name", "Total EP"));
         int upper = Math.min(((page + 1) * ENTRIES_PER_PAGE), players.size());
@@ -66,11 +64,11 @@ public class GuildProfileMessage implements ReactableMessage {
         body.append("```");
 
         StringBuilder footer = new StringBuilder();
-        if (matchedGuild.submissions.isEmpty()) {
+        if (submissions.isEmpty()) {
             footer.append("**There is no submission history**\n");
         } else {
             footer.append("**Submission History:** \n");
-            for (OldSubmission submission : matchedGuild.submissions) {
+            for (OldSubmission submission : submissions) {
                 footer.append(submission.makeSubmissionHistoryMessage());
                 footer.append('\n');
             }

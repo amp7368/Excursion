@@ -1,11 +1,12 @@
 package apple.excursion.database;
 
-import apple.excursion.database.objects.GuildData;
+import apple.excursion.database.objects.GuildHeader;
 import apple.excursion.database.objects.OldSubmission;
 import apple.excursion.database.objects.PlayerData;
 import apple.excursion.discord.data.answers.GuildLeaderboardEntry;
 import apple.excursion.discord.data.answers.LeaderboardOfGuilds;
 import apple.excursion.utils.Pair;
+import com.google.api.client.util.ArrayMap;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -58,7 +59,7 @@ public class GetDB {
         Statement statement = VerifyDB.database.createStatement();
         ResultSet response = statement.executeQuery(sql);
         List<GuildLeaderboardEntry> guilds = new ArrayList<>();
-        if(!response.isClosed())
+        if (!response.isClosed())
             response.next();
         while (!response.isClosed()) {
             int guildScore = response.getInt(1);
@@ -99,5 +100,37 @@ public class GetDB {
         response.close();
         statement.close();
         return players;
+    }
+
+    public static List<GuildHeader> getGuildNameList() throws SQLException {
+        String sql = GetSql.getSqlGetGuildNames();
+        Statement statement = VerifyDB.database.createStatement();
+        ResultSet response = statement.executeQuery(sql);
+        List<GuildHeader> guilds = new ArrayList<>();
+        if (!response.isClosed())
+            response.next();
+        while (!response.isClosed()) {
+            String guildTag = response.getString(1);
+            String guildName = response.getString(2);
+            guilds.add(new GuildHeader(guildTag, guildName));
+            response.next();
+        }
+        response.close();
+        statement.close();
+        return guilds;
+    }
+
+    public static List<OldSubmission> getGuildSubmissions(String guildTag) throws SQLException {
+        List<OldSubmission> submissions= new ArrayList<>();
+        String sql = GetSql.getSqlGetGuildSubmissionHistory(guildTag);
+        Statement statement = VerifyDB.database.createStatement();
+        ResultSet response = statement.executeQuery(sql);
+        while (response.next()) {
+            submissions.add(new OldSubmission(response));
+        }
+
+        statement.close();
+        response.close();
+        return submissions;
     }
 }

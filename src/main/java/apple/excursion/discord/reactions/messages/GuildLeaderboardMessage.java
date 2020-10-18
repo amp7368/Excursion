@@ -1,8 +1,6 @@
 package apple.excursion.discord.reactions.messages;
 
 import apple.excursion.database.GetDB;
-import apple.excursion.database.objects.GuildData;
-import apple.excursion.discord.data.AllProfiles;
 import apple.excursion.discord.data.answers.LeaderboardOfGuilds;
 import apple.excursion.discord.data.answers.GuildLeaderboardEntry;
 import apple.excursion.discord.reactions.AllReactables;
@@ -13,7 +11,6 @@ import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 
 import java.sql.SQLException;
-import java.util.List;
 
 
 public class GuildLeaderboardMessage implements ReactableMessage {

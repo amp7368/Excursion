@@ -144,7 +144,7 @@ class GetSql {
                 "                             ON submissions_link.submission_id = submissions.id\n" +
                 "                  INNER JOIN guilds\n" +
                 "                             ON guilds.guild_tag = submissions_link.guild_tag\n" +
-                "         GROUP BY players.player_uid\n" +
+                "         GROUP BY guilds.guild_tag\n" +
                 "     ) as player_score\n" +
                 "GROUP BY player_score.guild_tag;";
     }
@@ -160,7 +160,7 @@ class GetSql {
                 "      players.player_name,\n" +
                 "      players.guild_tag,\n" +
                 "      players.guild_name\n" +
-                "FROM players;",id);
+                "FROM players;", id);
     }
 
 
@@ -237,5 +237,40 @@ class GetSql {
     @NotNull
     public static String getSqlInsertSubmissionLink(int submissionId, long playerId, String guildTag) {
         return String.format("INSERT INTO submissions_link VALUES (%d,%d,'%s')", submissionId, playerId, guildTag);
+    }
+
+    @NotNull
+    public static String getSqlGetGuildNames() {
+        return "SELECT guild_tag, guild_name FROM guilds;";
+    }
+
+    @NotNull
+    public static String getSqlGetGuildSubmissionHistory(String guildTag) {
+        return "SELECT group_concat(players.player_name),\n" +
+                "       data.submitter_name,\n" +
+                "       data.date_submitted,\n" +
+                "       data.task_name,\n" +
+                "       data.links,\n" +
+                "       data.submission_type,\n" +
+                "       data.score\n" +
+                "FROM (\n" +
+                "         SELECT s.*, players.player_name as submitter_name\n" +
+                "         FROM (\n" +
+                "                  SELECT submissions.*\n" +
+                "                  FROM submissions_link\n" +
+                "                           INNER JOIN submissions\n" +
+                "                                      ON submissions_link.submission_id = submissions.id\n" +
+                "                  WHERE submissions_link.guild_tag = '" + guildTag + "'\n" +
+                "                  ORDER BY submissions.date_submitted DESC\n" +
+                "                  LIMIT 5\n" +
+                "              ) as s\n" +
+                "                  INNER JOIN players\n" +
+                "                             ON s.submitter = players.player_uid\n" +
+                "     ) AS data\n" +
+                "         INNER JOIN submissions_link\n" +
+                "                    ON submissions_link.submission_id = data.id\n" +
+                "         INNER JOIN players\n" +
+                "                    ON submissions_link.player_id = players.player_uid\n" +
+                "GROUP BY data.id;";
     }
 }

@@ -1,8 +1,6 @@
 package apple.excursion.discord.commands.general;
 
-import apple.excursion.database.GetDB;
 import apple.excursion.database.UpdateDB;
-import apple.excursion.database.objects.GuildData;
 import apple.excursion.discord.commands.Commands;
 import apple.excursion.discord.commands.DoCommand;
 import apple.excursion.discord.reactions.messages.CreateGuildMessage;
@@ -24,16 +22,16 @@ public class CommandGuild implements DoCommand {
             event.getChannel().sendMessage(Commands.GUILD.getUsageMessage()).queue();
             return;
         }
-        List<GuildData> guilds=null;
+        List<GuildSubmissions> guilds=null;
 //        try {
 //            guilds = GetDB.getGuildList(); //todo change this to only get guildNames
 //        } catch (SQLException throwables) {
 //            throwables.printStackTrace();
 //            return;
 //        }
-        GuildData match = null;
+        GuildSubmissions match = null;
         final String guildTag = contentSplit[1];
-        for (GuildData guild : guilds) {
+        for (GuildSubmissions guild : guilds) {
             if (guild.tag.equals(guildTag)) {
                 match = guild;
                 break;
