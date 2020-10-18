@@ -1,6 +1,6 @@
 package apple.excursion.discord.reactions.messages;
 
-import apple.excursion.database.InsertSubmissionDB;
+import apple.excursion.database.InsertDB;
 import apple.excursion.discord.DiscordBot;
 import apple.excursion.discord.data.answers.SubmissionData;
 import apple.excursion.discord.reactions.AllReactables;
@@ -104,7 +104,7 @@ public class SubmissionMessage implements ReactableMessage {
                 }
             }
         }
-        InsertSubmissionDB.insertSubmission(data);
+        InsertDB.insertSubmission(data);
     }
 
     public void completeSubmit(boolean isAccepted, User reviewer) {

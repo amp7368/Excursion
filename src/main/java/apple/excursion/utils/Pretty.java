@@ -20,10 +20,10 @@ public class Pretty {
         return String.join(" ", split);
     }
 
-    public static String date(Long epochSeconds) {
+    public static String date(Long epochMilliseconds) {
         SimpleDateFormat formatter = new SimpleDateFormat();
                 formatter.applyPattern("h:mm a 'EST' 'on' EEE, MMMMMMMMM d");
-        return formatter.format(new Date(epochSeconds*1000));
+        return formatter.format(new Date(epochMilliseconds));
     }
 
     public static String getProgressBar(double percentage) {
