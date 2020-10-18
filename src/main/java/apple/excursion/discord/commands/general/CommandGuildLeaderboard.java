@@ -8,8 +8,6 @@ import apple.excursion.discord.data.AllProfiles;
 import apple.excursion.discord.data.answers.GuildLeaderboardProfile;
 import apple.excursion.discord.reactions.messages.GuildLeaderboardMessage;
 import apple.excursion.discord.reactions.messages.GuildProfileMessage;
-import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 import java.sql.SQLException;
@@ -24,20 +22,25 @@ public class CommandGuildLeaderboard implements DoCommand {
         List<String> contentSplit = new ArrayList<>(Arrays.asList(content.split(" ")));
         if (contentSplit.size() < 2) {
             AllProfiles.update();
-            new GuildLeaderboardMessage(event.getChannel());
+            try {
+                new GuildLeaderboardMessage(event.getChannel());
+            } catch (SQLException throwables) {
+                //todo deal with error
+                throwables.printStackTrace();
+            }
             return;
         }
         contentSplit.remove(0);
         String inputAsGuildTag = contentSplit.get(0);
         String inputAsGuildName = String.join(" ", contentSplit);
 
-        List<GuildData> guilds;
-        try {
-            guilds = GetDB.getGuildList();
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-            return;
-        }
+        List<GuildData> guilds=null;
+//        try {
+//            guilds = GetDB.getGuildList();
+//        } catch (SQLException throwables) {
+//            throwables.printStackTrace();
+//            return;
+//        }
         GuildData matchedGuild = null;
         for (GuildData guild : guilds) {
             if (guild.tag.equals(inputAsGuildTag)) {
@@ -66,7 +69,7 @@ public class CommandGuildLeaderboard implements DoCommand {
             return;
         }
         GuildLeaderboardProfile guildProfile = AllProfiles.getLeaderboardOfGuilds().getGuildProfile(matchedGuild.tag);
-        new GuildProfileMessage(matchedGuild,playersInGuild,guildProfile,event.getChannel());
+        new GuildProfileMessage(matchedGuild, playersInGuild, guildProfile, event.getChannel());
 
     }
 }

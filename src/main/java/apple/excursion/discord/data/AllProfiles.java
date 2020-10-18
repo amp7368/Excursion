@@ -131,7 +131,7 @@ public class AllProfiles {
 
     public static LeaderboardOfGuilds getLeaderboardOfGuilds() {
         List<Profile> leaderboard = getCopy();
-        return new LeaderboardOfGuilds(leaderboard);
+        return new LeaderboardOfGuilds(null);
     }
 
     @NotNull

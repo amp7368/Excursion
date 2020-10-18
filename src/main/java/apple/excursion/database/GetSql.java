@@ -134,19 +134,19 @@ class GetSql {
 
     @NotNull
     public static String getSqlGetGuilds() {
-        return "SELECT sum(player_score.score) AS guild_score, player_score.tag, player_score.name, max(player_score.score)\n" +
+        return "SELECT sum(player_score.score) AS guild_score, player_score.guild_tag, player_score.guild_name, player_score.player_name, max(player_score.score)\n" +
                 "FROM (\n" +
-                "         SELECT players.player_name, sum(submissions.score) as score, guilds.tag\n" +
+                "         SELECT players.player_name, sum(submissions.score) as score, guilds.guild_tag, guilds.guild_name\n" +
                 "         FROM players\n" +
                 "                  INNER JOIN submissions_link\n" +
                 "                             ON players.player_uid = submissions_link.player_id\n" +
                 "                  INNER JOIN submissions\n" +
                 "                             ON submissions_link.submission_id = submissions.id\n" +
                 "                  INNER JOIN guilds\n" +
-                "                             ON guilds.tag = submissions_link.guild_tag\n" +
+                "                             ON guilds.guild_tag = submissions_link.guild_tag\n" +
                 "         GROUP BY players.player_uid\n" +
                 "     ) as player_score\n" +
-                "GROUP BY player_score.tag;";
+                "GROUP BY player_score.guild_tag;";
     }
 
     @NotNull
@@ -166,7 +166,7 @@ class GetSql {
 
     @NotNull
     public static String getSqlGetPlayersInGuild(String tag) {
-        return String.format("SELECT data.name,guilds.tag,guilds.name,data.score\n" +
+        return String.format("SELECT data.player_name,guilds.guild_tag,guilds.guild_name,data.score\n" +
                 "FROM (\n" +
                 "         SELECT players.player_name, players.guild_tag, sum(submissions.score) as score\n" +
                 "         FROM players\n" +
@@ -178,7 +178,7 @@ class GetSql {
                 "         GROUP BY players.player_uid\n" +
                 "     ) AS data\n" +
                 "INNER JOIN guilds\n" +
-                "ON guilds.tag = data.guild_tag\n" +
+                "ON guilds.guild_tag = data.guild_tag\n" +
                 "ORDER BY data.score DESC;", tag);
     }
 

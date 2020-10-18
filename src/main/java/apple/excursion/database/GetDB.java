@@ -3,6 +3,8 @@ package apple.excursion.database;
 import apple.excursion.database.objects.GuildData;
 import apple.excursion.database.objects.OldSubmission;
 import apple.excursion.database.objects.PlayerData;
+import apple.excursion.discord.data.answers.GuildLeaderboardEntry;
+import apple.excursion.discord.data.answers.LeaderboardOfGuilds;
 import apple.excursion.utils.Pair;
 
 import java.sql.ResultSet;
@@ -51,23 +53,26 @@ public class GetDB {
     }
 
 
-    public static List<GuildData> getGuildList() throws SQLException {
+    public static LeaderboardOfGuilds getGuildList() throws SQLException {
         String sql = GetSql.getSqlGetGuilds();
         Statement statement = VerifyDB.database.createStatement();
         ResultSet response = statement.executeQuery(sql);
-        List<GuildData> guildData = new ArrayList<>();
+        List<GuildLeaderboardEntry> guilds = new ArrayList<>();
+        if(!response.isClosed())
+            response.next();
         while (!response.isClosed()) {
-            String guildTag = response.getString(1);
-            String guildName = response.getString(2);
-            int guildScore = response.getInt(3);
+            int guildScore = response.getInt(1);
+            String guildTag = response.getString(2);
+            String guildName = response.getString(3);
             String playerName = response.getString(4);
             int playerScore = response.getInt(5);
-            guildData.add(new GuildData(guildTag, guildName, guildScore, playerName, playerScore));
+            guilds.add(new GuildLeaderboardEntry(guildTag, guildName, guildScore, playerName, playerScore));
             response.next();
         }
         response.close();
         statement.close();
-        return guildData;
+
+        return new LeaderboardOfGuilds(guilds);
     }
 
 

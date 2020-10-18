@@ -10,6 +10,8 @@ public class GuildData {
     public String topPlayer;
     public int playerScore;
     public final List<OldSubmission> submissions;
+    public int rank;
+    public int topGuildScore;
 
     public GuildData(String guildTag, String guildName, int guildScore, String playerName, int playerScore) {
         this.tag = guildTag;
@@ -17,7 +19,7 @@ public class GuildData {
         this.score = guildScore;
         this.topPlayer = playerName;
         this.playerScore = playerScore;
-        submissions = new ArrayList<>();
+        this.submissions = new ArrayList<>();
     }
 
     public GuildData(String tag, String name, int score, String topPlayer, int playerScore, List<OldSubmission> submissions) {

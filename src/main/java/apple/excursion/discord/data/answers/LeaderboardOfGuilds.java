@@ -1,36 +1,40 @@
 package apple.excursion.discord.data.answers;
 
-import apple.excursion.discord.data.Profile;
-
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class LeaderboardOfGuilds {
-    public List<GuildLeaderboardEntry> leaderboard;
+    private List<GuildLeaderboardEntry> leaderboard;
     private GuildLeaderboardEntry noGuildsEntry;
     private long totalEp;
-    private long topEp = -1;
 
-    public LeaderboardOfGuilds(List<Profile> profiles) {
-        Map<String, GuildLeaderboardEntry> leaderboard = new HashMap<>();
-        for (Profile profile : profiles) {
-            if (leaderboard.containsKey(profile.getGuild())) {
-                leaderboard.get(profile.getGuild()).updateTop(profile);
-            } else {
-                leaderboard.put(profile.getGuild(), new GuildLeaderboardEntry(profile.getGuild(), profile.getGuildTag(), profile.getName(), profile.getTotalEp()));
+    public LeaderboardOfGuilds(List<GuildLeaderboardEntry> guilds) {
+        this.leaderboard = guilds;
+        Iterator<GuildLeaderboardEntry> iterator = leaderboard.iterator();
+        while (iterator.hasNext()) {
+            GuildLeaderboardEntry guild = iterator.next();
+            if (guild.isDefault()) {
+                noGuildsEntry = guild;
+                iterator.remove();
+                break;
             }
         }
-        noGuildsEntry = leaderboard.remove("");
-        this.leaderboard = new ArrayList<>(leaderboard.values());
-        for (GuildLeaderboardEntry entry : this.leaderboard) {
-            totalEp += entry.points;
-            if (entry.points > topEp) topEp = entry.points;
+        int topScore;
+        if (leaderboard.isEmpty()) {
+            topScore = 0;
+        } else {
+            leaderboard.sort((o1, o2) -> o2.score - o1.score);
+            topScore = guilds.get(0).score;
         }
-        totalEp += noGuildsEntry.points;
-        this.leaderboard.sort((o1, o2) -> (int) (o2.points - o1.points));
+        int totalEp = 0;
+        final int size = leaderboard.size();
+        for (int i = 0; i < size; i++) {
+            GuildLeaderboardEntry guild = leaderboard.get(0);
+            guild.rank = i + 1;
+            guild.topGuildScore = topScore;
+            totalEp += guild.score;
+        }
+        this.totalEp = totalEp;
     }
 
     public long getTotalEp() {
@@ -38,7 +42,7 @@ public class LeaderboardOfGuilds {
     }
 
     public long getNoGuildsEp() {
-        return noGuildsEntry.points;
+        return noGuildsEntry.score;
     }
 
     @Nullable
@@ -50,5 +54,13 @@ public class LeaderboardOfGuilds {
             rank++;
         }
         return null;
+    }
+
+    public int size() {
+        return leaderboard.size();
+    }
+
+    public GuildLeaderboardEntry get(int i) {
+        return leaderboard.get(i);
     }
 }

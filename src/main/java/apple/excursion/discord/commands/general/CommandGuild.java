@@ -24,13 +24,13 @@ public class CommandGuild implements DoCommand {
             event.getChannel().sendMessage(Commands.GUILD.getUsageMessage()).queue();
             return;
         }
-        List<GuildData> guilds;
-        try {
-            guilds = GetDB.getGuildList();
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-            return;
-        }
+        List<GuildData> guilds=null;
+//        try {
+//            guilds = GetDB.getGuildList(); //todo change this to only get guildNames
+//        } catch (SQLException throwables) {
+//            throwables.printStackTrace();
+//            return;
+//        }
         GuildData match = null;
         final String guildTag = contentSplit[1];
         for (GuildData guild : guilds) {
