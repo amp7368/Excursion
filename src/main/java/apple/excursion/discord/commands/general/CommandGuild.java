@@ -2,7 +2,7 @@ package apple.excursion.discord.commands.general;
 
 import apple.excursion.database.GetDB;
 import apple.excursion.database.UpdateDB;
-import apple.excursion.database.objects.GuildHeader;
+import apple.excursion.database.objects.guild.GuildHeader;
 import apple.excursion.discord.commands.Commands;
 import apple.excursion.discord.commands.DoCommand;
 import apple.excursion.discord.reactions.messages.CreateGuildMessage;

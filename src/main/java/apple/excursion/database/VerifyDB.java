@@ -25,14 +25,15 @@ public class VerifyDB {
             + "	submitter BIGINT NOT NULL,"
             + "	submission_type TEXT NOT NULL,"
             + " score INTEGER NOT NULL, "
-            + " FOREIGN KEY (submitter) REFERENCES players (id)"
+            + " FOREIGN KEY (submitter) REFERENCES players (player_uid)"
             + ");";
     public static final String BUILD_TABLE_SQL_PLAYERS = "CREATE TABLE IF NOT EXISTS players ("
             + "	player_uid TEXT PRIMARY KEY NOT NULL UNIQUE,"
             + "	player_name TEXT NOT NULL,"
             + "	guild_name TEXT NOT NULL DEFAULT '" + DEFAULT_GUILD_NAME + "',"
             + "	guild_tag TEXT NOT NULL DEFAULT '" + DEFAULT_GUILD_TAG + "',"
-            + " FOREIGN KEY (guild_tag) REFERENCES guilds (tag)"
+            + "	soul_juice INTEGER NOT NULL DEFAULT 0, "
+            + " FOREIGN KEY (guild_tag) REFERENCES guilds (guild_tag)"
             + ");";
     public static final String BUILD_TABLE_SQL_GUILDS = "CREATE TABLE IF NOT EXISTS guilds ("
             + "	guild_tag TEXT NOT NULL PRIMARY KEY UNIQUE,"

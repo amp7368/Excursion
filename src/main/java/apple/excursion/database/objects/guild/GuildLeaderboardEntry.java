@@ -1,4 +1,4 @@
-package apple.excursion.discord.data.answers;
+package apple.excursion.database.objects.guild;
 
 import apple.excursion.database.VerifyDB;
 

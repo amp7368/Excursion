@@ -1,6 +1,6 @@
 package apple.excursion.discord.data.answers;
 
-import apple.excursion.database.objects.PlayerData;
+import apple.excursion.database.objects.player.PlayerData;
 import apple.excursion.discord.DiscordBot;
 import apple.excursion.discord.data.TaskSimple;
 import apple.excursion.discord.reactions.AllReactables;

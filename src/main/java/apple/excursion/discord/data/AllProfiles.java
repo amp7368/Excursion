@@ -1,7 +1,7 @@
 package apple.excursion.discord.data;
 
-import apple.excursion.discord.data.answers.LeaderboardOfGuilds;
-import apple.excursion.discord.data.answers.OverallLeaderboard;
+import apple.excursion.database.objects.guild.LeaderboardOfGuilds;
+import apple.excursion.database.objects.player.PlayerLeaderboard;
 import apple.excursion.sheets.SheetsPlayerStats;
 import apple.excursion.utils.GetFromObject;
 import apple.excursion.utils.Pair;
@@ -123,10 +123,10 @@ public class AllProfiles {
         }
     }
 
-    public static OverallLeaderboard getOverallLeaderboard() {
+    public static PlayerLeaderboard getOverallLeaderboard() {
         List<Profile> leaderboard = getCopy();
         leaderboard.sort((o1, o2) -> o2.getTotalEp() - o1.getTotalEp());
-        return new OverallLeaderboard(leaderboard);
+        return null;
     }
 
     public static LeaderboardOfGuilds getLeaderboardOfGuilds() {

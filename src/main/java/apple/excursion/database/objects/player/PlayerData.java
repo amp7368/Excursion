@@ -1,4 +1,6 @@
-package apple.excursion.database.objects;
+package apple.excursion.database.objects.player;
+
+import apple.excursion.database.objects.OldSubmission;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,12 +12,14 @@ public class PlayerData {
     private final String guildTag;
     public final List<OldSubmission> submissions;
     public final int score;
+    private final int soulJuice;
 
-    public PlayerData(String playerName, String guildName, String guildTag, List<OldSubmission> submissions, int score) {
+    public PlayerData(String playerName, String guildName, String guildTag, List<OldSubmission> submissions, int score,int soulJuice) {
         this.name = playerName;
         this.guildName = guildName;
         this.guildTag = guildTag;
         this.submissions = submissions;
+        this.soulJuice = soulJuice;
         if (submissions != null)
             this.submissions.sort((o1, o2) -> (int) (o2.dateSubmitted / 1000L - o1.dateSubmitted / 1000L));
         this.score = score;

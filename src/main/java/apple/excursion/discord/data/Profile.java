@@ -14,11 +14,11 @@ public class Profile {
     private int totalEp = 0;
     private int soulJuice = 0;
     private long discordId;
-    private int row;
     private String name;
     private String guild;
     private String guildTag;
     private boolean complete = false;
+    private int row;
 
     public Profile(Iterator<Object> profileRow, int row) {
         this.row = row;

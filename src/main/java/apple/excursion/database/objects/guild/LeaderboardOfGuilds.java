@@ -1,6 +1,5 @@
-package apple.excursion.discord.data.answers;
+package apple.excursion.database.objects.guild;
 
-import javax.annotation.Nullable;
 import java.util.*;
 
 public class LeaderboardOfGuilds {
@@ -43,17 +42,6 @@ public class LeaderboardOfGuilds {
 
     public long getNoGuildsEp() {
         return noGuildsEntry.score;
-    }
-
-    @Nullable
-    public GuildLeaderboardProfile getGuildProfile(String guildTag) {
-        int rank = 1;
-        for (GuildLeaderboardEntry entry : leaderboard) {
-            if (entry.guildTag.equals(guildTag))
-                return new GuildLeaderboardProfile(entry, totalEp, rank);
-            rank++;
-        }
-        return null;
     }
 
     public int size() {

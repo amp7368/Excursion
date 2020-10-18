@@ -2,13 +2,13 @@ package apple.excursion.discord.reactions.messages;
 
 import apple.excursion.database.GetDB;
 import apple.excursion.database.objects.OldSubmission;
-import apple.excursion.database.objects.PlayerData;
-import apple.excursion.discord.DiscordBot;
+import apple.excursion.database.objects.player.PlayerData;
+import apple.excursion.discord.commands.Commands;
 import apple.excursion.discord.data.AllProfiles;
 import apple.excursion.discord.data.Profile;
 import apple.excursion.discord.data.Task;
 import apple.excursion.discord.data.TaskSimple;
-import apple.excursion.discord.data.answers.GuildLeaderboardProfile;
+import apple.excursion.database.objects.guild.GuildLeaderboardEntry;
 import apple.excursion.discord.data.answers.PlayerLeaderboardProfile;
 import apple.excursion.discord.reactions.AllReactables;
 import apple.excursion.discord.reactions.ReactableMessage;
@@ -36,54 +36,60 @@ public class ProfileMessage implements ReactableMessage {
     private static final int SUBMISSION_HISTORY_SIZE = 5;
     private Message message;
     private Profile profile;
-    private GuildLeaderboardProfile guildProfile;
+    private GuildLeaderboardEntry guild;
     private PlayerLeaderboardProfile playerLeaderboardProfile;
     private final Map<String, List<TaskSimple>> topTasks = new HashMap<>();
     private long lastUpdated = System.currentTimeMillis();
     private final List<Task> tasks = SheetsTasks.getTasks();
 
     public ProfileMessage(MessageReceivedEvent event) {
-        final String[] eventContentSplitOnce = event.getMessage().getContentStripped().split(" ", 2);
-        if (eventContentSplitOnce.length > 1) {
-            final String nameToGet = eventContentSplitOnce[1];
-            List<Profile> profilesWithName = AllProfiles.getProfile(nameToGet);
-            final int profilesWithNameLength = profilesWithName.size();
-            if (profilesWithNameLength == 0) {
-                // quit with an error message
-                event.getChannel().sendMessage(String.format("Nobody's name contains '%s'.", nameToGet)).queue();
-                return;
-            } else if (profilesWithNameLength == 1) {
-                // we found the person
-                profile = profilesWithName.get(0);
-            } else {
-                // ask the user to narrow their search
-                //todo what if multiple ppl have the same name
-                event.getChannel().sendMessage(String.format("There are %d people that have '%s' in their name.", profilesWithNameLength, nameToGet)).queue();
-                return;
-            }
-        } else {
-            profile = AllProfiles.getProfile(event.getAuthor().getIdLong(), event.getMember().getEffectiveName());
-            event.getMember().getRoles();
-            if (profile == null) {
-                event.getChannel().sendMessage("There was an error making a new profile for you").queue();
-                return;
-            }
-        }
-
-        guildProfile = AllProfiles.getLeaderboardOfGuilds().getGuildProfile(profile.getGuildTag());
-        playerLeaderboardProfile = AllProfiles.getOverallLeaderboard().getPlayerProfile(profile.getId());
-        for (String taskType : TaskSimple.TaskCategory.values())
-            topTasks.put(taskType, playerLeaderboardProfile.getTopTasks(taskType));
-        message = event.getChannel().sendMessage(makeMessage()).complete();
-        message.addReaction(AllReactables.Reactable.TOP.getFirstEmoji()).queue();
-        int i = 0;
-        for (List<TaskSimple> tasks : topTasks.values()) {
-            final int size = tasks.size();
-            for (int j = 0; j < size; j++) {
-                message.addReaction(AllReactables.emojiAlphabet.get(i++)).queue();
-            }
-        }
-        AllReactables.add(this);
+//        final String[] eventContentSplitOnce = event.getMessage().getContentStripped().split(" ", 2);
+//        if (eventContentSplitOnce.length > 1) {
+//            final String nameToGet = eventContentSplitOnce[1];
+//            List<Profile> profilesWithName = AllProfiles.getProfile(nameToGet);
+//            final int profilesWithNameLength = profilesWithName.size();
+//            if (profilesWithNameLength == 0) {
+//                // quit with an error message
+//                event.getChannel().sendMessage(String.format("Nobody's name contains '%s'.", nameToGet)).queue();
+//                return;
+//            } else if (profilesWithNameLength == 1) {
+//                // we found the person
+//                profile = profilesWithName.get(0);
+//            } else {
+//                // ask the user to narrow their search
+//                //todo what if multiple ppl have the same name
+//                event.getChannel().sendMessage(String.format("There are %d people that have '%s' in their name.", profilesWithNameLength, nameToGet)).queue();
+//                return;
+//            }
+//        } else {
+//            profile = AllProfiles.getProfile(event.getAuthor().getIdLong(), event.getMember().getEffectiveName());
+//            event.getMember().getRoles();
+//            if (profile == null) {
+//                event.getChannel().sendMessage("There was an error making a new profile for you").queue();
+//                return;
+//            }
+//        }
+//
+//        try {
+//            this.guild = GetDB.getGuildList().get(profile.getGuildTag(), profile.getName());
+//        } catch (SQLException throwables) {
+//            throwables.printStackTrace(); //todo
+//        }
+//
+//
+//        playerLeaderboardProfile = AllProfiles.getOverallLeaderboard().getPlayerProfile(profile.getId());
+//        for (String taskType : TaskSimple.TaskCategory.values())
+//            topTasks.put(taskType, playerLeaderboardProfile.getTopTasks(taskType));
+//        message = event.getChannel().sendMessage(makeMessage()).complete();
+//        message.addReaction(AllReactables.Reactable.TOP.getFirstEmoji()).queue();
+//        int i = 0;
+//        for (List<TaskSimple> tasks : topTasks.values()) {
+//            final int size = tasks.size();
+//            for (int j = 0; j < size; j++) {
+//                message.addReaction(AllReactables.emojiAlphabet.get(i++)).queue();
+//            }
+//        }
+//        AllReactables.add(this);
     }
 
     private MessageEmbed makeMessage() {
@@ -92,15 +98,15 @@ public class ProfileMessage implements ReactableMessage {
         StringBuilder description = new StringBuilder();
 
         // put guild info
-        if (guildProfile == null) {
-            description.append(String.format("Not in a guild. To join a guild use %s", "no implemented"));
+        if (guild == null) {
+            description.append(String.format("Not in a guild. To join a guild use %s", Commands.GUILD.getUsageMessage()));
         } else {
             description.append(String.format("Member of %s [%s]\n", profile.getGuild(), profile.getGuildTag()));
             description.append('\n');
-            description.append(String.format("Guild rank: #%d\n", guildProfile.getRank()));
-            description.append(Pretty.getProgressBar(guildProfile.getProgress()));
+            description.append(String.format("Guild rank: #%d\n", guild.rank));
+            description.append(Pretty.getProgressBar(guild.getProgress()));
             description.append('\n');
-            description.append(String.format("Guild EP: %d EP", guildProfile.getTotalEp()));
+            description.append(String.format("Guild EP: %d EP", guild.score));
             description.append('\n');
         }
         description.append('\n');

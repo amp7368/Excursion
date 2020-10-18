@@ -1,8 +1,8 @@
 package apple.excursion.discord.reactions.messages;
 
 import apple.excursion.database.GetDB;
-import apple.excursion.discord.data.answers.LeaderboardOfGuilds;
-import apple.excursion.discord.data.answers.GuildLeaderboardEntry;
+import apple.excursion.database.objects.guild.LeaderboardOfGuilds;
+import apple.excursion.database.objects.guild.GuildLeaderboardEntry;
 import apple.excursion.discord.reactions.AllReactables;
 import apple.excursion.discord.reactions.ReactableMessage;
 import net.dv8tion.jda.api.entities.Message;

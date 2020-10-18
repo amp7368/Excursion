@@ -1,4 +1,4 @@
-package apple.excursion.database.objects;
+package apple.excursion.database.objects.guild;
 
 public class GuildHeader {
     public final String tag;

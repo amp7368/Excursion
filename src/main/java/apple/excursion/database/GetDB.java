@@ -1,12 +1,13 @@
 package apple.excursion.database;
 
-import apple.excursion.database.objects.GuildHeader;
+import apple.excursion.database.objects.guild.GuildHeader;
 import apple.excursion.database.objects.OldSubmission;
-import apple.excursion.database.objects.PlayerData;
-import apple.excursion.discord.data.answers.GuildLeaderboardEntry;
-import apple.excursion.discord.data.answers.LeaderboardOfGuilds;
+import apple.excursion.database.objects.player.PlayerData;
+import apple.excursion.database.objects.guild.GuildLeaderboardEntry;
+import apple.excursion.database.objects.guild.LeaderboardOfGuilds;
+import apple.excursion.database.objects.player.PlayerLeaderboard;
+import apple.excursion.database.objects.player.PlayerLeaderboardEntry;
 import apple.excursion.utils.Pair;
-import com.google.api.client.util.ArrayMap;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -17,6 +18,7 @@ import java.util.List;
 public class GetDB {
     public static PlayerData getPlayerData(Pair<Long, String> id) throws SQLException {
         String sql = GetSql.getSqlGetPlayerAll(id.getKey());
+        System.out.println(sql);
         Statement statement = VerifyDB.database.createStatement();
         ResultSet response = statement.executeQuery(sql);
         String playerName;
@@ -26,7 +28,7 @@ public class GetDB {
             InsertDB.insertPlayer(id, null, null);
             response.close();
             statement.close();
-            return new PlayerData(id.getValue(), null, null, new ArrayList<>(), 0);
+            return new PlayerData(id.getValue(), null, null, new ArrayList<>(), 0, 0);
         }
 
         // if the player has the wrong playerName
@@ -39,6 +41,7 @@ public class GetDB {
         int score = response.getInt(1);
         String guildTag = response.getString(3);
         String guildName = response.getString(4);
+        int soulJuice = response.getInt(5);
         response.close();
         List<OldSubmission> submissions = new ArrayList<>();
         sql = GetSql.getSqlGetPlayerSubmissionHistory(id.getKey());
@@ -50,7 +53,7 @@ public class GetDB {
         statement.close();
         response.close();
 
-        return new PlayerData(playerName, guildName, guildTag, submissions, score);
+        return new PlayerData(playerName, guildName, guildTag, submissions, score, soulJuice);
     }
 
 
@@ -88,12 +91,14 @@ public class GetDB {
             String guildTag = response.getString(2);
             String guildName = response.getString(3);
             int score = response.getInt(4);
+            int soulJuice = response.getInt(5);
             players.add(new PlayerData(
                     playerName,
                     guildName,
                     guildTag,
                     null,
-                    score
+                    score,
+                    soulJuice
             )); // submissions is normally not null, but for this situation we don't need them
             response.next();
         }
@@ -121,7 +126,7 @@ public class GetDB {
     }
 
     public static List<OldSubmission> getGuildSubmissions(String guildTag) throws SQLException {
-        List<OldSubmission> submissions= new ArrayList<>();
+        List<OldSubmission> submissions = new ArrayList<>();
         String sql = GetSql.getSqlGetGuildSubmissionHistory(guildTag);
         Statement statement = VerifyDB.database.createStatement();
         ResultSet response = statement.executeQuery(sql);
@@ -132,5 +137,17 @@ public class GetDB {
         statement.close();
         response.close();
         return submissions;
+    }
+
+    public static PlayerLeaderboard getPlayerLeaderboard() throws SQLException {
+        String sql = GetSql.getSqlGetPlayerLeaderboard();
+        Statement statement = VerifyDB.database.createStatement();
+        ResultSet response = statement.executeQuery(sql);
+        List<PlayerLeaderboardEntry> leaderboard = new ArrayList<>();
+        if (!response.isClosed())
+            while (response.next()) {
+                leaderboard.add(new PlayerLeaderboardEntry(response));
+            }
+        return new PlayerLeaderboard(leaderboard);
     }
 }

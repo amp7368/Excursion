@@ -2,11 +2,11 @@ package apple.excursion.discord.commands.general;
 
 import apple.excursion.database.GetDB;
 import apple.excursion.database.objects.OldSubmission;
-import apple.excursion.database.objects.PlayerData;
+import apple.excursion.database.objects.player.PlayerData;
 import apple.excursion.discord.commands.DoCommand;
 import apple.excursion.discord.data.AllProfiles;
-import apple.excursion.discord.data.answers.GuildLeaderboardEntry;
-import apple.excursion.discord.data.answers.LeaderboardOfGuilds;
+import apple.excursion.database.objects.guild.GuildLeaderboardEntry;
+import apple.excursion.database.objects.guild.LeaderboardOfGuilds;
 import apple.excursion.discord.reactions.messages.GuildLeaderboardMessage;
 import apple.excursion.discord.reactions.messages.GuildProfileMessage;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;

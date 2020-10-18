@@ -159,7 +159,8 @@ class GetSql {
                 "          WHERE players.player_uid = %d) as score,\n" +
                 "      players.player_name,\n" +
                 "      players.guild_tag,\n" +
-                "      players.guild_name\n" +
+                "      players.guild_name,\n" +
+                "      players.soul_juice\n" +
                 "FROM players;", id);
     }
 
@@ -272,5 +273,19 @@ class GetSql {
                 "         INNER JOIN players\n" +
                 "                    ON submissions_link.player_id = players.player_uid\n" +
                 "GROUP BY data.id;";
+    }
+
+    @NotNull
+    public static String getSqlGetPlayerLeaderboard() {
+        return "SELECT players.player_name, players.guild_tag, players.guild_name, playerData.*\n" +
+                "FROM (\n" +
+                "         SELECT sum(submissions.score) AS score, player_uid\n" +
+                "         FROM players\n" +
+                "                  INNER JOIN submissions_link ON players.player_uid = submissions_link.player_id\n" +
+                "                  INNER JOIN submissions ON submissions_link.submission_id = submissions.id\n" +
+                "         GROUP BY players.player_uid\n" +
+                "     ) AS playerData\n" +
+                "         INNER JOIN players\n" +
+                "                    ON playerData.player_uid = players.player_uid";
     }
 }
