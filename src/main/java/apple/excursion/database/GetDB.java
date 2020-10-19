@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GetDB {
-    public static PlayerData getPlayerData(Pair<Long, String> id,int submissionSize) throws SQLException {
+    public static PlayerData getPlayerData(Pair<Long, String> id, int submissionSize) throws SQLException {
         String sql = GetSql.getSqlGetPlayerAll(id.getKey());
         Statement statement = VerifyDB.database.createStatement();
         ResultSet response = statement.executeQuery(sql);
@@ -29,12 +29,14 @@ public class GetDB {
             statement.close();
             return new PlayerData(id.getValue(), null, null, new ArrayList<>(), 0, 0);
         }
-
         // if the player has the wrong playerName
         if (!playerName.equals(id.getValue())) {
             sql = GetSql.updatePlayerName(id.getKey(), id.getValue());
             statement.execute(sql);
             playerName = id.getValue();
+            // reget the playerdata because the response closes somehow. probably because statement.execute();
+            sql = GetSql.getSqlGetPlayerAll(id.getKey());
+            response = statement.executeQuery(sql);
         }
 
         int score = response.getInt(1);

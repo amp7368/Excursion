@@ -2,7 +2,6 @@ package apple.excursion;
 
 import apple.excursion.database.VerifyDB;
 import apple.excursion.discord.DiscordBot;
-import apple.excursion.discord.data.AllProfiles;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
@@ -74,7 +73,6 @@ public class ExcursionMain {
         service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
                 .setApplicationName(APPLICATION_NAME)
                 .build();
-        AllProfiles.update();
         VerifyDB.connect();
         DiscordBot bot = new DiscordBot();
         try {

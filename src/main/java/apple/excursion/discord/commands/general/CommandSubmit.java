@@ -6,11 +6,9 @@ import apple.excursion.database.GetDB;
 import apple.excursion.database.objects.player.PlayerData;
 import apple.excursion.discord.DiscordBot;
 import apple.excursion.discord.commands.DoCommand;
-import apple.excursion.discord.data.AllProfiles;
 import apple.excursion.discord.data.TaskSimple;
 import apple.excursion.discord.data.answers.SubmissionData;
 import apple.excursion.discord.reactions.AllReactables;
-import apple.excursion.discord.reactions.messages.ProfileMessage;
 import apple.excursion.discord.reactions.messages.SubmissionMessage;
 import apple.excursion.sheets.SheetsPlayerStats;
 import apple.excursion.utils.Pair;
@@ -23,11 +21,9 @@ import org.json.simple.parser.ParseException;
 
 import java.awt.*;
 import java.io.*;
-import java.net.URISyntaxException;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class CommandSubmit implements DoCommand {
     private static final String REVIEWERS_FILE_PATH = getPath();
@@ -61,12 +57,10 @@ public class CommandSubmit implements DoCommand {
     public void dealWithCommand(MessageReceivedEvent event) {
         List<Member> tags = event.getMessage().getMentionedMembers();
         List<Pair<Long, String>> idToName = new ArrayList<>();
-        List<String> otherSubmitters = new ArrayList<>();
         String nickName;
         for (Member member : tags) {
             nickName = member.getEffectiveName();
             idToName.add(new Pair<>(member.getIdLong(), nickName));
-            otherSubmitters.add(nickName);
         }
         Member author = event.getMember();
         if (author == null) {
@@ -111,13 +105,6 @@ public class CommandSubmit implements DoCommand {
                 event.getChannel().sendMessage(String.format("'%s' is not a valid task name", questName)).queue();
                 return;
             }
-            // verify discord nickname
-            AllProfiles.getProfile(event.getAuthor().getIdLong(), submitterName);
-            for (Member tag : tags) {
-                nickName = tag.getEffectiveName();
-                AllProfiles.getProfile(tag.getIdLong(), nickName);
-            }
-            idToName = idToName.stream().map(pair -> new Pair<>(pair.getKey(), pair.getValue())).collect(Collectors.toList());
 
             List<PlayerData> playersData = new ArrayList<>();
             for (Pair<Long, String> player : idToName) {
@@ -179,7 +166,7 @@ public class CommandSubmit implements DoCommand {
                     reviewers.add(user);
             try {
                 writeReviewers();
-            } catch (URISyntaxException | IOException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
@@ -190,14 +177,14 @@ public class CommandSubmit implements DoCommand {
             reviewers.removeAll(users);
             try {
                 writeReviewers();
-            } catch (URISyntaxException | IOException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
 
     @SuppressWarnings("unchecked")
-    private static void writeReviewers() throws URISyntaxException, IOException {
+    private static void writeReviewers() throws IOException {
         JSONArray reviewersArray = new JSONArray();
         for (User user : reviewers) reviewersArray.add(user.getId());
         File file = new File(REVIEWERS_FILE_PATH);

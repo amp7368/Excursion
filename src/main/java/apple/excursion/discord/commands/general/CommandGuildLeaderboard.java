@@ -4,7 +4,6 @@ import apple.excursion.database.GetDB;
 import apple.excursion.database.objects.OldSubmission;
 import apple.excursion.database.objects.player.PlayerData;
 import apple.excursion.discord.commands.DoCommand;
-import apple.excursion.discord.data.AllProfiles;
 import apple.excursion.database.objects.guild.GuildLeaderboardEntry;
 import apple.excursion.database.objects.guild.LeaderboardOfGuilds;
 import apple.excursion.discord.reactions.messages.GuildLeaderboardMessage;
@@ -22,7 +21,6 @@ public class CommandGuildLeaderboard implements DoCommand {
         String content = event.getMessage().getContentStripped();
         List<String> contentSplit = new ArrayList<>(Arrays.asList(content.split(" ")));
         if (contentSplit.size() < 2) {
-            AllProfiles.update();
             try {
                 new GuildLeaderboardMessage(event.getChannel());
             } catch (SQLException throwables) {

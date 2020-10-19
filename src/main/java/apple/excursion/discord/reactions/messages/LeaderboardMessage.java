@@ -2,7 +2,6 @@ package apple.excursion.discord.reactions.messages;
 
 import apple.excursion.database.GetDB;
 import apple.excursion.database.objects.player.PlayerLeaderboardEntry;
-import apple.excursion.discord.data.Profile;
 import apple.excursion.database.objects.player.PlayerLeaderboard;
 import apple.excursion.discord.reactions.AllReactables;
 import apple.excursion.discord.reactions.ReactableMessage;

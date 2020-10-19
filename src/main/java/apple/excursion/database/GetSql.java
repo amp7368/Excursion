@@ -56,11 +56,11 @@ class GetSql {
         } else {
             return "INSERT INTO players "
                     + "VALUES "
-                    + String.format("('%d','%s',%s,%s);",
+                    + String.format("('%d','%s','%s','%s');",
                     id.getKey(),
                     id.getValue(),
-                    String.format("'%s'", guildName),
-                    String.format("'%s'", guildTag)
+                    guildName,
+                    guildTag
             );
         }
     }
@@ -195,7 +195,7 @@ class GetSql {
     @NotNull
     public static String updatePlayerName(Long id, String playerName) {
         return String.format("UPDATE players " +
-                        "SET player_name = %s " +
+                        "SET player_name = '%s' " +
                         "WHERE player_uid = '%d'",
                 playerName, id);
     }

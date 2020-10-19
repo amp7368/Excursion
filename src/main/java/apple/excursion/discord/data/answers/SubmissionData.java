@@ -115,6 +115,7 @@ public class SubmissionData {
             for (Pair<Long, String> userRaw : allSubmitters) {
                 User user = DiscordBot.client.getUserById(userRaw.getKey());
                 if (user != null) {
+                    if (user.isBot() || user.isFake()) return;
                     PrivateChannel channel = user.openPrivateChannel().complete();
                     List<String> otherSubmitters = new ArrayList<>();
                     for (Pair<Long, String> otherUserRaw : allSubmitters) {
