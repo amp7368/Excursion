@@ -17,6 +17,7 @@ import java.util.List;
 
 public class GuildProfileMessage implements ReactableMessage {
     public static final int ENTRIES_PER_PAGE = 10;
+    private static final int SUBMISSIONS_PER_PAGE = 5;
     private final GuildLeaderboardEntry matchedGuild;
     private final List<PlayerData> players;
     private final Message message;
@@ -74,8 +75,9 @@ public class GuildProfileMessage implements ReactableMessage {
             footer.append("**There is no submission history**\n");
         } else {
             footer.append("**Submission History:** \n");
-            for (OldSubmission submission : submissions) {
-                footer.append(submission.makeSubmissionHistoryMessage());
+            upper = Math.min(((page + 1) * SUBMISSIONS_PER_PAGE), submissions.size());
+            for (int lower = page * SUBMISSIONS_PER_PAGE; lower < upper; lower++) {
+                footer.append(submissions.get(lower).makeSubmissionHistoryMessage());
                 footer.append('\n');
             }
         }
@@ -88,7 +90,7 @@ public class GuildProfileMessage implements ReactableMessage {
     }
 
     public void forward() {
-        if ((players.size() - 1) / ENTRIES_PER_PAGE >= page + 1) {
+        if ((players.size() - 1) / ENTRIES_PER_PAGE >= page + 1 || (submissions.size() - 1) / SUBMISSIONS_PER_PAGE >= page + 1) {
             page++;
             message.editMessage(makeMessage()).queue();
         }

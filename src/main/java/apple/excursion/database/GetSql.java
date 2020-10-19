@@ -314,7 +314,6 @@ public class GetSql {
                 "                  WHERE submissions_link.guild_tag = '" + guildTag + "'\n" +
                 "                  AND submissions.date_submitted BETWEEN " + startTime + " AND " + endTime + "\n" +
                 "                  ORDER BY submissions.date_submitted DESC\n" +
-                "                  LIMIT 5\n" +
                 "              ) as s\n" +
                 "                  INNER JOIN players\n" +
                 "                             ON s.submitter = players.player_uid\n" +
@@ -344,7 +343,6 @@ public class GetSql {
                 "                                      ON submissions_link.submission_id = submissions.id\n" +
                 "                  WHERE submissions_link.guild_tag = '" + guildTag + "'\n" +
                 "                  ORDER BY submissions.date_submitted DESC\n" +
-                "                  LIMIT 5\n" +
                 "              ) as s\n" +
                 "                  INNER JOIN players\n" +
                 "                             ON s.submitter = players.player_uid\n" +
