@@ -14,7 +14,6 @@ public class Task {
     public String coordinates;
     public int ep;
     public String createdBy;
-    public String repeatable;
     @Nullable
     public String images;
     public boolean isFail;
@@ -39,7 +38,6 @@ public class Task {
                 ep = GetFromObject.getInt(epObject);
         }
         createdBy = row.get(5).toString();
-        repeatable = row.get(6).toString();
         images = row.size() < 8 ? null : row.get(7).toString();
         isFail = GetFromObject.intFail(ep);
     }

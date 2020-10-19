@@ -27,7 +27,7 @@ public class PlayerLeaderboardEntry {
     }
 
     public boolean nameIsSimilar(String name) {
-        return playerName.toLowerCase().contains(name);
+        return playerName.toLowerCase().contains(name.toLowerCase());
     }
 
     public boolean guildIsDefault() {

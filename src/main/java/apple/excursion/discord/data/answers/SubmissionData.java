@@ -11,7 +11,6 @@ import net.dv8tion.jda.api.entities.PrivateChannel;
 import net.dv8tion.jda.api.entities.User;
 
 import javax.annotation.Nullable;
-import java.sql.Date;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -166,6 +165,7 @@ public class SubmissionData {
 
     public enum TaskSubmissionType {
         DAILY,
-        NORMAL
+        NORMAL,
+        SYNC
     }
 }

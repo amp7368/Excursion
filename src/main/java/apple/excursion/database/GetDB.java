@@ -5,6 +5,7 @@ import apple.excursion.database.objects.OldSubmission;
 import apple.excursion.database.objects.player.PlayerData;
 import apple.excursion.database.objects.guild.GuildLeaderboardEntry;
 import apple.excursion.database.objects.guild.LeaderboardOfGuilds;
+import apple.excursion.database.objects.player.PlayerHeader;
 import apple.excursion.database.objects.player.PlayerLeaderboard;
 import apple.excursion.database.objects.player.PlayerLeaderboardEntry;
 import apple.excursion.utils.Pair;
@@ -14,6 +15,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class GetDB {
     public static PlayerData getPlayerData(Pair<Long, String> id, int submissionSize) throws SQLException {
@@ -154,5 +156,41 @@ public class GetDB {
                 }
             return new PlayerLeaderboard(leaderboard);
         }
+    }
+
+    public static List<PlayerHeader> getPlayerHeaders() throws SQLException {
+        synchronized (VerifyDB.syncDB) {
+            String sql = GetSql.getSqlGetPlayerHeaders();
+            Statement statement = VerifyDB.database.createStatement();
+            ResultSet response = statement.executeQuery(sql);
+            List<PlayerHeader> players = new ArrayList<>();
+            if (!response.isClosed())
+                while (response.next()) {
+                    players.add(new PlayerHeader(response.getLong(1),
+                            response.getString(2),
+                            response.getInt(3),
+                            response.getInt(4)));
+                }
+            sql = GetSql.getSqlGetPlayerHeadersNoScore();
+            response = statement.executeQuery(sql);
+            if (!response.isClosed())
+                while (response.next()) {
+                    long id = response.getLong(1);
+                    boolean contains = false;
+                    for (PlayerHeader header : players)
+                        if (header.id == id) {
+                            contains = true;
+                            break;
+                        }
+                    if (!contains)
+                        players.add(new PlayerHeader(id,
+                                response.getString(2),
+                                response.getInt(3),
+                                0));
+                }
+            statement.close();
+            return players;
+        }
+
     }
 }

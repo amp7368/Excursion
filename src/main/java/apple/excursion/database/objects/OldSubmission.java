@@ -18,6 +18,10 @@ public class OldSubmission {
     public String submitter; // id to name
     public List<String> otherSubmitters; // id to name
 
+    public boolean isSyncSubmission() {
+        return submissionType == SubmissionData.TaskSubmissionType.SYNC;
+    }
+
     public OldSubmission(ResultSet response) throws SQLException {
         otherSubmitters = Arrays.asList(response.getString(1).split(","));
         submitter = response.getString(2);
@@ -30,6 +34,7 @@ public class OldSubmission {
     }
 
     public String makeSubmissionHistoryMessage() {
+        if (isSyncSubmission()) return "";
         if (otherSubmitters == null || otherSubmitters.size() == 0) {
             return String.format("**%s** submitted %s__%s__ at *%s*",
                     submitter,

@@ -1,11 +1,9 @@
 package apple.excursion.discord.reactions.messages;
 
 import apple.excursion.database.InsertDB;
-import apple.excursion.discord.DiscordBot;
 import apple.excursion.discord.data.answers.SubmissionData;
 import apple.excursion.discord.reactions.AllReactables;
 import apple.excursion.discord.reactions.ReactableMessage;
-import apple.excursion.sheets.SheetsPlayerStats;
 import apple.excursion.utils.Pair;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
@@ -13,7 +11,6 @@ import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.stream.Collectors;
 

@@ -10,8 +10,6 @@ import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 import static apple.excursion.database.VerifyDB.DEFAULT_GUILD_NAME;
 import static apple.excursion.database.VerifyDB.DEFAULT_GUILD_TAG;

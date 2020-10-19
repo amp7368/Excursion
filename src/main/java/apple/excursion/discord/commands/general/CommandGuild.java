@@ -6,7 +6,6 @@ import apple.excursion.database.objects.guild.GuildHeader;
 import apple.excursion.discord.commands.Commands;
 import apple.excursion.discord.commands.DoCommand;
 import apple.excursion.discord.reactions.messages.CreateGuildMessage;
-import apple.excursion.sheets.SheetsPlayerStats;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
@@ -15,7 +14,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class CommandGuild implements DoCommand {
     @Override

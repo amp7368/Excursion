@@ -63,7 +63,7 @@ class GetSql {
     }
 
     @NotNull
-    static String getSqlInsertSubmission(SubmissionData data) {
+    public static String getSqlInsertSubmission(SubmissionData data) {
         final Collection<String> linksList = data.getLinks();
         String links;
         if (linksList.isEmpty())
@@ -76,11 +76,26 @@ class GetSql {
                         + "(%d,%d,'%s',%s,%d,'%s',%d);",
                 VerifyDB.currentSubmissionId,
                 data.getTimeEpoch() * 1000,
-                data.getTaskName(),
+                convertTaskNameToSql(data.getTaskName()),
                 links,
                 data.getSubmitterId(),
                 data.getType().name(),
                 data.getTaskScore()
+        );
+    }
+
+    @NotNull
+    public static String getSqlInsertSubmission(long playerId, int score) {
+        return String.format("INSERT INTO submissions "
+                        + "VALUES "
+                        + "(%d,%d,'%s',%s,%d,'%s',%d);",
+                VerifyDB.currentSubmissionId,
+                System.currentTimeMillis(),
+                SyncDB.SYNC_TASK_NAME,
+                null,
+                playerId,
+                SyncDB.SYNC_TASK_TYPE,
+                score
         );
     }
 
@@ -284,5 +299,30 @@ class GetSql {
                 "     ) AS playerData\n" +
                 "         INNER JOIN players\n" +
                 "                    ON playerData.player_uid = players.player_uid";
+    }
+
+    @NotNull
+    public static String getSqlUpdatePlayerSoulJuice(long id, int juiceToAddToDatabase) {
+        return String.format("UPDATE players\n" +
+                "SET soul_juice = soul_juice + %d\n" +
+                "WHERE player_uid = %d;", juiceToAddToDatabase, id);
+    }
+
+    @NotNull
+    public static String getSqlGetPlayerHeaders() {
+        return "SELECT players.player_uid, players.player_name, players.soul_juice, playerData.score\n" +
+                "FROM (\n" +
+                "         SELECT sum(submissions.score) AS score, player_uid\n" +
+                "         FROM players\n" +
+                "                  INNER JOIN submissions_link ON players.player_uid = submissions_link.player_id\n" +
+                "                  INNER JOIN submissions ON submissions_link.submission_id = submissions.id\n" +
+                "         GROUP BY players.player_uid\n" +
+                "     ) AS playerData\n" +
+                "         INNER JOIN players\n" +
+                "                    ON playerData.player_uid = players.player_uid";
+    }
+
+    public static String getSqlGetPlayerHeadersNoScore() {
+        return "SELECT players.player_uid, players.player_name, players.soul_juice FROM players";
     }
 }

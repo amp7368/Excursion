@@ -13,7 +13,7 @@ public class PlayerData {
     private final String guildTag;
     public final List<OldSubmission> submissions;
     public final int score;
-    public final int soulJuice;
+    private final int soulJuice;
 
     public PlayerData(String playerName, String guildName, String guildTag, List<OldSubmission> submissions, int score, int soulJuice) {
         this.name = playerName;
@@ -45,5 +45,9 @@ public class PlayerData {
             if (submission.taskName.equalsIgnoreCase(task.taskName)) return true;
         }
         return false;
+    }
+
+    public int getSoulJuice() {
+        return soulJuice;
     }
 }

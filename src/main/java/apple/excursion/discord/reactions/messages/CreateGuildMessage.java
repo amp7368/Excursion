@@ -3,7 +3,6 @@ package apple.excursion.discord.reactions.messages;
 import apple.excursion.database.UpdateDB;
 import apple.excursion.discord.reactions.AllReactables;
 import apple.excursion.discord.reactions.ReactableMessage;
-import apple.excursion.sheets.SheetsPlayerStats;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;

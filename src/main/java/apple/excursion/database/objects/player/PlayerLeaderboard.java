@@ -1,5 +1,6 @@
 package apple.excursion.database.objects.player;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,6 +28,7 @@ public class PlayerLeaderboard {
         return leaderboard.get(i);
     }
 
+    @Nullable
     public PlayerLeaderboardEntry get(long id) {
         for (PlayerLeaderboardEntry entry : leaderboard) {
             if (entry.hasId(id)) return entry;
