@@ -65,7 +65,6 @@ public class SyncDB {
                             new Pair<>(sheetPlayer.getId(), sheetPlayer.getName()),
                             guildName.isBlank() ? null : guildName,
                             guildTag.isBlank() ? null : guildTag);
-                    System.out.println(sql);
                     statement.addBatch(sql);
                     score = 0;
                     soulJuice = 0;
@@ -78,7 +77,7 @@ public class SyncDB {
                     score = databasePlayer.score;
                     soulJuice = databasePlayer.soulJuice;
                 }
-                if(playerData == null)
+                if (playerData == null)
                     playerData = new PlayerData(sheetPlayer.getId(), sheetPlayer.getName(), guildName, guildTag, Collections.emptyList(), 0, 0);
                 int pointsToAddToDatabase = sheetPlayer.getTotalEp() - score;
                 int juiceToAddToDatabase = sheetPlayer.getSoulJuice() - soulJuice;
@@ -151,6 +150,9 @@ public class SyncDB {
                         VerifyDB.currentSubmissionId++;
                     }
                 }
+            }
+            for (int i = 0; i < logs.size(); i++) {
+                logs.set(i, logs.get(i).replaceAll("~", ""));
             }
             statement.executeBatch();
             statement.close();

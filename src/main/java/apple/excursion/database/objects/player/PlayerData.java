@@ -57,7 +57,7 @@ public class PlayerData {
         int score = 0;
         for(OldSubmission submission:submissions){
             if(submission.taskName.equalsIgnoreCase(taskName)){
-                score = submission.score;
+                score += submission.score;
             }
         }
         return score;

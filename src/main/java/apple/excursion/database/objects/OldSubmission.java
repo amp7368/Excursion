@@ -1,6 +1,7 @@
 package apple.excursion.database.objects;
 
 
+import apple.excursion.database.GetSql;
 import apple.excursion.discord.data.answers.SubmissionData;
 import apple.excursion.utils.Pretty;
 
@@ -26,7 +27,7 @@ public class OldSubmission {
         otherSubmitters.remove(submitter);
 
         dateSubmitted = response.getTimestamp(3).toInstant().toEpochMilli();
-        taskName = response.getString(4);
+        taskName = GetSql.convertTaskNameFromSql( response.getString(4));
         String linksRaw = response.getString(5);
         if (linksRaw == null) links = new String[0];
         else links = linksRaw.split(",");
