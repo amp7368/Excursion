@@ -11,6 +11,8 @@ import apple.excursion.discord.data.answers.SubmissionData;
 import apple.excursion.discord.reactions.AllReactables;
 import apple.excursion.discord.reactions.messages.settings.SubmissionMessage;
 import apple.excursion.sheets.SheetsPlayerStats;
+import apple.excursion.utils.ColoredName;
+import apple.excursion.utils.GetColoredName;
 import apple.excursion.utils.Pair;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.*;
@@ -56,26 +58,35 @@ public class CommandSubmit implements DoCommand {
 
     public void dealWithCommand(MessageReceivedEvent event) {
         List<Member> tags = event.getMessage().getMentionedMembers();
-        List<Pair<Long, String>> idToName = new ArrayList<>();
+        List<Pair<Long, String>> idsToNames = new ArrayList<>();
         String nickName;
         for (Member member : tags) {
             nickName = member.getEffectiveName();
-            idToName.add(new Pair<>(member.getIdLong(), nickName));
+            idsToNames.add(new Pair<>(member.getIdLong(), nickName));
         }
         Member author = event.getMember();
         if (author == null) {
             // the author doesn't even exist atm
             return;
         }
-        nickName = author.getEffectiveName();
-        idToName.add(new Pair<>(author.getIdLong(), nickName));
+        // change all the idToNames to the correct name based on The Farplane discord names
+        for (Pair<Long, String> idToName : idsToNames) {
+            ColoredName coloredName = GetColoredName.get(idToName.getKey());
+            if (coloredName.getName() != null)
+                idToName.setValue(coloredName.getName());
+        }
+
+        ColoredName coloredName = GetColoredName.get(author.getIdLong());
+        nickName = coloredName.getName() == null ? author.getEffectiveName() : coloredName.getName();
+
+        idsToNames.add(new Pair<>(author.getIdLong(), nickName));
         String submitterName = nickName;
 
         Message eventMessage = event.getMessage();
         String content = eventMessage.getContentStripped();
         List<String> contentList = Arrays.asList(content.split(" "));
         content = String.join(" ", contentList.subList(1, contentList.size()));
-        for (Pair<Long, String> pair : idToName) {
+        for (Pair<Long, String> pair : idsToNames) {
             String other = pair.getValue();
             content = content.replace("@" + other, "");
         }
@@ -107,7 +118,7 @@ public class CommandSubmit implements DoCommand {
             }
 
             List<PlayerData> playersData = new ArrayList<>();
-            for (Pair<Long, String> player : idToName) {
+            for (Pair<Long, String> player : idsToNames) {
                 try {
                     playersData.add(GetDB.getPlayerData(player, SUBMISSION_HISTORY_SIZE));
                 } catch (SQLException throwables) {
@@ -122,8 +133,9 @@ public class CommandSubmit implements DoCommand {
                         links,
                         task,
                         submitterName,
+                        coloredName.getColor(),
                         author.getIdLong(),
-                        idToName,
+                        idsToNames,
                         playersData,
                         taskType
                 );

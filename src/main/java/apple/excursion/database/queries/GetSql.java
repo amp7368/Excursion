@@ -33,7 +33,7 @@ public class GetSql {
 
 
     @NotNull
-    static String getSqlInsertDailyTask(String monthName, int dayOfMonth, Collection<Task> todayTasks) {
+    public static String getSqlInsertDailyTask(String monthName, int dayOfMonth, Collection<Task> todayTasks) {
         return String.format("INSERT INTO %s (date, task_names) " +
                         "VALUES (%d, '%s'); ",
                 monthName,
@@ -147,9 +147,9 @@ public class GetSql {
 
     @NotNull
     static String getSqlGetGuilds() {
-        return "SELECT sum(player_score.score) AS guild_score, player_score.guild_tag, player_score.guild_name, player_score.player_name, max(player_score.score)\n" +
+        return "SELECT sum(player_score.score) AS guild_score, player_score.guild_tag, player_score.guild_name, player_score.player_name, player_score.player_uid, max(player_score.score)\n" +
                 "FROM (\n" +
-                "         SELECT players.player_name, sum(submissions.score) as score, guilds.guild_tag, guilds.guild_name\n" +
+                "         SELECT players.player_name, players.player_uid, sum(submissions.score) as score, guilds.guild_tag, guilds.guild_name\n" +
                 "         FROM players\n" +
                 "                  INNER JOIN submissions_link\n" +
                 "                             ON players.player_uid = submissions_link.player_id\n" +
@@ -163,10 +163,10 @@ public class GetSql {
     }
 
     @NotNull
-    static String getSqlGetGuildsBetweenTime(long start, long end) {
-        return "SELECT sum(player_score.score) AS guild_score, player_score.guild_tag, player_score.guild_name, player_score.player_name, max(player_score.score)\n" +
+    static String getSqlGetGuilds(long start, long end) {
+        return "SELECT sum(player_score.score) AS guild_score, player_score.guild_tag, player_score.guild_name, player_score.player_name, player_score.player_uid, max(player_score.score)\n" +
                 "FROM (\n" +
-                "         SELECT players.player_name, sum(submissions.score) as score, guilds.guild_tag, guilds.guild_name\n" +
+                "         SELECT players.player_name, players.player_uid, sum(submissions.score) as score, guilds.guild_tag, guilds.guild_name\n" +
                 "         FROM players\n" +
                 "                  INNER JOIN submissions_link\n" +
                 "                             ON players.player_uid = submissions_link.player_id\n" +

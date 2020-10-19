@@ -49,4 +49,17 @@ public class PlayerLeaderboard {
         }
         return players;
     }
+
+    public List<PlayerLeaderboardEntry> getPlayersById(List<Long> ids) {
+        List<PlayerLeaderboardEntry> players = new ArrayList<>();
+        for (Long id : ids) {
+            for (PlayerLeaderboardEntry entry : leaderboard) {
+                if (entry.hasId(id)) {
+                    players.add(entry);
+                    break;
+                }
+            }
+        }
+        return players;
+    }
 }

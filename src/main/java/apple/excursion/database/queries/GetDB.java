@@ -77,8 +77,9 @@ public class GetDB {
                     String guildTag = response.getString(2);
                     String guildName = response.getString(3);
                     String playerName = response.getString(4);
-                    int playerScore = response.getInt(5);
-                    guilds.add(new GuildLeaderboardEntry(guildTag, guildName, guildScore, playerName, playerScore));
+                    long playerUid = response.getLong(5);
+                    int playerScore = response.getInt(6);
+                    guilds.add(new GuildLeaderboardEntry(guildTag, guildName, guildScore, playerName, playerUid, playerScore));
                 }
             response.close();
             statement.close();
@@ -146,7 +147,7 @@ public class GetDB {
         if (startTime == -1 || endTime == -1)
             sql = GetSql.getSqlGetGuildSubmissionHistory(guildTag);
         else
-            sql = GetSql.getSqlGetGuildSubmissionHistory(guildTag,startTime,endTime);
+            sql = GetSql.getSqlGetGuildSubmissionHistory(guildTag, startTime, endTime);
         Statement statement = VerifyDB.database.createStatement();
         ResultSet response = statement.executeQuery(sql);
         while (response.next()) {
@@ -232,7 +233,7 @@ public class GetDB {
         startTime = times.getKey();
         endTime = times.getValue();
         synchronized (VerifyDB.syncDB) {
-            String sql = GetSql.getSqlGetGuildsBetweenTime(startTime, endTime);
+            String sql = GetSql.getSqlGetGuilds(startTime, endTime);
             Statement statement = VerifyDB.database.createStatement();
             ResultSet response = statement.executeQuery(sql);
             List<GuildLeaderboardEntry> guilds = new ArrayList<>();
@@ -241,9 +242,10 @@ public class GetDB {
                     int guildScore = response.getInt(1);
                     String guildTag = response.getString(2);
                     String guildName = response.getString(3);
-                    String playerName = response.getString(4);
-                    int playerScore = response.getInt(5);
-                    guilds.add(new GuildLeaderboardEntry(guildTag, guildName, guildScore, playerName, playerScore));
+                    long playerUid = response.getLong(4);
+                    String playerName = response.getString(5);
+                    int playerScore = response.getInt(6);
+                    guilds.add(new GuildLeaderboardEntry(guildTag, guildName, guildScore, playerName, playerUid, playerScore));
                 }
             response.close();
             statement.close();

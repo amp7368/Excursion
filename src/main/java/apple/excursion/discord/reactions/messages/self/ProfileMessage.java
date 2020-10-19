@@ -9,6 +9,8 @@ import apple.excursion.database.objects.guild.GuildLeaderboardEntry;
 import apple.excursion.discord.reactions.AllReactables;
 import apple.excursion.discord.reactions.ReactableMessage;
 import apple.excursion.sheets.SheetsTasks;
+import apple.excursion.utils.ColoredName;
+import apple.excursion.utils.GetColoredName;
 import apple.excursion.utils.PostcardDisplay;
 import apple.excursion.utils.Pretty;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -29,6 +31,7 @@ public class ProfileMessage implements ReactableMessage {
 
     private final Message message;
     private final PlayerLeaderboardEntry playerLeaderboardEntry;
+    private final ColoredName coloredName;
     private final PlayerData player;
     private final GuildLeaderboardEntry guild;
     private final Map<String, List<Task>> topTasks = new HashMap<>();
@@ -37,10 +40,11 @@ public class ProfileMessage implements ReactableMessage {
     private int countTasksDone = 0;
     private int page = 0;
 
-    public ProfileMessage(PlayerLeaderboardEntry playerLeaderboardEntry, PlayerData player, GuildLeaderboardEntry guild, MessageChannel channel) {
+    public ProfileMessage(PlayerLeaderboardEntry playerLeaderboardEntry, PlayerData player, GuildLeaderboardEntry guild, ColoredName coloredName, MessageChannel channel) {
         this.playerLeaderboardEntry = playerLeaderboardEntry;
         this.player = player;
         this.guild = guild;
+        this.coloredName = coloredName;
 
         Set<Task> tasksDone = new HashSet<>();
         for (Task task : allTasks) {
@@ -66,10 +70,10 @@ public class ProfileMessage implements ReactableMessage {
         message.addReaction(AllReactables.Reactable.RIGHT.getFirstEmoji()).queue();
         message.addReaction(AllReactables.Reactable.TOP.getFirstEmoji()).queue();
 
-        int i = 0;
-        for (List<Task> tasks : topTasks.values()) {
+        int size = topTasks.size();
+        for (int i = 0; i< size; i++) {
             for (int j = 0; j < TOP_TASKS_SIZE; j++) {
-                message.addReaction(AllReactables.emojiAlphabet.get(i++)).queue();
+                message.addReaction(AllReactables.emojiAlphabet.get(i)).queue();
             }
         }
         AllReactables.add(this);
@@ -78,7 +82,7 @@ public class ProfileMessage implements ReactableMessage {
 
     private MessageEmbed makeMessage() {
         EmbedBuilder embed = new EmbedBuilder();
-        embed.setTitle(player.name);
+        embed.setTitle(coloredName.getName() == null ? ColoredName.getGuestName(player.name) : coloredName.getName());
         StringBuilder description = new StringBuilder();
         description.append(String.format("Soul juice: %d\n\n", player.getSoulJuice()));
         // put guild info
@@ -131,7 +135,7 @@ public class ProfileMessage implements ReactableMessage {
             }
         }
         embed.setDescription(description);
-        embed.setColor(BOT_COLOR);
+        embed.setColor(coloredName.getColor());
         return embed.build();
     }
 

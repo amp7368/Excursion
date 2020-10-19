@@ -1,11 +1,14 @@
 package apple.excursion.discord.commands.general.self;
 
+import apple.excursion.database.objects.player.PlayerLeaderboard;
 import apple.excursion.database.queries.GetDB;
 import apple.excursion.database.objects.guild.GuildLeaderboardEntry;
 import apple.excursion.database.objects.player.PlayerData;
 import apple.excursion.database.objects.player.PlayerLeaderboardEntry;
 import apple.excursion.discord.commands.DoCommand;
 import apple.excursion.discord.reactions.messages.self.ProfileMessage;
+import apple.excursion.utils.ColoredName;
+import apple.excursion.utils.GetColoredName;
 import apple.excursion.utils.Pair;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
@@ -18,14 +21,20 @@ public class CommandProfile implements DoCommand {
         final String[] eventContentSplitOnce = event.getMessage().getContentStripped().split(" ", 2);
         PlayerLeaderboardEntry playerLeaderboardEntry;
         final String nameToGet;
+        PlayerLeaderboard leaderboard;
+        try {
+            leaderboard = GetDB.getPlayerLeaderboard();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace(); //todo
+            return;
+        }
         if (eventContentSplitOnce.length > 1) {
             nameToGet = eventContentSplitOnce[1];
             List<PlayerLeaderboardEntry> players;
-            try {
-                players = GetDB.getPlayerLeaderboard().getPlayersWithName(nameToGet);
-            } catch (SQLException throwables) {
-                throwables.printStackTrace(); //todo
-                return;
+            players = leaderboard.getPlayersWithName(nameToGet);
+            if (players.isEmpty()) {
+                List<Long> ids = GetColoredName.get(nameToGet);
+                players = leaderboard.getPlayersById(ids);
             }
             final int playersWithNameLength = players.size();
             if (playersWithNameLength == 0) {
@@ -42,12 +51,7 @@ public class CommandProfile implements DoCommand {
                 return;
             }
         } else {
-            try {
-                playerLeaderboardEntry = GetDB.getPlayerLeaderboard().get(event.getAuthor().getIdLong());
-            } catch (SQLException throwables) {
-                throwables.printStackTrace(); //todo
-                return;
-            }
+            playerLeaderboardEntry = leaderboard.get(event.getAuthor().getIdLong());
         }
         // we have the player
 
@@ -63,14 +67,18 @@ public class CommandProfile implements DoCommand {
             }
         }
         // we have the player's guild or null
+
+        ColoredName coloredName = GetColoredName.get(playerLeaderboardEntry.getId());
         PlayerData player;
         try {
-            player = GetDB.getPlayerData(new Pair<>(playerLeaderboardEntry.getId(), playerLeaderboardEntry.playerName), -1); //get all of them
+            player = GetDB.getPlayerData(new Pair<>(playerLeaderboardEntry.getId(),
+                            coloredName.getName() == null ? playerLeaderboardEntry.playerName : coloredName.getName()),
+                    -1); //get all of them
         } catch (SQLException throwables) {
             throwables.printStackTrace();//todo
             return;
         }
-        new ProfileMessage(playerLeaderboardEntry, player, guild, event.getChannel());
+        new ProfileMessage(playerLeaderboardEntry, player, guild,coloredName, event.getChannel());
 
     }
 }

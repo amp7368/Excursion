@@ -58,7 +58,7 @@ public class SpecificGuildHistoryMessage implements ReactableMessage {
     }
 
     private MessageEmbed makeMessage() {
-        if (later.getTimeInMillis()<=timeLookingAt.getTimeInMillis()) {
+        if (later.getTimeInMillis() <= timeLookingAt.getTimeInMillis()) {
             EmbedBuilder embed = new EmbedBuilder();
             embed.setTitle("Future");
             embed.setDescription("This data for this time is not available yet");
@@ -72,7 +72,7 @@ public class SpecificGuildHistoryMessage implements ReactableMessage {
                 List<OldSubmission> submissions = GetDB.getGuildSubmissions(guildTag, leaderboardOfGuilds.startTime, leaderboardOfGuilds.endTime);
                 GuildLeaderboardEntry matchedGuild = leaderboardOfGuilds.leaderboard.get(guildTag, guildName);
                 if (matchedGuild == null)
-                    matchedGuild = new GuildLeaderboardEntry(guildTag, guildName, 0, "nobody", 0);
+                    matchedGuild = new GuildLeaderboardEntry(guildTag, guildName, 0, "nobody", 0, 0);
                 myLeaderboard = new HistoryGuildLeaderboard(
                         matchedGuild,
                         players,

@@ -61,7 +61,7 @@ public class SubmissionMessage implements ReactableMessage {
         text.append("\n");
         text.append(data.submissionHistoryMessage);
         EmbedBuilder embed = new EmbedBuilder();
-        embed.setColor(BOT_COLOR);
+        embed.setColor(data.getColor());
         if (data.getType() == SubmissionData.TaskSubmissionType.DAILY) {
             embed.setTitle(data.getTaskName() + " - Daily Task");
         } else
