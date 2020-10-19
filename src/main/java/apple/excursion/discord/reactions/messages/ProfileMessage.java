@@ -162,6 +162,7 @@ public class ProfileMessage implements ReactableMessage {
                 lastUpdated = System.currentTimeMillis();
                 break;
             case TOP:
+                page = 0;
                 message.editMessage(makeMessage()).queue();
                 event.getReaction().removeReaction(user).queue();
                 break;
