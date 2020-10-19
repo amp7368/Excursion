@@ -64,7 +64,6 @@ public class CommandGuild implements DoCommand {
         // change the player's guild
         try {
             UpdateDB.updateGuild(match.name, match.tag, playerId, playerName);
-            SheetsPlayerStats.updateGuild(match.name, match.tag, playerId, playerName);
             event.getChannel().sendMessage(String.format("You are now in **%s [%s]**", match.name, match.tag)).queue();
         } catch (SQLException throwables) {
             //todo deal with errors

@@ -56,7 +56,6 @@ public class CreateGuildMessage implements ReactableMessage {
                     try {
                         UpdateDB.createGuild(guildName, guildTag);
                         UpdateDB.updateGuild(guildName, guildTag, playerId, playerName);
-                        SheetsPlayerStats.updateGuild(guildName, guildTag, playerId, playerName);
                         EmbedBuilder embed = new EmbedBuilder();
                         embed.setTitle(String.format("%s [%s]", guildName, guildTag));
                         embed.setDescription(String.format("%s [%s] has been created", guildName, guildTag));

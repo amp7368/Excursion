@@ -1,13 +1,16 @@
 package apple.excursion.database;
 
+import apple.excursion.sheets.SheetsPlayerStats;
 import apple.excursion.utils.Pair;
 
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
 public class UpdateDB {
-    public static void updateGuild(String guildName, String guildTag, long id, String playerName) throws SQLException {
+    public static void updateGuild(String guildName, String guildTag, long id, String playerName) throws SQLException, IOException {
+        SheetsPlayerStats.updateGuild(guildName, guildTag, id, playerName);
         synchronized (VerifyDB.syncDB) {
             Statement statement = VerifyDB.database.createStatement();
             String sql = GetSql.getSqlExistsPlayer(id);
@@ -26,6 +29,7 @@ public class UpdateDB {
     }
 
     public static void createGuild(String guildName, String guildTag) throws SQLException {
+        // no sheet change because creating a guild doesn't change a person's guild
         synchronized (VerifyDB.syncDB) {
             Statement statement = VerifyDB.database.createStatement();
             String sql = GetSql.getSqlInsertGuild(guildName, guildTag);
