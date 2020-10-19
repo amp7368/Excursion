@@ -3,6 +3,7 @@ package apple.excursion.discord.commands.general;
 import apple.excursion.discord.commands.DetermineArguments;
 import apple.excursion.discord.commands.DoCommand;
 import apple.excursion.discord.reactions.messages.history.GuildHistoryMessage;
+import apple.excursion.discord.reactions.messages.history.HistoryMessage;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 import java.util.ArrayList;
@@ -10,7 +11,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 
-public class CommandGuildHistory implements DoCommand {
+public class CommandHistory implements DoCommand {
 
     @Override
     public void dealWithCommand(MessageReceivedEvent event) {
@@ -26,28 +27,28 @@ public class CommandGuildHistory implements DoCommand {
             // deal with history in months
             if (months.hasValue) {
                 // deal with history in this month intervals
-                new GuildHistoryMessage(event.getChannel(), months.value, Calendar.MONTH);
+                new HistoryMessage(event.getChannel(), months.value, Calendar.MONTH);
             } else {
-                new GuildHistoryMessage(event.getChannel(), 1,Calendar.MONTH);
+                new HistoryMessage(event.getChannel(), 1,Calendar.MONTH);
             }
         } else if (weeks.exists) {
             // deal with history in weeks
             if (weeks.hasValue) {
                 // deal with history in this month intervals
-                new GuildHistoryMessage(event.getChannel(), weeks.value, Calendar.WEEK_OF_YEAR);
+                new HistoryMessage(event.getChannel(), weeks.value, Calendar.WEEK_OF_YEAR);
             } else {
-                new GuildHistoryMessage(event.getChannel(), 1,Calendar.WEEK_OF_YEAR);
+                new HistoryMessage(event.getChannel(), 1,Calendar.WEEK_OF_YEAR);
             }
         } else if (days.exists) {
             // deal with history in days
             if (days.hasValue) {
                 // deal with history in this month intervals
-                new GuildHistoryMessage(event.getChannel(), days.value, Calendar.DAY_OF_YEAR);
+                new HistoryMessage(event.getChannel(), days.value, Calendar.DAY_OF_YEAR);
             } else {
-                new GuildHistoryMessage(event.getChannel(), 1,Calendar.DAY_OF_YEAR);
+                new HistoryMessage(event.getChannel(), 1,Calendar.DAY_OF_YEAR);
             }
         }else{
-            new GuildHistoryMessage(event.getChannel(), 1,Calendar.MONTH);
+            new HistoryMessage(event.getChannel(), 1,Calendar.MONTH);
         }
     }
 }

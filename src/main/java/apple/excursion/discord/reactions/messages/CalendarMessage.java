@@ -17,7 +17,9 @@ import java.time.format.TextStyle;
 import java.util.*;
 
 public class CalendarMessage implements ReactableMessage {
-    private static final int epochYear = 2020;
+    private static final int EPOCH_YEAR = 2020;
+    public static final long EPOCH_START_OF_SUBMISSION_HISTORY = 1604188799000L;// 2020
+    public static final long EPOCH_START_OF_EXCURSION = 1577854800000L;// 2020 Halloween
     private final Message message;
     Calendar calendar = Calendar.getInstance();
     private long lastUpdated = System.currentTimeMillis();
@@ -26,7 +28,7 @@ public class CalendarMessage implements ReactableMessage {
     private final int originalYear = calendar.get(Calendar.YEAR);
     private final int originalDayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
     private final int originalDayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
-    private final int weeksSinceEpoch = calendar.get(Calendar.WEEK_OF_YEAR) + (calendar.get(Calendar.YEAR) - epochYear) * 365;
+    private final int weeksSinceEpoch = calendar.get(Calendar.WEEK_OF_YEAR) + (calendar.get(Calendar.YEAR) - EPOCH_YEAR) * 365;
 
     public CalendarMessage(MessageChannel channel) {
         message = channel.sendMessage(makeMessage()).complete();

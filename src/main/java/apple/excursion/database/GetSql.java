@@ -340,7 +340,23 @@ public class GetSql {
                 "                    ON playerData.player_uid = players.player_uid";
     }
 
+    @NotNull
     static String getSqlGetPlayerHeadersNoScore() {
         return "SELECT players.player_uid, players.player_name, players.soul_juice FROM players";
+    }
+
+    @NotNull
+    public static String getSqlGetPlayerLeaderboard(long startTime, long endTime) {
+        return "SELECT players.player_name, players.guild_tag, players.guild_name, playerData.*\n" +
+                "FROM (\n" +
+                "         SELECT sum(submissions.score) AS score, player_uid\n" +
+                "         FROM players\n" +
+                "                  INNER JOIN submissions_link ON players.player_uid = submissions_link.player_id\n" +
+                "                  INNER JOIN submissions ON submissions_link.submission_id = submissions.id\n" +
+                "         WHERE date_submitted BETWEEN " + startTime + " AND " + endTime + "\n" +
+                "         GROUP BY players.player_uid\n" +
+                "     ) AS playerData\n" +
+                "         INNER JOIN players\n" +
+                "                    ON playerData.player_uid = players.player_uid";
     }
 }

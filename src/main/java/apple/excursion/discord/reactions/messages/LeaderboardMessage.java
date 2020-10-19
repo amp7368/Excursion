@@ -15,14 +15,14 @@ import java.sql.SQLException;
 
 public class LeaderboardMessage implements ReactableMessage {
     private final PlayerLeaderboard leaderboard = GetDB.getPlayerLeaderboard();
-    private static final int ENTRIES_PER_PAGE = 20;
+    public static final int ENTRIES_PER_PAGE = 20;
     private final Message message;
     private int page;
     private long lastUpdated;
 
     public LeaderboardMessage(MessageChannel channel) throws SQLException {
         this.page = 0;
-        this.message = channel.sendMessage(getMessage()).complete();
+        this.message = channel.sendMessage(makeMessage()).complete();
         message.addReaction(AllReactables.Reactable.LEFT.getFirstEmoji()).queue();
         message.addReaction(AllReactables.Reactable.RIGHT.getFirstEmoji()).queue();
         message.addReaction(AllReactables.Reactable.TOP.getFirstEmoji()).queue();
@@ -30,9 +30,14 @@ public class LeaderboardMessage implements ReactableMessage {
         AllReactables.add(this);
     }
 
-    private String getMessage() {
+    private String makeMessage() {
+        String title = String.format("Excursion Leaderboards Page (%d)", page + 1);
+        return makeMessageStatic(leaderboard, page, title);
+    }
+
+    public static String makeMessageStatic(PlayerLeaderboard leaderboard, int page, String title) {
         StringBuilder leaderboardMessage = new StringBuilder();
-        leaderboardMessage.append(String.format("```glsl\nExcursion Leaderboards Page (%d)\n", page + 1));
+        leaderboardMessage.append(String.format("```glsl\n%s\n", title));
         leaderboardMessage.append(getDash());
         leaderboardMessage.append(String.format("|%4s|", ""));
         leaderboardMessage.append(String.format(" %-31s|", "Name"));
@@ -61,14 +66,14 @@ public class LeaderboardMessage implements ReactableMessage {
         return leaderboardMessage.toString();
     }
 
-    private String getDash() {
+    private static String getDash() {
         return "-".repeat(78) + "\n";
     }
 
     public void forward() {
         if ((leaderboard.size() - 1) / ENTRIES_PER_PAGE >= page + 1) {
             page++;
-            message.editMessage(getMessage()).queue();
+            message.editMessage(makeMessage()).queue();
         }
         this.lastUpdated = System.currentTimeMillis();
     }
@@ -76,14 +81,14 @@ public class LeaderboardMessage implements ReactableMessage {
     public void backward() {
         if (page != 0) {
             page--;
-            message.editMessage(getMessage()).queue();
+            message.editMessage(makeMessage()).queue();
         }
         this.lastUpdated = System.currentTimeMillis();
     }
 
     private void top() {
         page = 0;
-        message.editMessage(getMessage()).queue();
+        message.editMessage(makeMessage()).queue();
         this.lastUpdated = System.currentTimeMillis();
     }
 
