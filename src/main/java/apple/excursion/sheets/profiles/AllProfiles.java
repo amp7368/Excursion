@@ -1,18 +1,18 @@
 package apple.excursion.sheets.profiles;
 
+import apple.excursion.discord.data.TaskSimple;
+import apple.excursion.discord.data.TaskSimpleCompleted;
 import apple.excursion.sheets.SheetsPlayerStats;
 import apple.excursion.utils.GetFromObject;
 import apple.excursion.utils.Pair;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class AllProfiles {
-    public static List<Profile> getProfiles() throws IOException {
-        List<Profile> profiles = new ArrayList<>();
+    public static Set<Profile> getProfiles() throws IOException {
+        Set<Profile> profiles = new HashSet<>();
         List<List<Object>> everyone;
         everyone = SheetsPlayerStats.getEveryone();
         if (everyone == null || everyone.size() < 3) throw new IOException("nothing is in the sheet");
@@ -61,8 +61,10 @@ public class AllProfiles {
             for (Pair<Iterator<Object>, Profile> profileTemp : profilesTemp) {
                 if (profileTemp.getKey().hasNext()) {
                     int pointsEarnedByPlayer = GetFromObject.getInt(profileTemp.getKey().next());
-                    if (!GetFromObject.intFail(pointsEarnedByPlayer) && pointsEarnedByPlayer != 0) {
-                        profileTemp.getValue().addEp(pointsEarnedByPlayer);
+                    if (GetFromObject.intFail(pointsEarnedByPlayer) || pointsEarnedByPlayer == 0) {
+                        profileTemp.getValue().addNotDone(new TaskSimple(questEp, questName, category));
+                    } else {
+                        profileTemp.getValue().addDone(new TaskSimpleCompleted(questEp, questName, category, pointsEarnedByPlayer));
                     }
                 }
             }

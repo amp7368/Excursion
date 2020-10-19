@@ -1,9 +1,13 @@
 package apple.excursion.sheets.profiles;
 
 
+import apple.excursion.discord.data.TaskSimple;
+import apple.excursion.discord.data.TaskSimpleCompleted;
 import apple.excursion.utils.GetFromObject;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 public class Profile {
     private int totalEp = 0;
@@ -14,6 +18,8 @@ public class Profile {
     private String guildTag;
     private boolean complete = false;
     private int row;
+    private List<TaskSimple> tasksNotDone = new ArrayList<>();
+    public List<TaskSimpleCompleted> tasksDone = new ArrayList<>();
 
     public Profile(Iterator<Object> profileRow, int row) {
         this.row = row;
@@ -77,6 +83,15 @@ public class Profile {
         return this.discordId == id;
     }
 
+    public void addNotDone(TaskSimple task) {
+        this.tasksNotDone.add(task);
+    }
+
+    public void addDone(TaskSimpleCompleted task) {
+        this.tasksDone.add(task);
+        this.totalEp += task.pointsEarned;
+    }
+
     public int getTotalEp() {
         return totalEp;
     }
@@ -97,11 +112,17 @@ public class Profile {
         return this.discordId;
     }
 
-    public void addEp(int points) {
-        this.totalEp += points;
-    }
-
     public int getSoulJuice() {
         return soulJuice;
+    }
+
+    @Override
+    public int hashCode() {
+        return (int) (discordId % Integer.MAX_VALUE);
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        return other instanceof Profile && ((Profile) other).hasId(discordId);
     }
 }

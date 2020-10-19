@@ -3,29 +3,40 @@ package apple.excursion.discord.commands.admin;
 import apple.excursion.database.GetDB;
 import apple.excursion.database.SyncDB;
 import apple.excursion.database.objects.guild.GuildHeader;
+import apple.excursion.database.objects.player.PlayerData;
 import apple.excursion.database.objects.player.PlayerHeader;
 import apple.excursion.database.objects.player.PlayerLeaderboard;
 import apple.excursion.discord.DiscordBot;
 import apple.excursion.discord.commands.DoCommand;
 import apple.excursion.sheets.profiles.AllProfiles;
 import apple.excursion.sheets.profiles.Profile;
+import apple.excursion.utils.Pair;
 import net.dv8tion.jda.api.entities.PrivateChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class CommandSheetImport implements DoCommand {
+
+    public static final String WORKING_EMOJI = "\uD83D\uDEE0";
+
     @Override
     public void dealWithCommand(MessageReceivedEvent event) {
-        List<Profile> sheetData;
+        Set<Profile> sheetData;
         List<PlayerHeader> databasePlayers;
         List<GuildHeader> databaseGuilds;
+        List<PlayerData> playerData;
         try {
             sheetData = AllProfiles.getProfiles();
             databasePlayers = GetDB.getPlayerHeaders();
             databaseGuilds = GetDB.getGuildNameList();
+            playerData = new ArrayList<>();
+            for (PlayerHeader header : databasePlayers)
+                playerData.add(GetDB.getPlayerData(new Pair<>(header.id, header.name), -1));
         } catch (IOException e) {
             event.getChannel().sendMessage("There was an IOException importing everything from the sheet").queue();
             return;
@@ -34,7 +45,8 @@ public class CommandSheetImport implements DoCommand {
             return;
         }
         try {
-            List<String> logs = SyncDB.sync(sheetData, databasePlayers, databaseGuilds);
+            event.getMessage().addReaction(WORKING_EMOJI).queue();
+            List<String> logs = SyncDB.sync(sheetData, databasePlayers,playerData, databaseGuilds);
             PrivateChannel dms = DiscordBot.client.getUserById(253646208084475904L).openPrivateChannel().complete();
             StringBuilder builder = new StringBuilder();
             for (String log : logs) {
@@ -52,6 +64,7 @@ public class CommandSheetImport implements DoCommand {
             throwables.printStackTrace();
             event.getChannel().sendMessage("There was an SQLException importing the data into the database").queue();
         }
+        event.getMessage().removeReaction(WORKING_EMOJI, DiscordBot.client.getSelfUser()).queue();
 
     }
 }

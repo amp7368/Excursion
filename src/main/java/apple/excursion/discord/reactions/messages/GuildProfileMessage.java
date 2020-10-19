@@ -69,7 +69,6 @@ public class GuildProfileMessage implements ReactableMessage {
         } else {
             footer.append("**Submission History:** \n");
             for (OldSubmission submission : submissions) {
-                if(submission.isSyncSubmission()) continue;
                 footer.append(submission.makeSubmissionHistoryMessage());
                 footer.append('\n');
             }

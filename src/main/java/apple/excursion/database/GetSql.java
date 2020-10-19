@@ -44,7 +44,7 @@ class GetSql {
     @NotNull
     static String getSqlInsertPlayers(Pair<Long, String> id, String guildName, String guildTag) {
         if (guildName == null) {
-            return "INSERT INTO players(player_uid, player_name) "
+            return "INSERT INTO players (player_uid, player_name) "
                     + "VALUES "
                     + String.format("('%d','%s');",
                     id.getKey(),
@@ -85,13 +85,13 @@ class GetSql {
     }
 
     @NotNull
-    public static String getSqlInsertSubmission(long playerId, int score) {
+    public static String getSqlInsertSubmission(long playerId, int score, String taskName) {
         return String.format("INSERT INTO submissions "
                         + "VALUES "
                         + "(%d,%d,'%s',%s,%d,'%s',%d);",
                 VerifyDB.currentSubmissionId,
                 System.currentTimeMillis(),
-                SyncDB.SYNC_TASK_NAME,
+                convertTaskNameToSql(taskName),
                 null,
                 playerId,
                 SyncDB.SYNC_TASK_TYPE,
@@ -179,9 +179,9 @@ class GetSql {
 
     @NotNull
     public static String getSqlGetPlayersInGuild(String tag) {
-        return String.format("SELECT data.player_name,guilds.guild_tag,guilds.guild_name,data.score,data.soul_juice\n" +
+        return String.format("SELECT data.player_uid, data.player_name,guilds.guild_tag,guilds.guild_name,data.score,data.soul_juice\n" +
                 "FROM (\n" +
-                "         SELECT players.player_name, players.guild_tag, sum(submissions.score) as score, players.soul_juice\n" +
+                "         SELECT players.player_uid, players.player_name, players.guild_tag, sum(submissions.score) as score, players.soul_juice\n" +
                 "         FROM players\n" +
                 "                  INNER JOIN submissions_link\n" +
                 "                             ON players.player_uid = submissions_link.player_id\n" +

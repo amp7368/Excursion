@@ -15,7 +15,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class GetDB {
     public static PlayerData getPlayerData(Pair<Long, String> id, int submissionSize) throws SQLException {
@@ -30,7 +29,7 @@ public class GetDB {
                 InsertDB.insertPlayer(id, null, null);
                 response.close();
                 statement.close();
-                return new PlayerData(id.getValue(), null, null, new ArrayList<>(), 0, 0);
+                return new PlayerData(id.getKey(), id.getValue(), null, null, new ArrayList<>(), 0, 0);
             }
             // if the player has the wrong playerName
             if (!playerName.equals(id.getValue())) {
@@ -57,7 +56,7 @@ public class GetDB {
             statement.close();
             response.close();
 
-            return new PlayerData(playerName, guildName, guildTag, submissions, score, soulJuice);
+            return new PlayerData(id.getKey(),playerName, guildName, guildTag, submissions, score, soulJuice);
         }
     }
 
@@ -91,12 +90,14 @@ public class GetDB {
             List<PlayerData> players = new ArrayList<>();
             response.next();
             while (!response.isClosed()) {
-                String playerName = response.getString(1);
-                String guildTag = response.getString(2);
-                String guildName = response.getString(3);
-                int score = response.getInt(4);
-                int soulJuice = response.getInt(5);
+                long id = response.getLong(1);
+                String playerName = response.getString(2);
+                String guildTag = response.getString(3);
+                String guildName = response.getString(4);
+                int score = response.getInt(5);
+                int soulJuice = response.getInt(6);
                 players.add(new PlayerData(
+                        id,
                         playerName,
                         guildName,
                         guildTag,

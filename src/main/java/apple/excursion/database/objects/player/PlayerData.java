@@ -14,8 +14,10 @@ public class PlayerData {
     public final List<OldSubmission> submissions;
     public final int score;
     private final int soulJuice;
+    public final long id;
 
-    public PlayerData(String playerName, String guildName, String guildTag, List<OldSubmission> submissions, int score, int soulJuice) {
+    public PlayerData(long id,String playerName, String guildName, String guildTag, List<OldSubmission> submissions, int score, int soulJuice) {
+        this.id = id;
         this.name = playerName;
         this.guildName = guildName;
         this.guildTag = guildTag;
@@ -49,5 +51,15 @@ public class PlayerData {
 
     public int getSoulJuice() {
         return soulJuice;
+    }
+
+    public int getScoreOfSubmissionsWithName(String taskName) {
+        int score = 0;
+        for(OldSubmission submission:submissions){
+            if(submission.taskName.equalsIgnoreCase(taskName)){
+                score = submission.score;
+            }
+        }
+        return score;
     }
 }

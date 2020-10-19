@@ -122,7 +122,6 @@ public class ProfileMessage implements ReactableMessage {
             List<OldSubmission> submissions = player.submissions;
             int i = 0;
             for (OldSubmission submission : submissions) {
-                if(submission.isSyncSubmission()) continue;
                 if (i++ == SUBMISSION_HISTORY_SIZE) break;
                 description.append(submission.makeSubmissionHistoryMessage());
                 description.append("\n");
