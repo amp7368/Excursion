@@ -1,8 +1,8 @@
 package apple.excursion.discord.reactions.messages;
 
-import apple.excursion.discord.data.AllProfiles;
-import apple.excursion.discord.data.Profile;
-import apple.excursion.discord.data.answers.OverallLeaderboard;
+import apple.excursion.database.GetDB;
+import apple.excursion.database.objects.player.PlayerLeaderboardEntry;
+import apple.excursion.database.objects.player.PlayerLeaderboard;
 import apple.excursion.discord.reactions.AllReactables;
 import apple.excursion.discord.reactions.ReactableMessage;
 import net.dv8tion.jda.api.entities.Message;
@@ -10,15 +10,17 @@ import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 
+import java.sql.SQLException;
+
 
 public class LeaderboardMessage implements ReactableMessage {
-    private final OverallLeaderboard leaderboard = AllProfiles.getOverallLeaderboard();
+    private final PlayerLeaderboard leaderboard = GetDB.getPlayerLeaderboard();
     private static final int ENTRIES_PER_PAGE = 20;
     private final Message message;
     private int page;
     private long lastUpdated;
 
-    public LeaderboardMessage(MessageChannel channel) {
+    public LeaderboardMessage(MessageChannel channel) throws SQLException {
         this.page = 0;
         this.message = channel.sendMessage(getMessage()).complete();
         message.addReaction(AllReactables.Reactable.LEFT.getFirstEmoji()).queue();
@@ -37,16 +39,16 @@ public class LeaderboardMessage implements ReactableMessage {
         leaderboardMessage.append(String.format(" %8s |", "Total EP"));
         leaderboardMessage.append(String.format(" %-20s|", "Guild Name"));
         leaderboardMessage.append(String.format(" %4s|\n", "Tag "));
-        int entriesLength = leaderboard.leaderboard.size();
+        int entriesLength = leaderboard.size();
         for (int place = page * ENTRIES_PER_PAGE; place < ((page + 1) * ENTRIES_PER_PAGE) && place < entriesLength; place++) {
             StringBuilder stringToAdd = new StringBuilder();
             if (place % 5 == 0) {
                 stringToAdd.append(getDash());
             }
-            Profile entry = leaderboard.leaderboard.get(place);
-            final String name = entry.getName();
+            PlayerLeaderboardEntry entry = leaderboard.get(place);
+            final String name = entry.playerName;
             stringToAdd.append(String.format("|%4d| %-31s| %8d | %-20s| %3s |\n",
-                    place + 1, name.length() > 25 ? name.substring(0, 22) + "..." : name, entry.getTotalEp(), entry.getGuild(), entry.getGuildTag()));
+                    place + 1, name.length() > 25 ? name.substring(0, 22) + "..." : name, entry.score, entry.getGuildName(), entry.getGuildTag()));
 
             if (leaderboardMessage.length() + 3 + stringToAdd.length() >= 2000) {
                 leaderboardMessage.append("```");
@@ -64,7 +66,7 @@ public class LeaderboardMessage implements ReactableMessage {
     }
 
     public void forward() {
-        if ((leaderboard.leaderboard.size() - 1) / ENTRIES_PER_PAGE >= page + 1) {
+        if ((leaderboard.size() - 1) / ENTRIES_PER_PAGE >= page + 1) {
             page++;
             message.editMessage(getMessage()).queue();
         }

@@ -2,7 +2,6 @@ package apple.excursion.discord;
 
 import apple.excursion.ExcursionMain;
 import apple.excursion.discord.commands.*;
-import apple.excursion.discord.commands.general.CommandHelp;
 import apple.excursion.discord.commands.general.CommandSubmit;
 import apple.excursion.discord.reactions.*;
 import net.dv8tion.jda.api.JDA;

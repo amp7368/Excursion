@@ -8,7 +8,7 @@ import java.sql.Statement;
 
 public class UpdateDB {
     public static void updateGuild(String guildName, String guildTag, long id, String playerName) throws SQLException {
-        Statement statement = VerifyDB.playerDbConnection.createStatement();
+        Statement statement = VerifyDB.database.createStatement();
         String sql = GetSql.getSqlExistsPlayer(id);
         ResultSet response = statement.executeQuery(sql);
         if (response.getInt(1) == 1) {
@@ -17,15 +17,14 @@ public class UpdateDB {
             statement.execute(sql);
         } else {
             // the player doesn't exist so add an entry
-            sql = GetSql.getSqlInsertPlayers(new Pair<>(id, playerName), guildName, guildTag, -1);
-            statement.execute(sql);
+            InsertDB.insertPlayer(new Pair<>(id, playerName), guildName, guildTag);
         }
         response.close();
         statement.close();
     }
 
     public static void createGuild(String guildName, String guildTag) throws SQLException {
-        Statement statement = VerifyDB.guildDbConnection.createStatement();
+        Statement statement = VerifyDB.database.createStatement();
         String sql = GetSql.getSqlInsertGuild(guildName, guildTag);
         statement.execute(sql);
         statement.close();

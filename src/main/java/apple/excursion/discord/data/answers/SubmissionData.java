@@ -1,6 +1,6 @@
 package apple.excursion.discord.data.answers;
 
-import apple.excursion.database.objects.PlayerData;
+import apple.excursion.database.objects.player.PlayerData;
 import apple.excursion.discord.DiscordBot;
 import apple.excursion.discord.data.TaskSimple;
 import apple.excursion.discord.reactions.AllReactables;
@@ -11,6 +11,7 @@ import net.dv8tion.jda.api.entities.PrivateChannel;
 import net.dv8tion.jda.api.entities.User;
 
 import javax.annotation.Nullable;
+import java.sql.Date;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -114,6 +115,7 @@ public class SubmissionData {
             for (Pair<Long, String> userRaw : allSubmitters) {
                 User user = DiscordBot.client.getUserById(userRaw.getKey());
                 if (user != null) {
+                    if (user.isBot() || user.isFake()) return;
                     PrivateChannel channel = user.openPrivateChannel().complete();
                     List<String> otherSubmitters = new ArrayList<>();
                     for (Pair<Long, String> otherUserRaw : allSubmitters) {
@@ -146,26 +148,12 @@ public class SubmissionData {
         }
     }
 
-    public long getTime() {
+    public long getTimeEpoch() {
         return epochTimeOfSubmission;
     }
 
-    @Nullable
-    public String getOtherSubmitters() {
-        if (allSubmitters.size() == 1) {
-            return null;
-        }
-        List<Long> otherSubmitters = new ArrayList<>();
-        for (Pair<Long, String> otherUserRaw : allSubmitters) {
-            if (!otherUserRaw.getKey().equals(submitterId)) {
-                otherSubmitters.add(otherUserRaw.getKey());
-            }
-        }
-        return otherSubmitters.stream().map(String::valueOf).collect(Collectors.joining(","));
-    }
-
-    public String getSubmitterId() {
-        return String.valueOf(submitterId);
+    public long getSubmitterId() {
+        return submitterId;
     }
 
     public int getTaskScore() {
@@ -178,7 +166,6 @@ public class SubmissionData {
 
     public enum TaskSubmissionType {
         DAILY,
-        NORMAL,
-        IDK
+        NORMAL
     }
 }

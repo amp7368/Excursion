@@ -12,18 +12,45 @@ import java.util.Date;
 
 public class VerifyDB {
     private static final String DATABASE_FOLDER;
-    private static final String SUBMISSION_DB;
-    private static final String PLAYER_DB;
-    private static final String GUILD_LB_DB;
-    private static final String PLAYER_LB_DB;
-    private static final String GUILD_DB;
+    private static final String DB_DB;
     private static final String CALENDAR_DB;
     private static final int TASKS_PER_DAY = 3;
-    public static Connection submissionDbConnection;
-    public static Connection playerDbConnection;
-    public static Connection guildLbDbConnection;
-    public static Connection playerLbDbConnection;
-    public static Connection guildDbConnection;
+    public static final String DEFAULT_GUILD_TAG = "DEFAULT_TAG";
+    public static final String DEFAULT_GUILD_NAME = "DEFAULT_NAME";
+    public static final String BUILD_TABLE_SQL_SUBMISSIONS = "CREATE TABLE IF NOT EXISTS submissions ("
+            + "	id INTEGER PRIMARY KEY NOT NULL UNIQUE,"
+            + "	date_submitted TIMESTAMP NOT NULL,"
+            + "	task_name TEXT NOT NULL,"
+            + "	links TEXT,"
+            + "	submitter BIGINT NOT NULL,"
+            + "	submission_type TEXT NOT NULL,"
+            + " score INTEGER NOT NULL DEFAULT 0, "
+            + " FOREIGN KEY (submitter) REFERENCES players (player_uid)"
+            + ");";
+    public static final String BUILD_TABLE_SQL_PLAYERS = "CREATE TABLE IF NOT EXISTS players ("
+            + "	player_uid TEXT PRIMARY KEY NOT NULL UNIQUE,"
+            + "	player_name TEXT NOT NULL,"
+            + "	guild_name TEXT NOT NULL DEFAULT '" + DEFAULT_GUILD_NAME + "',"
+            + "	guild_tag TEXT NOT NULL DEFAULT '" + DEFAULT_GUILD_TAG + "',"
+            + "	soul_juice INTEGER NOT NULL DEFAULT 0, "
+            + " FOREIGN KEY (guild_tag) REFERENCES guilds (guild_tag)"
+            + ");";
+    public static final String BUILD_TABLE_SQL_GUILDS = "CREATE TABLE IF NOT EXISTS guilds ("
+            + "	guild_tag TEXT NOT NULL PRIMARY KEY UNIQUE,"
+            + "	guild_name TEXT NOT NULL"
+            + ");";
+    public static final String BUILD_TABLE_SQL_SUBMISSION_LINK = "CREATE TABLE IF NOT EXISTS submissions_link ( " +
+            "submission_id INTEGER NOT NULL, " +
+            "player_id BIG INT NOT NULL, " +
+            "guild_tag TEXT NOT NULL DEFAULT '" + DEFAULT_GUILD_TAG + "'," +
+            "PRIMARY KEY (submission_id, player_id), " +
+            "UNIQUE (submission_id, player_id), " +
+            "FOREIGN KEY (submission_id) REFERENCES submissions (id), " +
+            "FOREIGN KEY (player_id) REFERENCES players (player_uid), " +
+            "FOREIGN KEY (guild_tag) REFERENCES guilds (guild_tag) " +
+            ");";
+    private static final String INSERT_DEFAULT_GUILD = "INSERT INTO guilds VALUES ('" + DEFAULT_GUILD_TAG + "','" + DEFAULT_GUILD_NAME + "');";
+    public static Connection database;
     public static Connection calendarDbConnection;
 
     public static final Object syncDB = new Object();
@@ -32,21 +59,14 @@ public class VerifyDB {
     static {
         List<String> list = Arrays.asList(ExcursionMain.class.getProtectionDomain().getCodeSource().getLocation().getPath().split("/"));
         DATABASE_FOLDER = String.join("/", list.subList(0, list.size() - 1)) + "/data/";
-        PLAYER_LB_DB = DATABASE_FOLDER + "playerlb.db";
-        GUILD_LB_DB = DATABASE_FOLDER + "guildlb.db";
-        PLAYER_DB = DATABASE_FOLDER + "player.db";
-        SUBMISSION_DB = DATABASE_FOLDER + "submissions.db";
-        GUILD_DB = DATABASE_FOLDER + "guild.db";
+        DB_DB = DATABASE_FOLDER + "data.db";
         CALENDAR_DB = DATABASE_FOLDER + "calendar.db";
     }
 
     public static void connect() throws ClassNotFoundException, SQLException {
         synchronized (syncDB) {
             Class.forName("org.sqlite.JDBC");
-            submissionDbConnection = DriverManager.getConnection("jdbc:sqlite:" + SUBMISSION_DB);
-            guildLbDbConnection = DriverManager.getConnection("jdbc:sqlite:" + GUILD_LB_DB);
-            playerLbDbConnection = DriverManager.getConnection("jdbc:sqlite:" + PLAYER_LB_DB);
-            guildDbConnection = DriverManager.getConnection("jdbc:sqlite:" + GUILD_DB);
+            database = DriverManager.getConnection("jdbc:sqlite:" + DB_DB);
             calendarDbConnection = DriverManager.getConnection("jdbc:sqlite:" + CALENDAR_DB);
             verify();
             verifyCalendar();
@@ -56,75 +76,34 @@ public class VerifyDB {
     /**
      * this should always be within a synchronized
      *
-     * @throws SQLException
+     * @throws SQLException when sql goes bad
      */
     public static void verify() throws SQLException {
-        String month = getMonth();
-        String buildTableSql =
-                "CREATE TABLE IF NOT EXISTS submissions ("
-                        + "	id INTEGER PRIMARY KEY NOT NULL UNIQUE,"
-                        + "	date_submitted TEXT NOT NULL,"
-                        + "	task_name TEXT NOT NULL,"
-                        + "	links TEXT,"
-                        + "	submitter TEXT NOT NULL,"
-                        + "	all_submitters TEXT,"
-                        + "	submission_type TEXT NOT NULL"
-                        + ");";
-        Statement statement = submissionDbConnection.createStatement();
+        Statement statement = database.createStatement();
+        String buildTableSql = BUILD_TABLE_SQL_SUBMISSIONS;
         statement.execute(buildTableSql);
+
+        buildTableSql = BUILD_TABLE_SQL_PLAYERS;
+        statement.execute(buildTableSql);
+
+        buildTableSql = BUILD_TABLE_SQL_GUILDS;
+        statement.execute(buildTableSql);
+
+        buildTableSql = INSERT_DEFAULT_GUILD;
+        try {
+            statement.execute(buildTableSql);
+        } catch (SQLException ignored) {
+        }
+
+        buildTableSql = BUILD_TABLE_SQL_SUBMISSION_LINK;
+        statement.execute(buildTableSql);
+
         currentSubmissionId = statement.executeQuery("SELECT MAX(id) FROM submissions;").getInt(1) + 1;
         statement.close();
-        playerDbConnection = DriverManager.getConnection("jdbc:sqlite:" + PLAYER_DB);
-        buildTableSql =
-                "CREATE TABLE IF NOT EXISTS players ("
-                        + "	player_uid TEXT PRIMARY KEY NOT NULL UNIQUE,"
-                        + "	player_name TEXT NOT NULL,"
-                        + "	guild_name TEXT,"
-                        + "	guild_tag TEXT,"
-                        + "	submission_ids TEXT NOT NULL,"
-                        + "	score SCORE NOT NULL"
-                        + ");";
-        statement = playerDbConnection.createStatement();
-        statement.execute(buildTableSql);
-        statement.close();
 
-        buildTableSql =
-                "CREATE TABLE IF NOT EXISTS " + month + " ("
-                        + "	guild_tag TEXT NOT NULL PRIMARY KEY UNIQUE,"
-                        + "	guild_name TEXT NOT NULL,"
-                        + "	score INTEGER NOT NULL,"
-                        + "	submissions_count INTEGER NOT NULL"
-                        + ");";
-        statement = guildLbDbConnection.createStatement();
-        statement.execute(buildTableSql);
-        statement.close();
-
-
-        buildTableSql =
-                "CREATE TABLE IF NOT EXISTS " + month + " ("
-                        + "	player_uid INTEGER PRIMARY KEY NOT NULL UNIQUE,"
-                        + "	score INTEGER NOT NULL,"
-                        + "	submissions_count INTEGER NOT NULL"
-                        + ");";
-        statement = playerLbDbConnection.createStatement();
-        statement.execute(buildTableSql);
-        statement.close();
-
-
-        buildTableSql =
-                "CREATE TABLE IF NOT EXISTS guilds ("
-                        + "	guild_tag TEXT PRIMARY KEY NOT NULL UNIQUE,"
-                        + "	guild_name TEXT NOT NULL, "
-                        + "	submissions TEXT NOT NULL"
-                        + ");";
-        statement = guildDbConnection.createStatement();
-        statement.execute(buildTableSql);
-        statement.close();
-
-        buildTableSql =
-                "CREATE TABLE IF NOT EXISTS calendar ("
-                        + "	month_name TEXT PRIMARY KEY NOT NULL UNIQUE "
-                        + ");";
+        buildTableSql = "CREATE TABLE IF NOT EXISTS calendar ("
+                + "	month_name TEXT PRIMARY KEY NOT NULL UNIQUE "
+                + ");";
         statement = calendarDbConnection.createStatement();
         statement.execute(buildTableSql);
         statement.close();

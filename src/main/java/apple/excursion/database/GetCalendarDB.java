@@ -15,8 +15,8 @@ public class GetCalendarDB {
 
     public static List<String> getTasksToday(Calendar day) {
         List<DailyTaskWithDate> tasks = getWeek(day);
-        int dayOfWeek = day.get(Calendar.DAY_OF_WEEK) ;
-        if (DailyTaskWithDate.isWeekend(dayOfWeek-1)) { // because of sunday
+        int dayOfWeek = day.get(Calendar.DAY_OF_WEEK);
+        if (DailyTaskWithDate.isWeekend(dayOfWeek - 1)) { // because of sunday
             List<DailyTaskWithDate> weekend = new ArrayList<>();
             if (dayOfWeek == Calendar.SUNDAY) {
                 // go backwards from sunday
@@ -46,7 +46,10 @@ public class GetCalendarDB {
             }
             return taskNames;
         } else {
-            return tasks.get(dayOfWeek - 2).tasks; // because of sunday
+            int index = (dayOfWeek - 2); // because of sunday
+            if (index == -1) //sunday
+                index += 7;
+            return tasks.get(index).tasks;
         }
     }
 
@@ -179,9 +182,11 @@ public class GetCalendarDB {
             if (monthWithTasks.monthName.equals(monthName)) {
                 // we already have this month
                 monthWithTasks.lastUpdated = System.currentTimeMillis();
+                tasksInMonths.add(monthWithTasks);
                 return monthWithTasks;
             }
         }
+        tasksInMonths.removeIf(MonthWithTasks::isOld);
         try {
             return new MonthWithTasks(monthName, yearMonth.lengthOfMonth(), yearMonth.getMonth().name(), yearMonth.getMonthValue(), yearMonth.getYear());
         } catch (SQLException e) {

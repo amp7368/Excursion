@@ -17,40 +17,14 @@ class GetSql {
     }
 
     // all the exists sql
-    @NotNull
-    static String getSqlExistsLbGuild(String guildTag, String monthName) {
-        return String.format("SELECT COUNT(1) " +
-                        "FROM %s " +
-                        "WHERE guild_tag = '%s' " +
-                        "LIMIT 1;",
-                monthName, guildTag);
-    }
-
-    @NotNull
-    public static String getSqlExistsGuild(String guildTag) {
-        return String.format("SELECT COUNT(1) " +
-                        "FROM guilds " +
-                        "WHERE guild_tag = '%s' " +
-                        "LIMIT 1;",
-                guildTag);
-    }
-
-    @NotNull
-    static String getSqlExistsLbPlayer(Pair<Long, String> id, String monthName) {
-        return "SELECT COUNT(1)" +
-                "FROM " + monthName + " "
-                + "WHERE player_uid = '"
-                + id.getKey()
-                + "' LIMIT 1;";
-    }
 
     @NotNull
     static String getSqlExistsPlayer(Long id) {
         return "SELECT COUNT(1)" +
                 "FROM players " +
-                "WHERE player_uid = '"
+                "WHERE player_uid = "
                 + id
-                + "' LIMIT 1;";
+                + " LIMIT 1;";
     }
 
 
@@ -68,16 +42,24 @@ class GetSql {
     }
 
     @NotNull
-    static String getSqlInsertPlayers(Pair<Long, String> id, String guildName, String guildTag, int submissionId) {
-        return "INSERT INTO players(player_uid, player_name, guild_name, guild_tag, submission_ids, score) "
-                + "VALUES "
-                + String.format("('%d','%s',%s,%s,'%s',0);",
-                id.getKey(),
-                id.getValue(),
-                guildName == null ? null : String.format("'%s'", guildName),
-                guildTag == null ? null : String.format("'%s'", guildTag),
-                submissionId == -1 ? "" : String.valueOf(submissionId)
-        );
+    static String getSqlInsertPlayers(Pair<Long, String> id, String guildName, String guildTag) {
+        if (guildName == null) {
+            return "INSERT INTO players(player_uid, player_name) "
+                    + "VALUES "
+                    + String.format("('%d','%s');",
+                    id.getKey(),
+                    id.getValue()
+            );
+        } else {
+            return "INSERT INTO players "
+                    + "VALUES "
+                    + String.format("('%d','%s','%s','%s',0);",
+                    id.getKey(),
+                    id.getValue(),
+                    guildName,
+                    guildTag
+            );
+        }
     }
 
     @NotNull
@@ -89,150 +71,128 @@ class GetSql {
         else
             links = "'" + String.join(",", linksList) + "'";
 
-        return "INSERT INTO submissions(id, date_submitted, task_name, links, submitter, all_submitters, submission_type) "
-                + "VALUES "
-                + String.format("(%d,'%s','%s',%s,'%s',%s,'%s');",
+        return String.format("INSERT INTO submissions "
+                        + "VALUES "
+                        + "(%d,%d,'%s',%s,%d,'%s',%d);",
                 VerifyDB.currentSubmissionId,
-                data.getTime(),
+                data.getTimeEpoch() * 1000,
                 data.getTaskName(),
                 links,
                 data.getSubmitterId(),
-                data.getOtherSubmitters() == null ? null : "'" + data.getOtherSubmitters() + "'",
-                data.getType().name()
+                data.getType().name(),
+                data.getTaskScore()
         );
     }
 
     @NotNull
     public static String getSqlInsertGuild(String guildName, String guildTag) {
-        return String.format("INSERT INTO guilds (guild_name, guild_tag, submissions) "
-                        + "VALUES ('%s', '%s','%s');",
-                guildName, guildTag, "");
-    }
-
-    @NotNull
-    static String getSqlInsertLbPlayers(Pair<Long, String> id, String monthName, int taskScore, int count) {
-        return String.format("INSERT INTO %s (player_uid, score, submissions_count) "
-                        + "VALUES ('%d', %d, %d);",
-                monthName, id.getKey(), taskScore, count
-        );
-    }
-
-    @NotNull
-    static String getSqlInsertLbGuild(String guildName, String guildTag, String monthName, int taskScore, int count) {
-        return String.format("INSERT INTO %s (guild_tag, guild_name, score, submissions_count) "
-                        + "VALUES ('%s', '%s', %d, %d);"
-                , monthName, guildTag, guildName, taskScore, count);
+        return String.format("INSERT INTO guilds "
+                        + "VALUES ('%s', '%s');",
+                guildTag, guildName);
     }
 
 
     // all the get sql
+    @NotNull
+    public static String getSqlGetPlayerSubmissionHistory(long id, int submissionsToGet) {
+        return String.format("SELECT group_concat(players.player_name),\n" +
+                "       data.submitter_name,\n" +
+                "       data.date_submitted,\n" +
+                "       data.task_name,\n" +
+                "       data.links,\n" +
+                "       data.submission_type,\n" +
+                "       data.score\n" +
+                "FROM (\n" +
+                "         SELECT s.*, players.player_name as submitter_name\n" +
+                "         FROM (\n" +
+                "                  SELECT submissions.*\n" +
+                "                  FROM submissions_link\n" +
+                "                           INNER JOIN submissions\n" +
+                "                                      ON submissions_link.submission_id = submissions.id\n" +
+                "                  WHERE submissions_link.player_id = %d\n" +
+                "                  ORDER BY submissions.date_submitted DESC\n" +
+                (submissionsToGet == -1 ? "" : String.format("LIMIT %d ", submissionsToGet)) +
+                "              ) as s\n" +
+                "                  INNER JOIN players\n" +
+                "                             ON s.submitter = players.player_uid\n" +
+                "     ) AS data\n" +
+                "         INNER JOIN submissions_link\n" +
+                "                    ON submissions_link.submission_id = data.id\n" +
+                "         INNER JOIN players\n" +
+                "                    ON submissions_link.player_id = players.player_uid\n" +
+                "GROUP BY data.id", id);
+    }
 
     @NotNull
     public static String getSqlGetCalendar(String monthYear) {
         return "SELECT * FROM " + monthYear;
     }
 
-    @NotNull
-    static String getSqlSubmissionGetAll(String submissionId) {
-        return String.format("SELECT * " +
-                "FROM submissions " +
-                "WHERE id = %s;", submissionId);
-    }
-
-    @NotNull
-    static String getSqlGetPlayerName(String id) {
-        return String.format("SELECT player_name " +
-                "FROM players " +
-                "WHERE player_uid = '%s';", id);
-    }
 
     @NotNull
     public static String getSqlGetGuilds() {
-        return "SELECT * FROM guilds;";
+        return "SELECT sum(player_score.score) AS guild_score, player_score.guild_tag, player_score.guild_name, player_score.player_name, max(player_score.score)\n" +
+                "FROM (\n" +
+                "         SELECT players.player_name, sum(submissions.score) as score, guilds.guild_tag, guilds.guild_name\n" +
+                "         FROM players\n" +
+                "                  INNER JOIN submissions_link\n" +
+                "                             ON players.player_uid = submissions_link.player_id\n" +
+                "                  INNER JOIN submissions\n" +
+                "                             ON submissions_link.submission_id = submissions.id\n" +
+                "                  INNER JOIN guilds\n" +
+                "                             ON guilds.guild_tag = submissions_link.guild_tag\n" +
+                "         GROUP BY guilds.guild_tag\n" +
+                "     ) as player_score\n" +
+                "GROUP BY player_score.guild_tag;";
     }
 
     @NotNull
     static String getSqlGetPlayerAll(long id) {
-        return String.format("SELECT * " +
-                "FROM players " +
-                "WHERE player_uid = '%d';", id);
+        return String.format("SELECT(\n" +
+                "          SELECT sum(submissions.score)\n" +
+                "          FROM players\n" +
+                "                   INNER JOIN submissions_link ON players.player_uid = submissions_link.player_id\n" +
+                "                   INNER JOIN submissions ON submissions_link.submission_id = submissions.id\n" +
+                "          WHERE players.player_uid = %d) as score,\n" +
+                "      players.player_name,\n" +
+                "      players.guild_tag,\n" +
+                "      players.guild_name,\n" +
+                "      players.soul_juice\n" +
+                "FROM players;", id);
     }
 
-    @NotNull
-    static String getSqlGetLbGuild(String guildName, String guildTag, String monthName) {
-        return String.format(
-                "SELECT score, submissions_count "
-                        + "FROM %s "
-                        + "WHERE (guild_name = '%s' AND guild_tag = '%s') " +
-                        "LIMIT 1;"
-                , monthName, guildName, guildTag
-        );
-    }
 
     @NotNull
     public static String getSqlGetPlayersInGuild(String tag) {
-        return String.format("SELECT * " +
-                "FROM players " +
-                "WHERE guild_tag = '%s'", tag);
+        return String.format("SELECT data.player_name,guilds.guild_tag,guilds.guild_name,data.score,data.soul_juice\n" +
+                "FROM (\n" +
+                "         SELECT players.player_name, players.guild_tag, sum(submissions.score) as score, players.soul_juice\n" +
+                "         FROM players\n" +
+                "                  INNER JOIN submissions_link\n" +
+                "                             ON players.player_uid = submissions_link.player_id\n" +
+                "                  INNER JOIN submissions\n" +
+                "                             ON submissions_link.submission_id = submissions.id\n" +
+                "         WHERE submissions_link.guild_tag = '%s'\n" +
+                "         GROUP BY players.player_uid\n" +
+                "     ) AS data\n" +
+                "INNER JOIN guilds\n" +
+                "ON guilds.guild_tag = data.guild_tag\n" +
+                "ORDER BY data.score DESC;", tag);
     }
 
     @NotNull
-    static String getSqlGetPlayerSubmissionIdsAndScore(Pair<Long, String> id) {
-        return "SELECT submission_ids, score " +
-                "FROM players " +
-                "WHERE player_uid = '" + id.getKey() +
-                "' LIMIT 1";
-    }
-
-    @NotNull
-    static String getSqlGetPlayerGuild(Pair<Long, String> id) {
+    static String getSqlGetPlayerGuild(long id) {
         return "SELECT guild_name, guild_tag " +
                 "FROM players " +
-                "WHERE player_uid = '" + id.getKey() +
-                "' LIMIT 1;";
+                "WHERE player_uid = " + id +
+                " LIMIT 1;";
     }
 
-    @NotNull
-    static String getSqlGetLbPlayer(Pair<Long, String> id, String monthName) {
-        return "SELECT score, submissions_count " +
-                "FROM " + monthName + " "
-                + "WHERE player_uid = '"
-                + id.getKey()
-                + "' LIMIT 1;";
-    }
-
-
-    // all the update sql
-
-
-    @NotNull
-    static String getSqlUpdatePlayerSubmissionIdsAndScore(Pair<Long, String> id, String submission_ids, int score) {
-        return String.format("UPDATE players " +
-                "SET submission_ids = '%s', score = %d " +
-                "WHERE player_uid = '%s'", submission_ids, score, id.getKey());
-    }
-
-    @NotNull
-    static String getSqlUpdateLbPlayer(Pair<Long, String> id, String monthName, int score, int count) {
-        return String.format("UPDATE %s "
-                        + "SET score = %d, submissions_count = %d "
-                        + "WHERE player_uid = '%d';"
-                , monthName, score, count, id.getKey());
-    }
-
-    @NotNull
-    static String getSqlUpdateLbGuild(String guildName, String guildTag, String monthName, int score, int count) {
-        return String.format("UPDATE %s "
-                        + "SET score = %d, submissions_count = %d "
-                        + "WHERE (guild_name = '%s' AND guild_tag = '%s');"
-                , monthName, score, count, guildName, guildTag
-        );
-    }
 
     @NotNull
     public static String updatePlayerName(Long id, String playerName) {
         return String.format("UPDATE players " +
-                        "SET player_name = %s " +
+                        "SET player_name = '%s' " +
                         "WHERE player_uid = '%d'",
                 playerName, id);
     }
@@ -244,21 +204,6 @@ class GetSql {
                         "WHERE player_uid = '%d'",
                 name, tag, id);
     }
-
-    @NotNull
-    public static String getSqlUpdateGuildSubmissions(String guildTag, String submissions) {
-        return String.format("UPDATE guilds " +
-                "SET submissions = '%s' " +
-                "WHERE guild_tag = '%s'", submissions, guildTag);
-    }
-
-    @NotNull
-    public static String getSqlGetGuildSubmissions(String guildTag) {
-        return String.format("SELECT submissions " +
-                "FROM guilds " +
-                "WHERE guild_tag = '%s'", guildTag);
-    }
-
 
     // helper methods
     @NotNull
@@ -285,5 +230,59 @@ class GetSql {
             }
         }
         return new String(chars);
+    }
+
+    @NotNull
+    public static String getSqlInsertSubmissionLink(int submissionId, long playerId, String guildTag) {
+        return String.format("INSERT INTO submissions_link VALUES (%d,%d,'%s')", submissionId, playerId, guildTag);
+    }
+
+    @NotNull
+    public static String getSqlGetGuildNames() {
+        return "SELECT guild_tag, guild_name FROM guilds;";
+    }
+
+    @NotNull
+    public static String getSqlGetGuildSubmissionHistory(String guildTag) {
+        return "SELECT group_concat(players.player_name),\n" +
+                "       data.submitter_name,\n" +
+                "       data.date_submitted,\n" +
+                "       data.task_name,\n" +
+                "       data.links,\n" +
+                "       data.submission_type,\n" +
+                "       data.score\n" +
+                "FROM (\n" +
+                "         SELECT s.*, players.player_name as submitter_name\n" +
+                "         FROM (\n" +
+                "                  SELECT submissions.*\n" +
+                "                  FROM submissions_link\n" +
+                "                           INNER JOIN submissions\n" +
+                "                                      ON submissions_link.submission_id = submissions.id\n" +
+                "                  WHERE submissions_link.guild_tag = '" + guildTag + "'\n" +
+                "                  ORDER BY submissions.date_submitted DESC\n" +
+                "                  LIMIT 5\n" +
+                "              ) as s\n" +
+                "                  INNER JOIN players\n" +
+                "                             ON s.submitter = players.player_uid\n" +
+                "     ) AS data\n" +
+                "         INNER JOIN submissions_link\n" +
+                "                    ON submissions_link.submission_id = data.id\n" +
+                "         INNER JOIN players\n" +
+                "                    ON submissions_link.player_id = players.player_uid\n" +
+                "GROUP BY data.id;";
+    }
+
+    @NotNull
+    public static String getSqlGetPlayerLeaderboard() {
+        return "SELECT players.player_name, players.guild_tag, players.guild_name, playerData.*\n" +
+                "FROM (\n" +
+                "         SELECT sum(submissions.score) AS score, player_uid\n" +
+                "         FROM players\n" +
+                "                  INNER JOIN submissions_link ON players.player_uid = submissions_link.player_id\n" +
+                "                  INNER JOIN submissions ON submissions_link.submission_id = submissions.id\n" +
+                "         GROUP BY players.player_uid\n" +
+                "     ) AS playerData\n" +
+                "         INNER JOIN players\n" +
+                "                    ON playerData.player_uid = players.player_uid";
     }
 }

@@ -1,8 +1,12 @@
 package apple.excursion.database;
 
-import apple.excursion.database.objects.GuildData;
+import apple.excursion.database.objects.guild.GuildHeader;
 import apple.excursion.database.objects.OldSubmission;
-import apple.excursion.database.objects.PlayerData;
+import apple.excursion.database.objects.player.PlayerData;
+import apple.excursion.database.objects.guild.GuildLeaderboardEntry;
+import apple.excursion.database.objects.guild.LeaderboardOfGuilds;
+import apple.excursion.database.objects.player.PlayerLeaderboard;
+import apple.excursion.database.objects.player.PlayerLeaderboardEntry;
 import apple.excursion.utils.Pair;
 
 import java.sql.ResultSet;
@@ -12,134 +16,134 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GetDB {
-    public static PlayerData getPlayerData(Pair<Long, String> id) throws SQLException {
+    public static PlayerData getPlayerData(Pair<Long, String> id, int submissionSize) throws SQLException {
         String sql = GetSql.getSqlGetPlayerAll(id.getKey());
-        Statement statement = VerifyDB.playerDbConnection.createStatement();
+        Statement statement = VerifyDB.database.createStatement();
         ResultSet response = statement.executeQuery(sql);
+        String playerName;
         // if the player doesn't exist
-        if (response.isClosed()) {
+        if (response.isClosed() || (playerName = response.getString(2)) == null) {
             // add the player
-            sql = GetSql.getSqlInsertPlayers(id, null, null, -1);
-            statement.execute(sql);
+            InsertDB.insertPlayer(id, null, null);
             response.close();
             statement.close();
-            return new PlayerData(id.getKey(), id.getValue(), null, null, new ArrayList<>(), 0);
+            return new PlayerData(id.getValue(), null, null, new ArrayList<>(), 0, 0);
         }
-        String playerName = response.getString(2);
-
         // if the player has the wrong playerName
         if (!playerName.equals(id.getValue())) {
             sql = GetSql.updatePlayerName(id.getKey(), id.getValue());
             statement.execute(sql);
             playerName = id.getValue();
+            // reget the playerdata because the response closes somehow. probably because statement.execute();
+            sql = GetSql.getSqlGetPlayerAll(id.getKey());
+            response = statement.executeQuery(sql);
         }
 
-        String guildName = response.getString(3);
-        String guildTag = response.getString(4);
-        String submissionIds = response.getString(5);
-        int score = response.getInt(6);
+        int score = response.getInt(1);
+        String guildTag = response.getString(3);
+        String guildName = response.getString(4);
+        int soulJuice = response.getInt(5);
         response.close();
-        statement.close();
         List<OldSubmission> submissions = new ArrayList<>();
-        if (!submissionIds.isBlank())
-            for (String submissionId : submissionIds.split(",")) {
-                submissions.add(getOldSubmission(submissionId));
-            }
-        return new PlayerData(id.getKey(), playerName, guildName, guildTag, submissions, score);
-    }
-
-    public static OldSubmission getOldSubmission(String submissionId) throws SQLException {
-        Statement statement;
-        ResultSet response;
-        String sql;
-        statement = VerifyDB.submissionDbConnection.createStatement();
-        sql = GetSql.getSqlSubmissionGetAll(submissionId);
+        sql = GetSql.getSqlGetPlayerSubmissionHistory(id.getKey(), submissionSize);
         response = statement.executeQuery(sql);
-        int submissionIdInt = response.getInt(1);
-        Long date = response.getLong(2);
-        String taskName = response.getString(3);
-        String links = response.getString(4);
-        String submitterId = response.getString(5);
-        String otherSubmittersIdsListAsString = response.getString(6);
-        String submissionType = response.getString(7);
-        response.close();
-        statement.close();
+        while (response.next()) {
+            submissions.add(new OldSubmission(response));
+        }
 
-        statement = VerifyDB.playerDbConnection.createStatement();
-        String[] otherSubmittersIds = otherSubmittersIdsListAsString == null ? null : otherSubmittersIdsListAsString.split(",");
-        List<Pair<String, String>> otherSubmitters = new ArrayList<>();
-        if (otherSubmittersIds != null)
-            for (String otherSubmitterId : otherSubmittersIds) {
-                sql = GetSql.getSqlGetPlayerName(otherSubmitterId);
-                response = statement.executeQuery(sql);
-                otherSubmitters.add(new Pair<>(otherSubmitterId, response.getString(1)));
-                response.close();
-            }
-        sql = GetSql.getSqlGetPlayerName(submitterId);
-        response = statement.executeQuery(sql);
-        Pair<String, String> submitter = new Pair<>(submitterId, response.getString(1));
-        response.close();
         statement.close();
+        response.close();
 
-        return new OldSubmission(
-                submissionIdInt,
-                date,
-                taskName,
-                links,
-                submitter,
-                otherSubmitters,
-                submissionType
-        );
+        return new PlayerData(playerName, guildName, guildTag, submissions, score, soulJuice);
     }
 
 
-    public static List<GuildData> getGuildList() throws SQLException {
+    public static LeaderboardOfGuilds getGuildLeaderboard() throws SQLException {
         String sql = GetSql.getSqlGetGuilds();
-        Statement statement = VerifyDB.guildDbConnection.createStatement();
+        Statement statement = VerifyDB.database.createStatement();
         ResultSet response = statement.executeQuery(sql);
-        List<GuildData> guildData = new ArrayList<>();
-        while (!response.isClosed()) {
-            String tag = response.getString(1);
-            String name = response.getString(2);
-            String submissionsListAsString = response.getString(3);
-            List<OldSubmission> submissions = new ArrayList<>();
-            if (!submissionsListAsString.isBlank())
-                for (String submission : submissionsListAsString.split(",")) {
-                    submissions.add(GetDB.getOldSubmission(submission));
-                }
-            guildData.add(new GuildData(tag, name, submissions));
-            response.next();
+        List<GuildLeaderboardEntry> guilds = new ArrayList<>();
+        if (!response.isClosed())
+        while (response.next()) {
+            int guildScore = response.getInt(1);
+            String guildTag = response.getString(2);
+            String guildName = response.getString(3);
+            String playerName = response.getString(4);
+            int playerScore = response.getInt(5);
+            guilds.add(new GuildLeaderboardEntry(guildTag, guildName, guildScore, playerName, playerScore));
         }
         response.close();
         statement.close();
-        return guildData;
+        return new LeaderboardOfGuilds(guilds);
     }
 
 
     public static List<PlayerData> getPlayersInGuild(String tag) throws SQLException {
         String sql = GetSql.getSqlGetPlayersInGuild(tag);
-        Statement statement = VerifyDB.playerDbConnection.createStatement();
+        Statement statement = VerifyDB.database.createStatement();
         ResultSet response = statement.executeQuery(sql);
         List<PlayerData> players = new ArrayList<>();
         response.next();
         while (!response.isClosed()) {
-            long playerId = response.getLong(1);
-            String playerName = response.getString(2);
+            String playerName = response.getString(1);
+            String guildTag = response.getString(2);
             String guildName = response.getString(3);
-            String guildTag = response.getString(4);
-            int score = response.getInt(6);
+            int score = response.getInt(4);
+            int soulJuice = response.getInt(5);
             players.add(new PlayerData(
-                    playerId,
                     playerName,
                     guildName,
                     guildTag,
                     null,
-                    score
+                    score,
+                    soulJuice
             )); // submissions is normally not null, but for this situation we don't need them
             response.next();
         }
         response.close();
         statement.close();
         return players;
+    }
+
+    public static List<GuildHeader> getGuildNameList() throws SQLException {
+        String sql = GetSql.getSqlGetGuildNames();
+        Statement statement = VerifyDB.database.createStatement();
+        ResultSet response = statement.executeQuery(sql);
+        List<GuildHeader> guilds = new ArrayList<>();
+        if (!response.isClosed())
+            while (response.next()) {
+                String guildTag = response.getString(1);
+                String guildName = response.getString(2);
+                guilds.add(new GuildHeader(guildTag, guildName));
+            }
+        response.close();
+        statement.close();
+        return guilds;
+    }
+
+    public static List<OldSubmission> getGuildSubmissions(String guildTag) throws SQLException {
+        List<OldSubmission> submissions = new ArrayList<>();
+        String sql = GetSql.getSqlGetGuildSubmissionHistory(guildTag);
+        Statement statement = VerifyDB.database.createStatement();
+        ResultSet response = statement.executeQuery(sql);
+        while (response.next()) {
+            submissions.add(new OldSubmission(response));
+        }
+
+        statement.close();
+        response.close();
+        return submissions;
+    }
+
+    public static PlayerLeaderboard getPlayerLeaderboard() throws SQLException {
+        String sql = GetSql.getSqlGetPlayerLeaderboard();
+        Statement statement = VerifyDB.database.createStatement();
+        ResultSet response = statement.executeQuery(sql);
+        List<PlayerLeaderboardEntry> leaderboard = new ArrayList<>();
+        if (!response.isClosed())
+            while (response.next()) {
+                leaderboard.add(new PlayerLeaderboardEntry(response));
+            }
+        return new PlayerLeaderboard(leaderboard);
     }
 }

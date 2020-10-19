@@ -1,6 +1,6 @@
 package apple.excursion.discord.reactions.messages;
 
-import apple.excursion.database.InsertSubmissionDB;
+import apple.excursion.database.InsertDB;
 import apple.excursion.discord.DiscordBot;
 import apple.excursion.discord.data.answers.SubmissionData;
 import apple.excursion.discord.reactions.AllReactables;
@@ -93,18 +93,19 @@ public class SubmissionMessage implements ReactableMessage {
                             soulJuice = 0;
                         SheetsPlayerStats.submit(data.getTaskName(), idToName.getKey(), idToName.getValue(), soulJuice);
                     } catch (IOException e) {
+                        e.printStackTrace();
                         final User user = DiscordBot.client.getUserById(idToName.getKey());
-                        if (user == null) continue;
+                        if (user == null || user.isBot()) continue;
                         user.openPrivateChannel().complete().sendMessage("There was an error making your profile. Tell appleptr16 or ojomFox: " + e.getMessage()).queue();
                     } catch (NumberFormatException e) {
                         final User user = DiscordBot.client.getUserById(idToName.getKey());
-                        if (user == null) continue;
+                        if (user == null || user.isBot()) continue;
                         user.openPrivateChannel().complete().sendMessage("The quest reward was not specified correctly. Tell appleptr16 or ojomFox: " + e.getMessage()).queue();
                     }
                 }
             }
         }
-        InsertSubmissionDB.insertSubmission(data);
+        InsertDB.insertSubmission(data);
     }
 
     public void completeSubmit(boolean isAccepted, User reviewer) {

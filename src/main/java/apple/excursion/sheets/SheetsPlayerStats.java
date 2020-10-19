@@ -1,12 +1,8 @@
 package apple.excursion.sheets;
 
 import apple.excursion.ExcursionMain;
-import apple.excursion.discord.data.AllProfiles;
-import apple.excursion.discord.data.Profile;
 import apple.excursion.discord.data.TaskSimple;
 import apple.excursion.utils.GetFromObject;
-import apple.excursion.utils.Pair;
-import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.*;
 
 import java.io.IOException;
@@ -20,7 +16,6 @@ public class SheetsPlayerStats {
     private static final String ID_COL_RANGE = "PlayerStats!A:A";
     private static final String PLAYER_STATS_SHEET = "PlayerStats";
     private static final String BASE_PLAYER_STATS_RANGE = "F5";
-    private static final String EVERYONE_RANGE = "PlayerStats";
     private static final int PLAYER_STATS_SHEET_ID = 0;
 
     public static final String TASKS_DONE_HEADER = "Tasks Done";
@@ -49,8 +44,8 @@ public class SheetsPlayerStats {
     }
 
     public synchronized static void submit(String questNameToAdd, long discordId, String discordName, int soulJuiceToAdd) throws IOException, NumberFormatException {
-        Profile profile = AllProfiles.getProfile(discordId, discordName);
-        if (profile == null) throw new IOException("Error making a new profile");
+        int row = getRowFromDiscord(String.valueOf(discordId));
+        if (row == -1) row = addProfile(discordId, discordName);
         int pointsToAdd = -1;
         int col = -1;
         try {
@@ -73,7 +68,7 @@ public class SheetsPlayerStats {
                     break;
                 }
             }
-            String range = PLAYER_STATS_SHEET + "!" + addA1Notation(BASE_PLAYER_STATS_RANGE, col - 4, profile.getRow() - 4);
+            String range = PLAYER_STATS_SHEET + "!" + addA1Notation(BASE_PLAYER_STATS_RANGE, col - 4, row - 4);
 
             int pointsThere;
             List<List<Object>> pointsThereRaw = SHEETS_VALUES.get(SPREADSHEET_ID, range).execute().getValues();
@@ -88,7 +83,7 @@ public class SheetsPlayerStats {
                             .setValues(Collections.singletonList(Collections.singletonList(String.valueOf(pointsThere + pointsToAdd))))
             ).setValueInputOption("USER_ENTERED").execute();
             if (soulJuiceToAdd != 0) {
-                range = PLAYER_STATS_SHEET + "!" + addA1Notation("A1", 2, profile.getRow());
+                range = PLAYER_STATS_SHEET + "!" + addA1Notation("A1", 2, row);
                 pointsThereRaw = SHEETS_VALUES.get(SPREADSHEET_ID, range).execute().getValues();
                 if (pointsThereRaw == null) pointsThere = 0;
                 else if (pointsThereRaw.get(0) == null) pointsThere = 0;
@@ -111,9 +106,9 @@ public class SheetsPlayerStats {
      * adds a profile to the sheet
      *
      * @param discordId   the id of the player
-     * @param discordName
-     * @return
-     * @throws IOException
+     * @param discordName the name of the player
+     * @return what row the player is in
+     * @throws IOException sometime? maybe never?
      */
     public static int addProfile(long discordId, String discordName) throws IOException {
         List<List<Object>> sheet = SHEETS_VALUES.get(SPREADSHEET_ID, PLAYER_STATS_SHEET).execute().getValues();
@@ -185,10 +180,6 @@ public class SheetsPlayerStats {
             }
         }
         return idIndex;
-    }
-
-    public static List<List<Object>> getEveryone() throws IOException {
-        return SHEETS_VALUES.get(SPREADSHEET_ID, EVERYONE_RANGE).execute().getValues();
     }
 
     public static void rename(int row, String realName) {
