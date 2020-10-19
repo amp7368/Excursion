@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
-class GetSql {
+public class GetSql {
     private static final HashBiMap<Character, Character> incompatibleToCompatible = HashBiMap.create();
 
     static {
@@ -32,7 +32,7 @@ class GetSql {
 
 
     @NotNull
-    public static String getSqlInsertDailyTask(String monthName, int dayOfMonth, Collection<Task> todayTasks) {
+    static String getSqlInsertDailyTask(String monthName, int dayOfMonth, Collection<Task> todayTasks) {
         return String.format("INSERT INTO %s (date, task_names) " +
                         "VALUES (%d, '%s'); ",
                 monthName,
@@ -44,7 +44,7 @@ class GetSql {
     @NotNull
     static String getSqlInsertPlayers(Pair<Long, String> id, String guildName, String guildTag) {
         if (guildName == null) {
-            return "INSERT INTO players(player_uid, player_name) "
+            return "INSERT INTO players (player_uid, player_name) "
                     + "VALUES "
                     + String.format("('%d','%s');",
                     id.getKey(),
@@ -76,7 +76,7 @@ class GetSql {
                         + "(%d,%d,'%s',%s,%d,'%s',%d);",
                 VerifyDB.currentSubmissionId,
                 data.getTimeEpoch() * 1000,
-                data.getTaskName(),
+                convertTaskNameToSql(data.getTaskName()),
                 links,
                 data.getSubmitterId(),
                 data.getType().name(),
@@ -85,7 +85,22 @@ class GetSql {
     }
 
     @NotNull
-    public static String getSqlInsertGuild(String guildName, String guildTag) {
+    static String getSqlInsertSubmission(long playerId, int score, String taskName) {
+        return String.format("INSERT INTO submissions "
+                        + "VALUES "
+                        + "(%d,%d,'%s',%s,%d,'%s',%d);",
+                VerifyDB.currentSubmissionId,
+                System.currentTimeMillis(),
+                convertTaskNameToSql(taskName),
+                null,
+                playerId,
+                SyncDB.SYNC_TASK_TYPE,
+                score
+        );
+    }
+
+    @NotNull
+    static String getSqlInsertGuild(String guildName, String guildTag) {
         return String.format("INSERT INTO guilds "
                         + "VALUES ('%s', '%s');",
                 guildTag, guildName);
@@ -94,7 +109,7 @@ class GetSql {
 
     // all the get sql
     @NotNull
-    public static String getSqlGetPlayerSubmissionHistory(long id, int submissionsToGet) {
+    static String getSqlGetPlayerSubmissionHistory(long id, int submissionsToGet) {
         return String.format("SELECT group_concat(players.player_name),\n" +
                 "       data.submitter_name,\n" +
                 "       data.date_submitted,\n" +
@@ -124,13 +139,13 @@ class GetSql {
     }
 
     @NotNull
-    public static String getSqlGetCalendar(String monthYear) {
+    static String getSqlGetCalendar(String monthYear) {
         return "SELECT * FROM " + monthYear;
     }
 
 
     @NotNull
-    public static String getSqlGetGuilds() {
+    static String getSqlGetGuilds() {
         return "SELECT sum(player_score.score) AS guild_score, player_score.guild_tag, player_score.guild_name, player_score.player_name, max(player_score.score)\n" +
                 "FROM (\n" +
                 "         SELECT players.player_name, sum(submissions.score) as score, guilds.guild_tag, guilds.guild_name\n" +
@@ -163,10 +178,10 @@ class GetSql {
 
 
     @NotNull
-    public static String getSqlGetPlayersInGuild(String tag) {
-        return String.format("SELECT data.player_name,guilds.guild_tag,guilds.guild_name,data.score,data.soul_juice\n" +
+    static String getSqlGetPlayersInGuild(String tag) {
+        return String.format("SELECT data.player_uid, data.player_name,guilds.guild_tag,guilds.guild_name,data.score,data.soul_juice\n" +
                 "FROM (\n" +
-                "         SELECT players.player_name, players.guild_tag, sum(submissions.score) as score, players.soul_juice\n" +
+                "         SELECT players.player_uid, players.player_name, players.guild_tag, sum(submissions.score) as score, players.soul_juice\n" +
                 "         FROM players\n" +
                 "                  INNER JOIN submissions_link\n" +
                 "                             ON players.player_uid = submissions_link.player_id\n" +
@@ -190,7 +205,7 @@ class GetSql {
 
 
     @NotNull
-    public static String updatePlayerName(Long id, String playerName) {
+    static String updatePlayerName(Long id, String playerName) {
         return String.format("UPDATE players " +
                         "SET player_name = '%s' " +
                         "WHERE player_uid = '%d'",
@@ -198,7 +213,7 @@ class GetSql {
     }
 
     @NotNull
-    public static String getSqlUpdatePlayerGuild(long id, String name, String tag) {
+    static String getSqlUpdatePlayerGuild(long id, String name, String tag) {
         return String.format("UPDATE players " +
                         "SET guild_name = '%s', guild_tag = '%s' " +
                         "WHERE player_uid = '%d'",
@@ -233,17 +248,17 @@ class GetSql {
     }
 
     @NotNull
-    public static String getSqlInsertSubmissionLink(int submissionId, long playerId, String guildTag) {
+    static String getSqlInsertSubmissionLink(int submissionId, long playerId, String guildTag) {
         return String.format("INSERT INTO submissions_link VALUES (%d,%d,'%s')", submissionId, playerId, guildTag);
     }
 
     @NotNull
-    public static String getSqlGetGuildNames() {
+    static String getSqlGetGuildNames() {
         return "SELECT guild_tag, guild_name FROM guilds;";
     }
 
     @NotNull
-    public static String getSqlGetGuildSubmissionHistory(String guildTag) {
+    static String getSqlGetGuildSubmissionHistory(String guildTag) {
         return "SELECT group_concat(players.player_name),\n" +
                 "       data.submitter_name,\n" +
                 "       data.date_submitted,\n" +
@@ -273,7 +288,7 @@ class GetSql {
     }
 
     @NotNull
-    public static String getSqlGetPlayerLeaderboard() {
+    static String getSqlGetPlayerLeaderboard() {
         return "SELECT players.player_name, players.guild_tag, players.guild_name, playerData.*\n" +
                 "FROM (\n" +
                 "         SELECT sum(submissions.score) AS score, player_uid\n" +
@@ -284,5 +299,30 @@ class GetSql {
                 "     ) AS playerData\n" +
                 "         INNER JOIN players\n" +
                 "                    ON playerData.player_uid = players.player_uid";
+    }
+
+    @NotNull
+    static String getSqlUpdatePlayerSoulJuice(long id, int juiceToAddToDatabase) {
+        return String.format("UPDATE players\n" +
+                "SET soul_juice = soul_juice + %d\n" +
+                "WHERE player_uid = %d;", juiceToAddToDatabase, id);
+    }
+
+    @NotNull
+    static String getSqlGetPlayerHeaders() {
+        return "SELECT players.player_uid, players.player_name, players.soul_juice, playerData.score\n" +
+                "FROM (\n" +
+                "         SELECT sum(submissions.score) AS score, player_uid\n" +
+                "         FROM players\n" +
+                "                  INNER JOIN submissions_link ON players.player_uid = submissions_link.player_id\n" +
+                "                  INNER JOIN submissions ON submissions_link.submission_id = submissions.id\n" +
+                "         GROUP BY players.player_uid\n" +
+                "     ) AS playerData\n" +
+                "         INNER JOIN players\n" +
+                "                    ON playerData.player_uid = players.player_uid";
+    }
+
+    static String getSqlGetPlayerHeadersNoScore() {
+        return "SELECT players.player_uid, players.player_name, players.soul_juice FROM players";
     }
 }

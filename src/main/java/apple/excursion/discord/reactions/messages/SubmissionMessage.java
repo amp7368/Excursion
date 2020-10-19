@@ -1,11 +1,9 @@
 package apple.excursion.discord.reactions.messages;
 
 import apple.excursion.database.InsertDB;
-import apple.excursion.discord.DiscordBot;
 import apple.excursion.discord.data.answers.SubmissionData;
 import apple.excursion.discord.reactions.AllReactables;
 import apple.excursion.discord.reactions.ReactableMessage;
-import apple.excursion.sheets.SheetsPlayerStats;
 import apple.excursion.utils.Pair;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
@@ -13,14 +11,12 @@ import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.stream.Collectors;
 
 import static apple.excursion.discord.commands.general.CommandSubmit.BOT_COLOR;
 
 public class SubmissionMessage implements ReactableMessage {
-    private static final int SOUL_JUICE_FOR_DAILY = 1;
     private SubmissionData data;
     private User thisReviewer;
 
@@ -82,30 +78,9 @@ public class SubmissionMessage implements ReactableMessage {
         synchronized (data.sync) {
             if (data.isNotAccepted()) {
                 data.setAccepted();
-                for (Pair<Long, String> idToName : data.getSubmittersNameAndIds()) {
-                    try {
-                        int soulJuice;
-                        if (data.getType() == SubmissionData.TaskSubmissionType.NORMAL)
-                            soulJuice = 0;
-                        else if (data.getType() == SubmissionData.TaskSubmissionType.DAILY)
-                            soulJuice = SOUL_JUICE_FOR_DAILY;
-                        else
-                            soulJuice = 0;
-                        SheetsPlayerStats.submit(data.getTaskName(), idToName.getKey(), idToName.getValue(), soulJuice);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        final User user = DiscordBot.client.getUserById(idToName.getKey());
-                        if (user == null || user.isBot()) continue;
-                        user.openPrivateChannel().complete().sendMessage("There was an error making your profile. Tell appleptr16 or ojomFox: " + e.getMessage()).queue();
-                    } catch (NumberFormatException e) {
-                        final User user = DiscordBot.client.getUserById(idToName.getKey());
-                        if (user == null || user.isBot()) continue;
-                        user.openPrivateChannel().complete().sendMessage("The quest reward was not specified correctly. Tell appleptr16 or ojomFox: " + e.getMessage()).queue();
-                    }
-                }
+                InsertDB.insertSubmission(data);
             }
         }
-        InsertDB.insertSubmission(data);
     }
 
     public void completeSubmit(boolean isAccepted, User reviewer) {

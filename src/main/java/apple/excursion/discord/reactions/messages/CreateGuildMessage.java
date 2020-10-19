@@ -3,7 +3,6 @@ package apple.excursion.discord.reactions.messages;
 import apple.excursion.database.UpdateDB;
 import apple.excursion.discord.reactions.AllReactables;
 import apple.excursion.discord.reactions.ReactableMessage;
-import apple.excursion.sheets.SheetsPlayerStats;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
@@ -56,7 +55,6 @@ public class CreateGuildMessage implements ReactableMessage {
                     try {
                         UpdateDB.createGuild(guildName, guildTag);
                         UpdateDB.updateGuild(guildName, guildTag, playerId, playerName);
-                        SheetsPlayerStats.updateGuild(guildName, guildTag, playerId, playerName);
                         EmbedBuilder embed = new EmbedBuilder();
                         embed.setTitle(String.format("%s [%s]", guildName, guildTag));
                         embed.setDescription(String.format("%s [%s] has been created", guildName, guildTag));

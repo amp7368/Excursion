@@ -14,6 +14,7 @@ import static apple.excursion.sheets.SheetsUtils.addA1Notation;
 public class SheetsPlayerStats {
     private static final String MISSIONS_ROW_RANGE = "PlayerStats!F2:3";
     private static final String ID_COL_RANGE = "PlayerStats!A:A";
+    private static final String EVERYONE_RANGE = "PlayerStats";
     private static final String PLAYER_STATS_SHEET = "PlayerStats";
     private static final String BASE_PLAYER_STATS_RANGE = "F5";
     private static final int PLAYER_STATS_SHEET_ID = 0;
@@ -191,7 +192,9 @@ public class SheetsPlayerStats {
         } catch (IOException ignored) {
         }
     }
-
+    public static List<List<Object>> getEveryone() throws IOException {
+        return SHEETS_VALUES.get(SPREADSHEET_ID, EVERYONE_RANGE).execute().getValues();
+    }
     public static void updateGuild(String guildName, String guildTag, long id, String playerName) throws IOException {
         int row = getRowFromDiscord(String.valueOf(id));
         if (row == -1) {
