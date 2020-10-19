@@ -1,11 +1,10 @@
 package apple.excursion.discord.commands.admin;
 
-import apple.excursion.database.GetDB;
-import apple.excursion.database.SyncDB;
+import apple.excursion.database.queries.GetDB;
+import apple.excursion.database.queries.SyncDB;
 import apple.excursion.database.objects.guild.GuildHeader;
 import apple.excursion.database.objects.player.PlayerData;
 import apple.excursion.database.objects.player.PlayerHeader;
-import apple.excursion.database.objects.player.PlayerLeaderboard;
 import apple.excursion.discord.DiscordBot;
 import apple.excursion.discord.commands.DoCommand;
 import apple.excursion.sheets.profiles.AllProfiles;

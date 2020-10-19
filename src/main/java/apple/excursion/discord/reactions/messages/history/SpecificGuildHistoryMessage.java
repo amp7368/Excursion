@@ -1,6 +1,6 @@
 package apple.excursion.discord.reactions.messages.history;
 
-import apple.excursion.database.GetDB;
+import apple.excursion.database.queries.GetDB;
 import apple.excursion.database.objects.OldSubmission;
 import apple.excursion.database.objects.guild.GuildLeaderboardEntry;
 import apple.excursion.database.objects.player.PlayerData;
@@ -8,7 +8,7 @@ import apple.excursion.discord.data.answers.HistoryGuildLeaderboard;
 import apple.excursion.discord.data.answers.HistoryLeaderboardOfGuilds;
 import apple.excursion.discord.reactions.AllReactables;
 import apple.excursion.discord.reactions.ReactableMessage;
-import apple.excursion.discord.reactions.messages.GuildProfileMessage;
+import apple.excursion.discord.reactions.messages.leaderboard.GuildProfileMessage;
 import apple.excursion.utils.Pretty;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
@@ -23,8 +23,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static apple.excursion.discord.reactions.messages.CalendarMessage.EPOCH_START_OF_EXCURSION;
-import static apple.excursion.discord.reactions.messages.CalendarMessage.EPOCH_START_OF_SUBMISSION_HISTORY;
+import static apple.excursion.discord.reactions.messages.leaderboard.CalendarMessage.EPOCH_START_OF_EXCURSION;
+import static apple.excursion.discord.reactions.messages.leaderboard.CalendarMessage.EPOCH_START_OF_SUBMISSION_HISTORY;
 
 public class SpecificGuildHistoryMessage implements ReactableMessage {
     private final Message message;

@@ -1,4 +1,4 @@
-package apple.excursion.discord.reactions.messages;
+package apple.excursion.discord.reactions.messages.self;
 
 import apple.excursion.database.objects.OldSubmission;
 import apple.excursion.database.objects.player.PlayerData;

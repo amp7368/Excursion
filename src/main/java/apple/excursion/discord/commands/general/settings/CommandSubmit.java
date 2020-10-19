@@ -1,15 +1,15 @@
-package apple.excursion.discord.commands.general;
+package apple.excursion.discord.commands.general.settings;
 
 import apple.excursion.ExcursionMain;
-import apple.excursion.database.GetCalendarDB;
-import apple.excursion.database.GetDB;
+import apple.excursion.database.queries.GetCalendarDB;
+import apple.excursion.database.queries.GetDB;
 import apple.excursion.database.objects.player.PlayerData;
 import apple.excursion.discord.DiscordBot;
 import apple.excursion.discord.commands.DoCommand;
 import apple.excursion.discord.data.TaskSimple;
 import apple.excursion.discord.data.answers.SubmissionData;
 import apple.excursion.discord.reactions.AllReactables;
-import apple.excursion.discord.reactions.messages.SubmissionMessage;
+import apple.excursion.discord.reactions.messages.settings.SubmissionMessage;
 import apple.excursion.sheets.SheetsPlayerStats;
 import apple.excursion.utils.Pair;
 import net.dv8tion.jda.api.JDA;

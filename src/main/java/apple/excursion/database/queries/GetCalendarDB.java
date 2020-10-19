@@ -1,5 +1,6 @@
-package apple.excursion.database;
+package apple.excursion.database.queries;
 
+import apple.excursion.database.VerifyDB;
 import apple.excursion.discord.data.answers.DailyTaskWithDate;
 import apple.excursion.utils.Pretty;
 

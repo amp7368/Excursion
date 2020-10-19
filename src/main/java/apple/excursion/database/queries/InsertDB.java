@@ -1,5 +1,6 @@
-package apple.excursion.database;
+package apple.excursion.database.queries;
 
+import apple.excursion.database.VerifyDB;
 import apple.excursion.discord.DiscordBot;
 import apple.excursion.discord.data.answers.SubmissionData;
 import apple.excursion.sheets.SheetsPlayerStats;

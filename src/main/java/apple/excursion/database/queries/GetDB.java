@@ -1,5 +1,6 @@
-package apple.excursion.database;
+package apple.excursion.database.queries;
 
+import apple.excursion.database.VerifyDB;
 import apple.excursion.database.objects.guild.GuildHeader;
 import apple.excursion.database.objects.OldSubmission;
 import apple.excursion.database.objects.player.PlayerData;

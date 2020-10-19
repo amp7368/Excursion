@@ -1,6 +1,6 @@
-package apple.excursion.discord.reactions.messages;
+package apple.excursion.discord.reactions.messages.leaderboard;
 
-import apple.excursion.database.GetCalendarDB;
+import apple.excursion.database.queries.GetCalendarDB;
 import apple.excursion.discord.data.Task;
 import apple.excursion.discord.data.answers.DailyTaskWithDate;
 import apple.excursion.discord.reactions.AllReactables;

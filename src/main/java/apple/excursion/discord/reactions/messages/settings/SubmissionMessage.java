@@ -1,6 +1,6 @@
-package apple.excursion.discord.reactions.messages;
+package apple.excursion.discord.reactions.messages.settings;
 
-import apple.excursion.database.InsertDB;
+import apple.excursion.database.queries.InsertDB;
 import apple.excursion.discord.data.answers.SubmissionData;
 import apple.excursion.discord.reactions.AllReactables;
 import apple.excursion.discord.reactions.ReactableMessage;
@@ -14,7 +14,7 @@ import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import java.sql.SQLException;
 import java.util.stream.Collectors;
 
-import static apple.excursion.discord.commands.general.CommandSubmit.BOT_COLOR;
+import static apple.excursion.discord.commands.general.settings.CommandSubmit.BOT_COLOR;
 
 public class SubmissionMessage implements ReactableMessage {
     private SubmissionData data;

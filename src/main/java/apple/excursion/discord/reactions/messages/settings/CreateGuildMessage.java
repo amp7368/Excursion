@@ -1,6 +1,6 @@
-package apple.excursion.discord.reactions.messages;
+package apple.excursion.discord.reactions.messages.settings;
 
-import apple.excursion.database.UpdateDB;
+import apple.excursion.database.queries.UpdateDB;
 import apple.excursion.discord.reactions.AllReactables;
 import apple.excursion.discord.reactions.ReactableMessage;
 import net.dv8tion.jda.api.EmbedBuilder;

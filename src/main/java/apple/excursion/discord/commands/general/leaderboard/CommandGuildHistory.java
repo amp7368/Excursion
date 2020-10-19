@@ -1,6 +1,6 @@
-package apple.excursion.discord.commands.general;
+package apple.excursion.discord.commands.general.leaderboard;
 
-import apple.excursion.database.GetDB;
+import apple.excursion.database.queries.GetDB;
 import apple.excursion.database.objects.guild.GuildHeader;
 import apple.excursion.discord.commands.DetermineArguments;
 import apple.excursion.discord.commands.DoCommand;

@@ -1,6 +1,6 @@
 package apple.excursion.discord.commands.admin;
 
-import apple.excursion.discord.commands.general.CommandSubmit;
+import apple.excursion.discord.commands.general.settings.CommandSubmit;
 import apple.excursion.discord.commands.DoCommand;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;

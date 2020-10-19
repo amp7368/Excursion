@@ -1,4 +1,4 @@
-package apple.excursion.discord.commands.general;
+package apple.excursion.discord.commands.general.leaderboard;
 
 import apple.excursion.discord.commands.DetermineArguments;
 import apple.excursion.discord.commands.DoCommand;

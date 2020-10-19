@@ -15,7 +15,7 @@ import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static apple.excursion.discord.commands.general.CommandSubmit.BOT_COLOR;
+import static apple.excursion.discord.commands.general.settings.CommandSubmit.BOT_COLOR;
 
 public class SubmissionData {
     public final Object sync = new Object();

@@ -1,11 +1,11 @@
-package apple.excursion.discord.commands.general;
+package apple.excursion.discord.commands.general.settings;
 
-import apple.excursion.database.GetDB;
-import apple.excursion.database.UpdateDB;
+import apple.excursion.database.queries.GetDB;
+import apple.excursion.database.queries.UpdateDB;
 import apple.excursion.database.objects.guild.GuildHeader;
 import apple.excursion.discord.commands.Commands;
 import apple.excursion.discord.commands.DoCommand;
-import apple.excursion.discord.reactions.messages.CreateGuildMessage;
+import apple.excursion.discord.reactions.messages.settings.CreateGuildMessage;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
