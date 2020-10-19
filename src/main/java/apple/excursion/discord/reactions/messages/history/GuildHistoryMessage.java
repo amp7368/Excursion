@@ -24,12 +24,17 @@ public class GuildHistoryMessage implements ReactableMessage {
     private final Message message;
     private final Map<Long, HistoryLeaderboardOfGuilds> leaderboard = new HashMap<>();
     private final Calendar timeLookingAt = Calendar.getInstance();
+    private final Calendar later;
     private final int timeInterval;
     private final int timeField;
     private long lastUpdated = System.currentTimeMillis();
     private int page = 0;
 
     public GuildHistoryMessage(MessageChannel channel, int timeInterval, int timeField) {
+        later = Calendar.getInstance();
+        later.setTimeInMillis(timeLookingAt.getTimeInMillis());
+        later.add(timeField, timeInterval);
+
         this.timeInterval = timeInterval;
         this.timeField = timeField;
         timeLookingAt.add(timeField, -timeInterval + 1); // make it the last 3 days instead of the next 3
@@ -43,6 +48,9 @@ public class GuildHistoryMessage implements ReactableMessage {
     }
 
     private String makeMessage() {
+        if (later.getTimeInMillis() <= timeLookingAt.getTimeInMillis()) {
+            return "```\nFuture\nThis data for this time is not available yet\n```";
+        }
         HistoryLeaderboardOfGuilds myLeaderboard = leaderboard.get(timeLookingAt.getTimeInMillis());
         if (myLeaderboard == null) {
             try {

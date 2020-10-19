@@ -10,6 +10,7 @@ import apple.excursion.discord.reactions.AllReactables;
 import apple.excursion.discord.reactions.ReactableMessage;
 import apple.excursion.discord.reactions.messages.GuildProfileMessage;
 import apple.excursion.utils.Pretty;
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -29,6 +30,7 @@ public class SpecificGuildHistoryMessage implements ReactableMessage {
     private final Message message;
     private final Map<Long, HistoryGuildLeaderboard> leaderboard = new HashMap<>();
     private final Calendar timeLookingAt = Calendar.getInstance();
+    private final Calendar later;
     private final int timeInterval;
     private final int timeField;
     private final String guildName;
@@ -37,6 +39,10 @@ public class SpecificGuildHistoryMessage implements ReactableMessage {
     private int page = 0;
 
     public SpecificGuildHistoryMessage(MessageChannel channel, int timeInterval, int timeField, String guildTag, String guildName) {
+        later = Calendar.getInstance();
+        later.setTimeInMillis(timeLookingAt.getTimeInMillis());
+        later.add(timeField, timeInterval);
+
         this.timeInterval = timeInterval;
         this.timeField = timeField;
         this.guildTag = guildTag;
@@ -52,6 +58,12 @@ public class SpecificGuildHistoryMessage implements ReactableMessage {
     }
 
     private MessageEmbed makeMessage() {
+        if (later.getTimeInMillis()<=timeLookingAt.getTimeInMillis()) {
+            EmbedBuilder embed = new EmbedBuilder();
+            embed.setTitle("Future");
+            embed.setDescription("This data for this time is not available yet");
+            return embed.build();
+        }
         HistoryGuildLeaderboard myLeaderboard = leaderboard.get(timeLookingAt.getTimeInMillis());
         if (myLeaderboard == null) {
             try {

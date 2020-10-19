@@ -8,6 +8,7 @@ import apple.excursion.discord.reactions.ReactableMessage;
 import apple.excursion.discord.reactions.messages.GuildLeaderboardMessage;
 import apple.excursion.discord.reactions.messages.LeaderboardMessage;
 import apple.excursion.utils.Pretty;
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.User;
@@ -25,12 +26,17 @@ public class HistoryMessage implements ReactableMessage {
     private final Message message;
     private final Map<Long, HistoryPlayerLeaderboard> leaderboard = new HashMap<>();
     private final Calendar timeLookingAt = Calendar.getInstance();
+    private final Calendar later;
     private final int timeInterval;
     private final int timeField;
     private long lastUpdated = System.currentTimeMillis();
     private int page = 0;
 
     public HistoryMessage(MessageChannel channel, int timeInterval, int timeField) {
+        later = Calendar.getInstance();
+        later.setTimeInMillis(timeLookingAt.getTimeInMillis());
+        later.add(timeField, timeInterval);
+
         this.timeInterval = timeInterval;
         this.timeField = timeField;
         timeLookingAt.add(timeField, -timeInterval + 1); // make it the last 3 days instead of the next 3
@@ -44,6 +50,9 @@ public class HistoryMessage implements ReactableMessage {
     }
 
     private String makeMessage() {
+        if (later.getTimeInMillis() <= timeLookingAt.getTimeInMillis()) {
+            return "```\nFuture\nThis data for this time is not available yet\n```";
+        }
         HistoryPlayerLeaderboard myLeaderboard = leaderboard.get(timeLookingAt.getTimeInMillis());
         if (myLeaderboard == null) {
             try {
