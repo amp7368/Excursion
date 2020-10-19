@@ -156,7 +156,7 @@ public class GetSql {
                 "                             ON submissions_link.submission_id = submissions.id\n" +
                 "                  INNER JOIN guilds\n" +
                 "                             ON guilds.guild_tag = submissions_link.guild_tag\n" +
-                "         GROUP BY guilds.guild_tag\n" +
+                "         GROUP BY players.player_uid\n" +
                 "     ) as player_score\n" +
                 "GROUP BY player_score.guild_tag;";
     }
@@ -174,7 +174,7 @@ public class GetSql {
                 "                  INNER JOIN guilds\n" +
                 "                             ON guilds.guild_tag = submissions_link.guild_tag\n" +
                 "         WHERE date_submitted BETWEEN " + start + " AND " + end + "\n" +
-                "         GROUP BY guilds.guild_tag\n" +
+                "         GROUP BY players.player_uid\n" +
                 "     ) as player_score\n" +
                 "GROUP BY player_score.guild_tag;";
     }

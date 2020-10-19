@@ -67,7 +67,6 @@ public class GetDB {
     public static LeaderboardOfGuilds getGuildLeaderboard() throws SQLException {
         synchronized (VerifyDB.syncDB) {
             String sql = GetSql.getSqlGetGuilds();
-            System.out.println(sql);
             Statement statement = VerifyDB.database.createStatement();
             ResultSet response = statement.executeQuery(sql);
             List<GuildLeaderboardEntry> guilds = new ArrayList<>();
