@@ -50,14 +50,14 @@ public class CommandGuildLeaderboard implements DoCommand {
         // we have the correct guild
         List<PlayerData> playersInGuild;
         try {
-            playersInGuild = GetDB.getPlayersInGuild(matchedGuild.guildTag);
+            playersInGuild = GetDB.getPlayersInGuild(matchedGuild.guildTag, -1, -1);
         } catch (SQLException throwables) {
             throwables.printStackTrace();
             return;
         }
         List<OldSubmission> submissions;
         try {
-            submissions = GetDB.getGuildSubmissions(matchedGuild.guildTag);
+            submissions = GetDB.getGuildSubmissions(matchedGuild.guildTag, -1, -1);
         } catch (SQLException throwables) {
             throwables.printStackTrace(); //todo fix
             return;

@@ -16,7 +16,7 @@ import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import java.util.List;
 
 public class GuildProfileMessage implements ReactableMessage {
-    private static final int ENTRIES_PER_PAGE = 10;
+    public static final int ENTRIES_PER_PAGE = 10;
     private final GuildLeaderboardEntry matchedGuild;
     private final List<PlayerData> players;
     private final Message message;
@@ -36,12 +36,18 @@ public class GuildProfileMessage implements ReactableMessage {
         AllReactables.add(this);
     }
 
+
     private MessageEmbed makeMessage() {
+        String title = String.format("%s [%s]", matchedGuild.getGuildName(), matchedGuild.getGuildTag());
+        return makeMessageStatic(matchedGuild, players, submissions, page, title, "");
 
+    }
 
+    public static MessageEmbed makeMessageStatic(GuildLeaderboardEntry matchedGuild, List<PlayerData> players, List<OldSubmission> submissions, int page, String title, String headerTitle) {
         EmbedBuilder embed = new EmbedBuilder();
-        embed.setTitle(String.format("%s [%s]", matchedGuild.getGuildName(), matchedGuild.getGuildTag()));
+        embed.setTitle(title);
         StringBuilder header = new StringBuilder();
+        header.append(headerTitle);
         header.append(String.format("Guild rank : #%d\n", matchedGuild.rank));
         header.append(Pretty.getProgressBar(matchedGuild.getProgress()));
         header.append("\n\n");
@@ -77,7 +83,7 @@ public class GuildProfileMessage implements ReactableMessage {
         return embed.build();
     }
 
-    private String getDash() {
+    private static String getDash() {
         return "-".repeat(48) + "\n";
     }
 

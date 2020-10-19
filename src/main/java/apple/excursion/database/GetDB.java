@@ -85,9 +85,14 @@ public class GetDB {
         }
     }
 
-    public static List<PlayerData> getPlayersInGuild(String tag) throws SQLException {
+    public static List<PlayerData> getPlayersInGuild(String tag, long startTime, long endTime) throws SQLException {
         synchronized (VerifyDB.syncDB) {
-            String sql = GetSql.getSqlGetPlayersInGuild(tag);
+            String sql;
+            if (startTime == -1 || endTime == -1)
+                sql = GetSql.getSqlGetPlayersInGuild(tag);
+            else
+                sql = GetSql.getSqlGetPlayersInGuild(tag, startTime, endTime);
+
             Statement statement = VerifyDB.database.createStatement();
             ResultSet response = statement.executeQuery(sql);
             List<PlayerData> players = new ArrayList<>();
@@ -134,9 +139,13 @@ public class GetDB {
         }
     }
 
-    public static List<OldSubmission> getGuildSubmissions(String guildTag) throws SQLException {
+    public static List<OldSubmission> getGuildSubmissions(String guildTag, long startTime, long endTime) throws SQLException {
         List<OldSubmission> submissions = new ArrayList<>();
-        String sql = GetSql.getSqlGetGuildSubmissionHistory(guildTag);
+        String sql;
+        if (startTime == -1 || endTime == -1)
+            sql = GetSql.getSqlGetGuildSubmissionHistory(guildTag);
+        else
+            sql = GetSql.getSqlGetGuildSubmissionHistory(guildTag,startTime,endTime);
         Statement statement = VerifyDB.database.createStatement();
         ResultSet response = statement.executeQuery(sql);
         while (response.next()) {
@@ -203,7 +212,7 @@ public class GetDB {
         long startTime = times.getKey();
         long endTime = times.getValue();
         synchronized (VerifyDB.syncDB) {
-            String sql = GetSql.getSqlGetPlayerLeaderboard(startTime,endTime);
+            String sql = GetSql.getSqlGetPlayerLeaderboard(startTime, endTime);
             Statement statement = VerifyDB.database.createStatement();
             ResultSet response = statement.executeQuery(sql);
             List<PlayerLeaderboardEntry> leaderboard = new ArrayList<>();

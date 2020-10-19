@@ -1,10 +1,14 @@
 package apple.excursion.discord.commands.general;
 
+import apple.excursion.database.GetDB;
+import apple.excursion.database.objects.guild.GuildHeader;
 import apple.excursion.discord.commands.DetermineArguments;
 import apple.excursion.discord.commands.DoCommand;
+import apple.excursion.discord.reactions.messages.history.SpecificGuildHistoryMessage;
 import apple.excursion.discord.reactions.messages.history.GuildHistoryMessage;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -20,34 +24,88 @@ public class CommandGuildHistory implements DoCommand {
         DetermineArguments.ArgumentInt weeks = DetermineArguments.determineInt("-w", contentSplit);
         DetermineArguments.ArgumentInt days = DetermineArguments.determineInt("-d", contentSplit);
 
-        // todo deal with the guild side of this command
-
-        if (months.exists) {
-            // deal with history in months
-            if (months.hasValue) {
-                // deal with history in this month intervals
-                new GuildHistoryMessage(event.getChannel(), months.value, Calendar.MONTH);
+        if (contentSplit.isEmpty()) {
+            if (months.exists) {
+                // deal with history in months
+                if (months.hasValue) {
+                    // deal with history in this month intervals
+                    new GuildHistoryMessage(event.getChannel(), months.value, Calendar.MONTH);
+                } else {
+                    new GuildHistoryMessage(event.getChannel(), 1, Calendar.MONTH);
+                }
+            } else if (weeks.exists) {
+                // deal with history in weeks
+                if (weeks.hasValue) {
+                    // deal with history in this month intervals
+                    new GuildHistoryMessage(event.getChannel(), weeks.value, Calendar.WEEK_OF_YEAR);
+                } else {
+                    new GuildHistoryMessage(event.getChannel(), 1, Calendar.WEEK_OF_YEAR);
+                }
+            } else if (days.exists) {
+                // deal with history in days
+                if (days.hasValue) {
+                    // deal with history in this month intervals
+                    new GuildHistoryMessage(event.getChannel(), days.value, Calendar.DAY_OF_YEAR);
+                } else {
+                    new GuildHistoryMessage(event.getChannel(), 1, Calendar.DAY_OF_YEAR);
+                }
             } else {
-                new GuildHistoryMessage(event.getChannel(), 1,Calendar.MONTH);
+                new GuildHistoryMessage(event.getChannel(), 1, Calendar.MONTH);
             }
-        } else if (weeks.exists) {
-            // deal with history in weeks
-            if (weeks.hasValue) {
-                // deal with history in this month intervals
-                new GuildHistoryMessage(event.getChannel(), weeks.value, Calendar.WEEK_OF_YEAR);
+        } else {
+            // try to find the guild
+            List<GuildHeader> guildHeaders;
+            try {
+                guildHeaders = GetDB.getGuildNameList();
+            } catch (SQLException throwables) {
+                throwables.printStackTrace(); //todo
+                return;
+            }
+            final String guildTag = contentSplit.get(0);
+            contentSplit.remove(0);
+            String guildName = String.join(" ", contentSplit);
+            GuildHeader match = null;
+            for (GuildHeader guild : guildHeaders) {
+                if (guild.tag.equals(guildTag) || guildName.equals(guild.name)) {
+                    match = guild;
+                    break;
+                }
+            }
+            if (match == null) {
+                event.getChannel().sendMessage(
+                        String.format("'%s' is not a valid guild tag\n" +
+                                        "If you're trying to create a guild, add the [guild_name] to the end of the command",
+                                guildTag)).queue();
+                return;
+            }
+            // deal with the guildHistoryMessage
+            if (months.exists) {
+                // deal with history in months
+                if (months.hasValue) {
+                    // deal with history in this month intervals
+                    new SpecificGuildHistoryMessage(event.getChannel(), months.value, Calendar.MONTH, match.tag, match.name);
+                } else {
+                    new SpecificGuildHistoryMessage(event.getChannel(), 1, Calendar.MONTH, match.tag, match.name);
+                }
+            } else if (weeks.exists) {
+                // deal with history in weeks
+                if (weeks.hasValue) {
+                    // deal with history in this month intervals
+                    new SpecificGuildHistoryMessage(event.getChannel(), weeks.value, Calendar.WEEK_OF_YEAR, match.tag, match.name);
+                } else {
+                    new SpecificGuildHistoryMessage(event.getChannel(), 1, Calendar.WEEK_OF_YEAR, match.tag, match.name);
+                }
+            } else if (days.exists) {
+                // deal with history in days
+                if (days.hasValue) {
+                    // deal with history in this month intervals
+                    new SpecificGuildHistoryMessage(event.getChannel(), days.value, Calendar.DAY_OF_YEAR, match.tag, match.name);
+                } else {
+                    new SpecificGuildHistoryMessage(event.getChannel(), 1, Calendar.DAY_OF_YEAR, match.tag, match.name);
+                }
             } else {
-                new GuildHistoryMessage(event.getChannel(), 1,Calendar.WEEK_OF_YEAR);
+                new SpecificGuildHistoryMessage(event.getChannel(), 1, Calendar.MONTH, match.tag, match.name);
             }
-        } else if (days.exists) {
-            // deal with history in days
-            if (days.hasValue) {
-                // deal with history in this month intervals
-                new GuildHistoryMessage(event.getChannel(), days.value, Calendar.DAY_OF_YEAR);
-            } else {
-                new GuildHistoryMessage(event.getChannel(), 1,Calendar.DAY_OF_YEAR);
-            }
-        }else{
-            new GuildHistoryMessage(event.getChannel(), 1,Calendar.MONTH);
         }
     }
 }
