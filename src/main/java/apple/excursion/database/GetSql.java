@@ -156,7 +156,25 @@ public class GetSql {
                 "                             ON submissions_link.submission_id = submissions.id\n" +
                 "                  INNER JOIN guilds\n" +
                 "                             ON guilds.guild_tag = submissions_link.guild_tag\n" +
-                "         GROUP BY guilds.guild_tag\n" +
+                "         GROUP BY players.player_uid\n" +
+                "     ) as player_score\n" +
+                "GROUP BY player_score.guild_tag;";
+    }
+
+    @NotNull
+    static String getSqlGetGuildsBetweenTime(long start, long end) {
+        return "SELECT sum(player_score.score) AS guild_score, player_score.guild_tag, player_score.guild_name, player_score.player_name, max(player_score.score)\n" +
+                "FROM (\n" +
+                "         SELECT players.player_name, sum(submissions.score) as score, guilds.guild_tag, guilds.guild_name\n" +
+                "         FROM players\n" +
+                "                  INNER JOIN submissions_link\n" +
+                "                             ON players.player_uid = submissions_link.player_id\n" +
+                "                  INNER JOIN submissions\n" +
+                "                             ON submissions_link.submission_id = submissions.id\n" +
+                "                  INNER JOIN guilds\n" +
+                "                             ON guilds.guild_tag = submissions_link.guild_tag\n" +
+                "         WHERE date_submitted BETWEEN " + start + " AND " + end + "\n" +
+                "         GROUP BY players.player_uid\n" +
                 "     ) as player_score\n" +
                 "GROUP BY player_score.guild_tag;";
     }
@@ -194,6 +212,26 @@ public class GetSql {
                 "ON guilds.guild_tag = data.guild_tag\n" +
                 "ORDER BY data.score DESC;", tag);
     }
+
+    @NotNull
+    public static String getSqlGetPlayersInGuild(String tag, long startTime, long endTime) {
+        return String.format("SELECT data.player_uid, data.player_name,guilds.guild_tag,guilds.guild_name,data.score,data.soul_juice\n" +
+                "FROM (\n" +
+                "         SELECT players.player_uid, players.player_name, players.guild_tag, sum(submissions.score) as score, players.soul_juice\n" +
+                "         FROM players\n" +
+                "                  INNER JOIN submissions_link\n" +
+                "                             ON players.player_uid = submissions_link.player_id\n" +
+                "                  INNER JOIN submissions\n" +
+                "                             ON submissions_link.submission_id = submissions.id\n" +
+                "         WHERE submissions_link.guild_tag = '%s'\n" +
+                "         AND date_submitted BETWEEN %d AND %d\n" +
+                "         GROUP BY players.player_uid\n" +
+                "     ) AS data\n" +
+                "INNER JOIN guilds\n" +
+                "ON guilds.guild_tag = data.guild_tag\n" +
+                "ORDER BY data.score DESC;", tag, startTime, endTime);
+    }
+
 
     @NotNull
     static String getSqlGetPlayerGuild(long id) {
@@ -258,6 +296,36 @@ public class GetSql {
     }
 
     @NotNull
+    public static String getSqlGetGuildSubmissionHistory(String guildTag, long startTime, long endTime) {
+        return "SELECT group_concat(players.player_name),\n" +
+                "       data.submitter_name,\n" +
+                "       data.date_submitted,\n" +
+                "       data.task_name,\n" +
+                "       data.links,\n" +
+                "       data.submission_type,\n" +
+                "       data.score\n" +
+                "FROM (\n" +
+                "         SELECT s.*, players.player_name as submitter_name\n" +
+                "         FROM (\n" +
+                "                  SELECT submissions.*\n" +
+                "                  FROM submissions_link\n" +
+                "                           INNER JOIN submissions\n" +
+                "                                      ON submissions_link.submission_id = submissions.id\n" +
+                "                  WHERE submissions_link.guild_tag = '" + guildTag + "'\n" +
+                "                  AND submissions.date_submitted BETWEEN " + startTime + " AND " + endTime + "\n" +
+                "                  ORDER BY submissions.date_submitted DESC\n" +
+                "              ) as s\n" +
+                "                  INNER JOIN players\n" +
+                "                             ON s.submitter = players.player_uid\n" +
+                "     ) AS data\n" +
+                "         INNER JOIN submissions_link\n" +
+                "                    ON submissions_link.submission_id = data.id\n" +
+                "         INNER JOIN players\n" +
+                "                    ON submissions_link.player_id = players.player_uid\n" +
+                "GROUP BY data.id;";
+    }
+
+    @NotNull
     static String getSqlGetGuildSubmissionHistory(String guildTag) {
         return "SELECT group_concat(players.player_name),\n" +
                 "       data.submitter_name,\n" +
@@ -275,7 +343,6 @@ public class GetSql {
                 "                                      ON submissions_link.submission_id = submissions.id\n" +
                 "                  WHERE submissions_link.guild_tag = '" + guildTag + "'\n" +
                 "                  ORDER BY submissions.date_submitted DESC\n" +
-                "                  LIMIT 5\n" +
                 "              ) as s\n" +
                 "                  INNER JOIN players\n" +
                 "                             ON s.submitter = players.player_uid\n" +
@@ -322,7 +389,24 @@ public class GetSql {
                 "                    ON playerData.player_uid = players.player_uid";
     }
 
+    @NotNull
     static String getSqlGetPlayerHeadersNoScore() {
         return "SELECT players.player_uid, players.player_name, players.soul_juice FROM players";
     }
+
+    @NotNull
+    public static String getSqlGetPlayerLeaderboard(long startTime, long endTime) {
+        return "SELECT players.player_name, players.guild_tag, players.guild_name, playerData.*\n" +
+                "FROM (\n" +
+                "         SELECT sum(submissions.score) AS score, player_uid\n" +
+                "         FROM players\n" +
+                "                  INNER JOIN submissions_link ON players.player_uid = submissions_link.player_id\n" +
+                "                  INNER JOIN submissions ON submissions_link.submission_id = submissions.id\n" +
+                "         WHERE date_submitted BETWEEN " + startTime + " AND " + endTime + "\n" +
+                "         GROUP BY players.player_uid\n" +
+                "     ) AS playerData\n" +
+                "         INNER JOIN players\n" +
+                "                    ON playerData.player_uid = players.player_uid";
+    }
+
 }

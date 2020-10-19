@@ -51,6 +51,8 @@ public class AllReactables {
     public enum Reactable {
         LEFT(Collections.singletonList("\u2B05")),
         RIGHT(Collections.singletonList("\u27A1")),
+        CLOCK_LEFT(Collections.singletonList("\uD83D\uDD59")),
+        CLOCK_RIGHT(Collections.singletonList("\uD83D\uDD51")),
         TOP(Collections.singletonList("\u21A9")),
         ACCEPT(Collections.singletonList("\u2705")),
         REJECT(Collections.singletonList("\u274C")),

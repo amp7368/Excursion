@@ -16,7 +16,8 @@ import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import java.util.List;
 
 public class GuildProfileMessage implements ReactableMessage {
-    private static final int ENTRIES_PER_PAGE = 10;
+    public static final int ENTRIES_PER_PAGE = 10;
+    private static final int SUBMISSIONS_PER_PAGE = 5;
     private final GuildLeaderboardEntry matchedGuild;
     private final List<PlayerData> players;
     private final Message message;
@@ -36,12 +37,18 @@ public class GuildProfileMessage implements ReactableMessage {
         AllReactables.add(this);
     }
 
+
     private MessageEmbed makeMessage() {
+        String title = String.format("%s [%s]", matchedGuild.getGuildName(), matchedGuild.getGuildTag());
+        return makeMessageStatic(matchedGuild, players, submissions, page, title, "");
 
+    }
 
+    public static MessageEmbed makeMessageStatic(GuildLeaderboardEntry matchedGuild, List<PlayerData> players, List<OldSubmission> submissions, int page, String title, String headerTitle) {
         EmbedBuilder embed = new EmbedBuilder();
-        embed.setTitle(String.format("%s [%s]", matchedGuild.getGuildName(), matchedGuild.getGuildTag()));
+        embed.setTitle(title);
         StringBuilder header = new StringBuilder();
+        header.append(headerTitle);
         header.append(String.format("Guild rank : #%d\n", matchedGuild.rank));
         header.append(Pretty.getProgressBar(matchedGuild.getProgress()));
         header.append("\n\n");
@@ -68,8 +75,9 @@ public class GuildProfileMessage implements ReactableMessage {
             footer.append("**There is no submission history**\n");
         } else {
             footer.append("**Submission History:** \n");
-            for (OldSubmission submission : submissions) {
-                footer.append(submission.makeSubmissionHistoryMessage());
+            upper = Math.min(((page + 1) * SUBMISSIONS_PER_PAGE), submissions.size());
+            for (int lower = page * SUBMISSIONS_PER_PAGE; lower < upper; lower++) {
+                footer.append(submissions.get(lower).makeSubmissionHistoryMessage());
                 footer.append('\n');
             }
         }
@@ -77,12 +85,12 @@ public class GuildProfileMessage implements ReactableMessage {
         return embed.build();
     }
 
-    private String getDash() {
+    private static String getDash() {
         return "-".repeat(48) + "\n";
     }
 
     public void forward() {
-        if ((players.size() - 1) / ENTRIES_PER_PAGE >= page + 1) {
+        if ((players.size() - 1) / ENTRIES_PER_PAGE >= page + 1 || (submissions.size() - 1) / SUBMISSIONS_PER_PAGE >= page + 1) {
             page++;
             message.editMessage(makeMessage()).queue();
         }

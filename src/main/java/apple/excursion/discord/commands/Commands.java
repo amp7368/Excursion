@@ -13,6 +13,8 @@ import static apple.excursion.discord.DiscordBot.PREFIX;
 public enum Commands {
     LEADERBOARD(Arrays.asList("leaderboard", "lb"), "Gives an overall leaderboard", "", new CommandLeaderboard()),
     LEADERBOARD_IN_GUILD(Arrays.asList("gleaderboard", "glb"), "Gives a leaderboard for a specific guild or the overall guild leaderboard", "[(optional) tag/name]", new CommandGuildLeaderboard()),
+    COMMAND_GUILD_HISTORY(Collections.singletonList("ghistory"), "Gives a history with intervals of the specified time", "[(optional) -m [months]] [(optional) -w [weeks]] [(optional) -d [days]]", new CommandGuildHistory()),
+    COMMAND_HISTORY(Collections.singletonList("history"), "Gives a history with intervals of the specified time", "[(optional) -m [months]] [(optional) -w [weeks]] [(optional) -d [days]]", new CommandHistory()),
     PROFILE(Collections.singletonList("profile"), "Gives the profile of the person who entered the command or the profile of the player_name", "[player_name]", new CommandProfile()),
     POSTCARD(Collections.singletonList("postcard"), "Gives a list of postcards or searches for taskName", "[(optional) postcard name)]", new CommandPostcard()),
     CALENDAR(Collections.singletonList("calendar"), "Gives a list of daily tasks", "", new CommandCalendar()),

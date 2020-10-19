@@ -41,7 +41,7 @@ public class LeaderboardOfGuilds {
     }
 
     public long getNoGuildsEp() {
-        return noGuildsEntry.score;
+        return noGuildsEntry == null ? 0 : noGuildsEntry.score;
     }
 
     public int size() {

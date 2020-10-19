@@ -12,7 +12,7 @@ public class PlayerLeaderboardEntry {
     public int score;
     public int rank;
     private final long id;
-    public long everyonesScore;
+    public long topPlayerScore;
 
     public PlayerLeaderboardEntry(ResultSet response) throws SQLException {
         playerName = response.getString(1);
@@ -39,7 +39,7 @@ public class PlayerLeaderboardEntry {
     }
 
     public double getProgress() {
-        return ((double) score) / everyonesScore;
+        return ((double) score) / topPlayerScore;
     }
 
     public String getGuildName() {

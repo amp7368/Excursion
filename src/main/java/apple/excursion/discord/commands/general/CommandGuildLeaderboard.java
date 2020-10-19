@@ -22,7 +22,8 @@ public class CommandGuildLeaderboard implements DoCommand {
         List<String> contentSplit = new ArrayList<>(Arrays.asList(content.split(" ")));
         if (contentSplit.size() < 2) {
             try {
-                new GuildLeaderboardMessage(event.getChannel());
+                LeaderboardOfGuilds leaderboard = GetDB.getGuildLeaderboard();
+                new GuildLeaderboardMessage(event.getChannel(), leaderboard);
             } catch (SQLException throwables) {
                 //todo deal with error
                 throwables.printStackTrace();
@@ -49,18 +50,18 @@ public class CommandGuildLeaderboard implements DoCommand {
         // we have the correct guild
         List<PlayerData> playersInGuild;
         try {
-            playersInGuild = GetDB.getPlayersInGuild(matchedGuild.guildTag);
+            playersInGuild = GetDB.getPlayersInGuild(matchedGuild.guildTag, -1, -1);
         } catch (SQLException throwables) {
             throwables.printStackTrace();
             return;
         }
         List<OldSubmission> submissions;
         try {
-            submissions = GetDB.getGuildSubmissions(matchedGuild.guildTag);
+            submissions = GetDB.getGuildSubmissions(matchedGuild.guildTag, -1, -1);
         } catch (SQLException throwables) {
             throwables.printStackTrace(); //todo fix
             return;
         }
-        new GuildProfileMessage(submissions,matchedGuild,playersInGuild, event.getChannel());
+        new GuildProfileMessage(submissions, matchedGuild, playersInGuild, event.getChannel());
     }
 }
