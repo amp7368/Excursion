@@ -64,19 +64,16 @@ public class GetDB {
         ResultSet response = statement.executeQuery(sql);
         List<GuildLeaderboardEntry> guilds = new ArrayList<>();
         if (!response.isClosed())
-            response.next();
-        while (!response.isClosed()) {
+        while (response.next()) {
             int guildScore = response.getInt(1);
             String guildTag = response.getString(2);
             String guildName = response.getString(3);
             String playerName = response.getString(4);
             int playerScore = response.getInt(5);
             guilds.add(new GuildLeaderboardEntry(guildTag, guildName, guildScore, playerName, playerScore));
-            response.next();
         }
         response.close();
         statement.close();
-
         return new LeaderboardOfGuilds(guilds);
     }
 
@@ -114,13 +111,11 @@ public class GetDB {
         ResultSet response = statement.executeQuery(sql);
         List<GuildHeader> guilds = new ArrayList<>();
         if (!response.isClosed())
-            response.next();
-        while (!response.isClosed()) {
-            String guildTag = response.getString(1);
-            String guildName = response.getString(2);
-            guilds.add(new GuildHeader(guildTag, guildName));
-            response.next();
-        }
+            while (response.next()) {
+                String guildTag = response.getString(1);
+                String guildName = response.getString(2);
+                guilds.add(new GuildHeader(guildTag, guildName));
+            }
         response.close();
         statement.close();
         return guilds;

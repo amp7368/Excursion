@@ -40,7 +40,7 @@ public class GuildProfileMessage implements ReactableMessage {
 
 
         EmbedBuilder embed = new EmbedBuilder();
-        embed.setTitle(String.format("%s [%s]", matchedGuild.guildName, matchedGuild.guildTag));
+        embed.setTitle(String.format("%s [%s]", matchedGuild.getGuildName(), matchedGuild.getGuildTag()));
         StringBuilder header = new StringBuilder();
         header.append(String.format("Guild rank : #%d\n", matchedGuild.rank));
         header.append(Pretty.getProgressBar(matchedGuild.getProgress()));
@@ -49,7 +49,7 @@ public class GuildProfileMessage implements ReactableMessage {
 
         StringBuilder body = new StringBuilder();
         body.append("```glsl\n");
-        body.append(String.format("%s [%s] Leaderboards Page (%d)\n", matchedGuild.guildName, matchedGuild.guildTag, page));
+        body.append(String.format("%s [%s] Leaderboards Page (%d)\n", matchedGuild.getGuildName(), matchedGuild.getGuildTag(), page));
         body.append(getDash());
         body.append(String.format("|%3s| %-31s| %-8s|\n", "", "Name", "Total EP"));
         int upper = Math.min(((page + 1) * ENTRIES_PER_PAGE), players.size());

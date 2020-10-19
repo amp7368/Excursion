@@ -24,7 +24,7 @@ public class VerifyDB {
             + "	links TEXT,"
             + "	submitter BIGINT NOT NULL,"
             + "	submission_type TEXT NOT NULL,"
-            + " score INTEGER NOT NULL, "
+            + " score INTEGER NOT NULL DEFAULT 0, "
             + " FOREIGN KEY (submitter) REFERENCES players (player_uid)"
             + ");";
     public static final String BUILD_TABLE_SQL_PLAYERS = "CREATE TABLE IF NOT EXISTS players ("

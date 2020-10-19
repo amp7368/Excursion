@@ -11,7 +11,7 @@ public class PlayerLeaderboardEntry {
     public String guildName;
     public int score;
     public int rank;
-    private long id;
+    private final long id;
     public long everyonesScore;
 
     public PlayerLeaderboardEntry(ResultSet response) throws SQLException {
@@ -39,6 +39,14 @@ public class PlayerLeaderboardEntry {
     }
 
     public double getProgress() {
-        return score / everyonesScore;
+        return ((double) score) / everyonesScore;
+    }
+
+    public String getGuildName() {
+        return guildName.equals(VerifyDB.DEFAULT_GUILD_NAME) ? "" : guildName;
+    }
+
+    public String getGuildTag() {
+        return guildTag.equals(VerifyDB.DEFAULT_GUILD_TAG) ? "" : guildTag;
     }
 }

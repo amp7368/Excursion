@@ -56,7 +56,7 @@ public class CommandProfile implements DoCommand {
             guild = null;
         } else {
             try {
-                guild = GetDB.getGuildLeaderboard().get(playerLeaderboardEntry.guildTag, playerLeaderboardEntry.guildName);
+                guild = GetDB.getGuildLeaderboard().get(playerLeaderboardEntry.getGuildTag(), playerLeaderboardEntry.getGuildName());
             } catch (SQLException throwables) {
                 throwables.printStackTrace(); //todo
                 return;

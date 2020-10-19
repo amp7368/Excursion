@@ -49,17 +49,17 @@ public class ProfileMessage implements ReactableMessage {
                 }
             }
         }
-        System.out.println(allTasks.size());
         for (Task task : allTasks) {
             String category = task.category.toUpperCase();
             topTasks.putIfAbsent(category, new ArrayList<>());
             List<Task> tasksToDoByCategory = topTasks.get(category);
-            if (tasksToDoByCategory.size() < TOP_TASKS_SIZE && !tasksDone.contains(task))
+            if (!tasksDone.contains(task))
                 tasksToDoByCategory.add(task);
         }
         for (List<Task> tasks : topTasks.values()) {
             tasks.sort((o1, o2) -> o2.ep - o1.ep);
         }
+        topTasks.replaceAll((category, tasks) -> tasks.subList(0, SUBMISSION_HISTORY_SIZE));
 
         message = channel.sendMessage(makeMessage()).complete();
         message.addReaction(AllReactables.Reactable.TOP.getFirstEmoji()).queue();
@@ -105,7 +105,11 @@ public class ProfileMessage implements ReactableMessage {
             description.append(String.format("**Uncompleted %s**\n", Pretty.upperCaseFirst(topTaskCategory.getKey())));
             List<String> taskNames = new ArrayList<>();
             for (Task task : topTaskCategory.getValue()) {
-                taskNames.add(AllReactables.emojiAlphabet.get(emojiAt++) + " " + task.taskName);
+                taskNames.add(String.format("%s %s (%d EP)",
+                        AllReactables.emojiAlphabet.get(emojiAt++),
+                        task.taskName,
+                        task.ep
+                ));
             }
             description.append(String.join("\n", taskNames));
             description.append('\n');

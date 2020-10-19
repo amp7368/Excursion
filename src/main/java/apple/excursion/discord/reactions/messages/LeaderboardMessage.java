@@ -48,7 +48,7 @@ public class LeaderboardMessage implements ReactableMessage {
             PlayerLeaderboardEntry entry = leaderboard.get(place);
             final String name = entry.playerName;
             stringToAdd.append(String.format("|%4d| %-31s| %8d | %-20s| %3s |\n",
-                    place + 1, name.length() > 25 ? name.substring(0, 22) + "..." : name, entry.score, entry.guildName, entry.guildTag));
+                    place + 1, name.length() > 25 ? name.substring(0, 22) + "..." : name, entry.score, entry.getGuildName(), entry.getGuildTag()));
 
             if (leaderboardMessage.length() + 3 + stringToAdd.length() >= 2000) {
                 leaderboardMessage.append("```");

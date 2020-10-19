@@ -15,6 +15,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class CommandGuild implements DoCommand {
     @Override
@@ -24,17 +25,20 @@ public class CommandGuild implements DoCommand {
             event.getChannel().sendMessage(Commands.GUILD.getUsageMessage()).queue();
             return;
         }
-        List<GuildHeader> guilds=null;
+        List<GuildHeader> guilds;
         try {
-            guilds = GetDB.getGuildNameList(); //todo change this to only get guildNames
+            guilds = GetDB.getGuildNameList();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
             return;
         }
-        GuildHeader match = null;
+        List<String> guildNameSplit = new ArrayList<>(Arrays.asList(contentSplit));
+        guildNameSplit.remove(0);
+        String guildName = String.join(" ", guildNameSplit);
         final String guildTag = contentSplit[1];
+        GuildHeader match = null;
         for (GuildHeader guild : guilds) {
-            if (guild.tag.equals(guildTag)) {
+            if (guild.tag.equals(guildTag) || guildName.equals(guild.name)) {
                 match = guild;
                 break;
             }
@@ -51,10 +55,8 @@ public class CommandGuild implements DoCommand {
                                 guildTag)).queue();
                 return;
             }
-            List<String> guildNameSplit = new ArrayList<>(Arrays.asList(contentSplit));
-            guildNameSplit.remove(0);
-            guildNameSplit.remove(0);
-            String guildName = String.join(" ", guildNameSplit);
+            guildNameSplit.remove(0); // get rid of the tag
+            guildName = String.join(" ", guildNameSplit);
             // ask the player if they want to create the guild
             new CreateGuildMessage(guildName, guildTag, playerId, playerName, event.getChannel());
             return;

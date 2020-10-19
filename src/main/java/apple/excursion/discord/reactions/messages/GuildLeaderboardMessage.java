@@ -50,8 +50,8 @@ public class GuildLeaderboardMessage implements ReactableMessage {
             GuildLeaderboardEntry entry = leaderboard.get(place);
             stringToAdd.append(String.format("|%4d|%-20s|%-3s| %9d | %-25s| %-9d|\n",
                     entry.rank,
-                    entry.guildName,
-                    entry.guildTag,
+                    entry.getGuildName(),
+                    entry.getGuildTag(),
                     entry.score,
                     entry.topPlayer.length() > 25 ? entry.topPlayer.substring(0, 22) + "..." : entry.topPlayer,
                     entry.topPlayerPoints));
@@ -65,7 +65,7 @@ public class GuildLeaderboardMessage implements ReactableMessage {
         }
         leaderboardMessage.append(getDash());
         leaderboardMessage.append(String.format("Total EP: %d EP\n", leaderboard.getTotalEp()));
-        leaderboardMessage.append(String.format("Total EP guildless players: %d EP\n", leaderboard.getNoGuildsEp()));
+        leaderboardMessage.append(String.format("Total EP guildless submissions: %d EP\n", leaderboard.getNoGuildsEp()));
         leaderboardMessage.append(getDash());
         leaderboardMessage.append("```");
         return leaderboardMessage.toString();

@@ -15,12 +15,12 @@ public class LeaderboardOfGuilds {
             if (guild.isDefault()) {
                 noGuildsEntry = guild;
                 iterator.remove();
-                break;
+                break; // only 1 default guild entry
             }
         }
         int topScore;
         if (leaderboard.isEmpty()) {
-            topScore = 0;
+            topScore = Integer.MAX_VALUE;
         } else {
             leaderboard.sort((o1, o2) -> o2.score - o1.score);
             topScore = guilds.get(0).score;
@@ -28,7 +28,7 @@ public class LeaderboardOfGuilds {
         int totalEp = 0;
         final int size = leaderboard.size();
         for (int i = 0; i < size; i++) {
-            GuildLeaderboardEntry guild = leaderboard.get(0);
+            GuildLeaderboardEntry guild = leaderboard.get(i);
             guild.rank = i + 1;
             guild.topGuildScore = topScore;
             totalEp += guild.score;

@@ -26,4 +26,12 @@ public class GuildLeaderboardEntry {
     public double getProgress() {
         return ((double) this.score) / this.topGuildScore;
     }
+
+    public String getGuildName() {
+        return guildName.equals(VerifyDB.DEFAULT_GUILD_NAME) ? "" : guildName;
+    }
+
+    public String getGuildTag() {
+        return guildTag.equals(VerifyDB.DEFAULT_GUILD_TAG) ? "" : guildTag;
+    }
 }

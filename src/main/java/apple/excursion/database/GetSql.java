@@ -53,7 +53,7 @@ class GetSql {
         } else {
             return "INSERT INTO players "
                     + "VALUES "
-                    + String.format("('%d','%s','%s','%s');",
+                    + String.format("('%d','%s','%s','%s',0);",
                     id.getKey(),
                     id.getValue(),
                     guildName,
@@ -88,7 +88,7 @@ class GetSql {
     public static String getSqlInsertGuild(String guildName, String guildTag) {
         return String.format("INSERT INTO guilds "
                         + "VALUES ('%s', '%s');",
-                guildName, guildTag);
+                guildTag, guildName);
     }
 
 
@@ -164,9 +164,9 @@ class GetSql {
 
     @NotNull
     public static String getSqlGetPlayersInGuild(String tag) {
-        return String.format("SELECT data.player_name,guilds.guild_tag,guilds.guild_name,data.score\n" +
+        return String.format("SELECT data.player_name,guilds.guild_tag,guilds.guild_name,data.score,data.soul_juice\n" +
                 "FROM (\n" +
-                "         SELECT players.player_name, players.guild_tag, sum(submissions.score) as score\n" +
+                "         SELECT players.player_name, players.guild_tag, sum(submissions.score) as score, players.soul_juice\n" +
                 "         FROM players\n" +
                 "                  INNER JOIN submissions_link\n" +
                 "                             ON players.player_uid = submissions_link.player_id\n" +
