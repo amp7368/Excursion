@@ -1,6 +1,5 @@
 package apple.excursion.discord.reactions.messages;
 
-import apple.excursion.database.GetDB;
 import apple.excursion.database.objects.guild.LeaderboardOfGuilds;
 import apple.excursion.database.objects.guild.GuildLeaderboardEntry;
 import apple.excursion.discord.reactions.AllReactables;
@@ -14,13 +13,14 @@ import java.sql.SQLException;
 
 
 public class GuildLeaderboardMessage implements ReactableMessage {
-    private static final int ENTRIES_PER_PAGE = 10;
+    public static final int ENTRIES_PER_PAGE = 10;
     private final Message message;
     private int page;
     private long lastUpdated;
-    private final LeaderboardOfGuilds leaderboard = GetDB.getGuildLeaderboard();
+    private final LeaderboardOfGuilds leaderboard;
 
-    public GuildLeaderboardMessage(MessageChannel channel) throws SQLException {
+    public GuildLeaderboardMessage(MessageChannel channel, LeaderboardOfGuilds leaderboard) throws SQLException {
+        this.leaderboard = leaderboard;
         this.page = 0;
         this.message = channel.sendMessage(makeMessage()).complete();
         message.addReaction(AllReactables.Reactable.LEFT.getFirstEmoji()).queue();
@@ -30,9 +30,14 @@ public class GuildLeaderboardMessage implements ReactableMessage {
         AllReactables.add(this);
     }
 
-    private String makeMessage() {
+    public String makeMessage() {
+        String title = String.format("Excursion Guild Leaderboards Page (%d)", page + 1);
+        return makeMessageStatic(leaderboard,page,title);
+    }
+
+    public static String makeMessageStatic(LeaderboardOfGuilds leaderboard, int page, String title) {
         StringBuilder leaderboardMessage = new StringBuilder();
-        leaderboardMessage.append(String.format("```glsl\nExcursion Guild Leaderboards Page (%d)\n", page + 1));
+        leaderboardMessage.append(String.format("```glsl\n%s\n", title));
         leaderboardMessage.append(getDash());
         leaderboardMessage.append(String.format("|%4s|", ""));
         leaderboardMessage.append(String.format("%-20s|", "Guild Name"));
@@ -71,7 +76,7 @@ public class GuildLeaderboardMessage implements ReactableMessage {
         return leaderboardMessage.toString();
     }
 
-    private String getDash() {
+    private static String getDash() {
         return "-".repeat(78) + "\n";
     }
 

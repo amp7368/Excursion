@@ -8,12 +8,15 @@ import apple.excursion.database.objects.guild.LeaderboardOfGuilds;
 import apple.excursion.database.objects.player.PlayerHeader;
 import apple.excursion.database.objects.player.PlayerLeaderboard;
 import apple.excursion.database.objects.player.PlayerLeaderboardEntry;
+import apple.excursion.discord.data.answers.HistoryLeaderboardOfGuilds;
 import apple.excursion.utils.Pair;
+import apple.excursion.utils.Pretty;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 public class GetDB {
@@ -56,7 +59,7 @@ public class GetDB {
             statement.close();
             response.close();
 
-            return new PlayerData(id.getKey(),playerName, guildName, guildTag, submissions, score, soulJuice);
+            return new PlayerData(id.getKey(), playerName, guildName, guildTag, submissions, score, soulJuice);
         }
     }
 
@@ -64,6 +67,7 @@ public class GetDB {
     public static LeaderboardOfGuilds getGuildLeaderboard() throws SQLException {
         synchronized (VerifyDB.syncDB) {
             String sql = GetSql.getSqlGetGuilds();
+            System.out.println(sql);
             Statement statement = VerifyDB.database.createStatement();
             ResultSet response = statement.executeQuery(sql);
             List<GuildLeaderboardEntry> guilds = new ArrayList<>();
@@ -193,5 +197,80 @@ public class GetDB {
             return players;
         }
 
+    }
+
+    public static HistoryLeaderboardOfGuilds getGuildLeaderboard(int timeField, int timeInterval, Calendar timeLookingAt) throws SQLException {
+        long startTime = 0;
+        Calendar start = Calendar.getInstance();
+        start.setTimeInMillis(timeLookingAt.getTimeInMillis());
+        long endTime = 0;
+        switch (timeField) {
+            case Calendar.MONTH:
+                int dayOfMonthInCalendar = timeLookingAt.get(Calendar.DAY_OF_MONTH); // what day of the month it is
+                int firstDayOfMonth = timeLookingAt.get(Calendar.DAY_OF_YEAR) - dayOfMonthInCalendar; // the first day of the month for this month
+                start.set(Calendar.DAY_OF_YEAR, firstDayOfMonth + 1);
+                start.add(Calendar.DAY_OF_YEAR, -timeInterval + 1); // +1 because we already got to the beginning of the month
+                setStartOfDay(start);
+                startTime = start.getTimeInMillis();
+                start.add(Calendar.MONTH, timeInterval); // add to get the end date exclusive
+                start.add(Calendar.DAY_OF_YEAR, -1); // subtract 1 day to go back to the previous month
+                setEndOfDay(start);
+                endTime = start.getTimeInMillis();
+                break;
+            case Calendar.WEEK_OF_YEAR:
+                timeLookingAt.setFirstDayOfWeek(Calendar.MONDAY);
+                start.setFirstDayOfWeek(Calendar.MONDAY);
+                int dayOfWeekInCalendar = (timeLookingAt.get(Calendar.DAY_OF_WEEK) - 2) % 7;
+                if (dayOfWeekInCalendar < 0) dayOfWeekInCalendar += 7;
+                System.out.println(dayOfWeekInCalendar);
+                start.add(Calendar.DAY_OF_MONTH, -dayOfWeekInCalendar);
+                setStartOfDay(start);
+                startTime = start.getTimeInMillis();
+                start.add(Calendar.WEEK_OF_YEAR, timeInterval);
+                start.add(Calendar.DAY_OF_YEAR, -1); // subtract 1 day to go back to the previous month
+                setEndOfDay(start);
+                endTime = start.getTimeInMillis();
+                break;
+            case Calendar.DAY_OF_YEAR:
+                setStartOfDay(start);
+                startTime = start.getTimeInMillis();
+                start.add(Calendar.DAY_OF_YEAR, timeInterval);
+                start.add(Calendar.DAY_OF_YEAR, -1);
+                setEndOfDay(start);
+                endTime = start.getTimeInMillis();
+                break;
+        }
+        synchronized (VerifyDB.syncDB) {
+            String sql = GetSql.getSqlGetGuildsBetweenTime(startTime, endTime);
+            Statement statement = VerifyDB.database.createStatement();
+            ResultSet response = statement.executeQuery(sql);
+            List<GuildLeaderboardEntry> guilds = new ArrayList<>();
+            if (!response.isClosed())
+                while (response.next()) {
+                    int guildScore = response.getInt(1);
+                    String guildTag = response.getString(2);
+                    String guildName = response.getString(3);
+                    String playerName = response.getString(4);
+                    int playerScore = response.getInt(5);
+                    guilds.add(new GuildLeaderboardEntry(guildTag, guildName, guildScore, playerName, playerScore));
+                }
+            response.close();
+            statement.close();
+            return new HistoryLeaderboardOfGuilds(new LeaderboardOfGuilds(guilds), startTime, endTime);
+        }
+    }
+
+    private static void setEndOfDay(Calendar start) {
+        start.set(Calendar.SECOND, 59);
+        start.set(Calendar.MINUTE, 59);
+        start.set(Calendar.HOUR, 11);
+        start.set(Calendar.AM_PM, Calendar.PM);
+    }
+
+    private static void setStartOfDay(Calendar start) {
+        start.set(Calendar.SECOND, 0);
+        start.set(Calendar.MINUTE, 0);
+        start.set(Calendar.HOUR, 0);
+        start.set(Calendar.AM_PM, Calendar.AM);
     }
 }
