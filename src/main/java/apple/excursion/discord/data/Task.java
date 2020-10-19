@@ -4,8 +4,6 @@ import apple.excursion.utils.GetFromObject;
 import org.eclipse.jetty.util.ConcurrentHashSet;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 public class Task {
@@ -59,10 +57,5 @@ public class Task {
     public static class TaskCategory {
         private static final ConcurrentHashSet<String> taskTypes = new ConcurrentHashSet<>();
 
-        public static boolean contains(String category) {
-            for (String task : taskTypes)
-                if (task.equalsIgnoreCase(category)) return true;
-            return false;
-        }
     }
 }

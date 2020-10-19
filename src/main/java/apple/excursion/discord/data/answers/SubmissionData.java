@@ -148,26 +148,8 @@ public class SubmissionData {
         }
     }
 
-    public Date getDate() {
-        return new Date(epochTimeOfSubmission);
-    }
-
     public long getTimeEpoch() {
         return epochTimeOfSubmission;
-    }
-
-    @Nullable
-    public String getOtherSubmitters() {
-        if (allSubmitters.size() == 1) {
-            return null;
-        }
-        List<Long> otherSubmitters = new ArrayList<>();
-        for (Pair<Long, String> otherUserRaw : allSubmitters) {
-            if (!otherUserRaw.getKey().equals(submitterId)) {
-                otherSubmitters.add(otherUserRaw.getKey());
-            }
-        }
-        return otherSubmitters.stream().map(String::valueOf).collect(Collectors.joining(","));
     }
 
     public long getSubmitterId() {
@@ -184,7 +166,6 @@ public class SubmissionData {
 
     public enum TaskSubmissionType {
         DAILY,
-        NORMAL,
-        IDK
+        NORMAL
     }
 }

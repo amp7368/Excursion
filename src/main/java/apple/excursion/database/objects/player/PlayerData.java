@@ -13,7 +13,7 @@ public class PlayerData {
     private final String guildTag;
     public final List<OldSubmission> submissions;
     public final int score;
-    private final int soulJuice;
+    public final int soulJuice;
 
     public PlayerData(String playerName, String guildName, String guildTag, List<OldSubmission> submissions, int score, int soulJuice) {
         this.name = playerName;

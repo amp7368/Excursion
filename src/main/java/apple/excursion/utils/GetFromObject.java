@@ -1,7 +1,5 @@
 package apple.excursion.utils;
 
-import java.util.Iterator;
-
 public class GetFromObject {
 
     private static final int INT_FAIL = Integer.MIN_VALUE;

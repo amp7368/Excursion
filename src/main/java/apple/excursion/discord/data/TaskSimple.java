@@ -1,10 +1,5 @@
 package apple.excursion.discord.data;
 
-import org.eclipse.jetty.util.ConcurrentHashSet;
-
-import java.util.ArrayList;
-import java.util.Collection;
-
 public class TaskSimple {
     public int points;
     public String name;

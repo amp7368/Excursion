@@ -182,9 +182,11 @@ public class GetCalendarDB {
             if (monthWithTasks.monthName.equals(monthName)) {
                 // we already have this month
                 monthWithTasks.lastUpdated = System.currentTimeMillis();
+                tasksInMonths.add(monthWithTasks);
                 return monthWithTasks;
             }
         }
+        tasksInMonths.removeIf(MonthWithTasks::isOld);
         try {
             return new MonthWithTasks(monthName, yearMonth.lengthOfMonth(), yearMonth.getMonth().name(), yearMonth.getMonthValue(), yearMonth.getYear());
         } catch (SQLException e) {

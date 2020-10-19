@@ -208,16 +208,14 @@ public class PostcardListMessage implements ReactableMessage {
     }
 
     public enum Category {
-        DARE(AllReactables.Reactable.DARES,0xff9797),
-        EXCURSION(AllReactables.Reactable.EXCURSIONS,0xfaab5f),
-        ALL(AllReactables.Reactable.ALL_CATEGORIES,0xffffff),
-        MISSION(AllReactables.Reactable.MISSIONS,0xc3993e);
+        DARE(0xff9797),
+        EXCURSION(0xfaab5f),
+        ALL(0xffffff),
+        MISSION(0xc3993e);
 
-        public final AllReactables.Reactable reactable;
         public int color;
 
-        Category(AllReactables.Reactable reactable, int color) {
-            this.reactable = reactable;
+        Category(int color) {
             this.color = color;
         }
     }

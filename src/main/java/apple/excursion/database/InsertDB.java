@@ -54,9 +54,4 @@ public class InsertDB {
         statement.close();
     }
 
-    private static String getMonthName(long epochSeconds) {
-        SimpleDateFormat formatter = new SimpleDateFormat();
-        formatter.applyPattern("MMM_yyyy");
-        return formatter.format(new Date(epochSeconds * 1000));
-    }
 }

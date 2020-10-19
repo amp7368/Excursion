@@ -54,7 +54,7 @@ public class GuildLeaderboardMessage implements ReactableMessage {
                     entry.guildTag,
                     entry.score,
                     entry.topPlayer.length() > 25 ? entry.topPlayer.substring(0, 22) + "..." : entry.topPlayer,
-                    entry.topGuildScore));
+                    entry.topPlayerPoints));
 
             if (leaderboardMessage.length() + 3 + stringToAdd.length() >= 2000) {
                 leaderboardMessage.append("```");

@@ -1,11 +1,8 @@
 package apple.excursion.sheets;
 
 import apple.excursion.ExcursionMain;
-import apple.excursion.discord.data.Profile;
 import apple.excursion.discord.data.TaskSimple;
 import apple.excursion.utils.GetFromObject;
-import apple.excursion.utils.Pair;
-import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.*;
 
 import java.io.IOException;
@@ -19,7 +16,6 @@ public class SheetsPlayerStats {
     private static final String ID_COL_RANGE = "PlayerStats!A:A";
     private static final String PLAYER_STATS_SHEET = "PlayerStats";
     private static final String BASE_PLAYER_STATS_RANGE = "F5";
-    private static final String EVERYONE_RANGE = "PlayerStats";
     private static final int PLAYER_STATS_SHEET_ID = 0;
 
     public static final String TASKS_DONE_HEADER = "Tasks Done";
@@ -184,10 +180,6 @@ public class SheetsPlayerStats {
             }
         }
         return idIndex;
-    }
-
-    public static List<List<Object>> getEveryone() throws IOException {
-        return SHEETS_VALUES.get(SPREADSHEET_ID, EVERYONE_RANGE).execute().getValues();
     }
 
     public static void rename(int row, String realName) {

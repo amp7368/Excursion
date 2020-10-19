@@ -9,9 +9,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
-import static apple.excursion.database.VerifyDB.DEFAULT_GUILD_NAME;
-import static apple.excursion.database.VerifyDB.DEFAULT_GUILD_TAG;
-
 class GetSql {
     private static final HashBiMap<Character, Character> incompatibleToCompatible = HashBiMap.create();
 

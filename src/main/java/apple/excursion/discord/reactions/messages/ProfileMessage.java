@@ -79,13 +79,12 @@ public class ProfileMessage implements ReactableMessage {
         EmbedBuilder embed = new EmbedBuilder();
         embed.setTitle(player.name);
         StringBuilder description = new StringBuilder();
-
+        description.append(String.format("Soul juice: %d\n\n", player.soulJuice));
         // put guild info
         if (guild == null) {
             description.append(String.format("Not in a guild. To join a guild use %s", Commands.GUILD.getUsageMessage()));
         } else {
             description.append(String.format("Member of %s [%s]\n", playerLeaderboardEntry.guildName, playerLeaderboardEntry.guildTag));
-            description.append('\n');
             description.append(String.format("Guild rank: #%d\n", guild.rank));
             description.append(Pretty.getProgressBar(guild.getProgress()));
             description.append('\n');
