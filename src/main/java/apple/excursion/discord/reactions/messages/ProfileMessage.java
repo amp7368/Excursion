@@ -24,8 +24,8 @@ import java.util.List;
 
 public class ProfileMessage implements ReactableMessage {
     private static final Color BOT_COLOR = new Color(0x4e80f7);
-    private static final int TOP_TASKS_SIZE = 5;
-    public static final int SUBMISSION_HISTORY_SIZE = 5;
+    private static final int TOP_TASKS_SIZE = 4;
+    public static final int SUBMISSIONS_PER_PAGE = 5;
 
     private final Message message;
     private final PlayerLeaderboardEntry playerLeaderboardEntry;
@@ -35,6 +35,7 @@ public class ProfileMessage implements ReactableMessage {
     private long lastUpdated = System.currentTimeMillis();
     private final List<Task> allTasks = SheetsTasks.getTasks();
     private int countTasksDone = 0;
+    private int page = 0;
 
     public ProfileMessage(PlayerLeaderboardEntry playerLeaderboardEntry, PlayerData player, GuildLeaderboardEntry guild, MessageChannel channel) {
         this.playerLeaderboardEntry = playerLeaderboardEntry;
@@ -59,15 +60,15 @@ public class ProfileMessage implements ReactableMessage {
         for (List<Task> tasks : topTasks.values()) {
             tasks.sort((o1, o2) -> o2.ep - o1.ep);
         }
-        topTasks.replaceAll((category, tasks) -> tasks.subList(0, SUBMISSION_HISTORY_SIZE));
 
         message = channel.sendMessage(makeMessage()).complete();
+        message.addReaction(AllReactables.Reactable.LEFT.getFirstEmoji()).queue();
+        message.addReaction(AllReactables.Reactable.RIGHT.getFirstEmoji()).queue();
         message.addReaction(AllReactables.Reactable.TOP.getFirstEmoji()).queue();
 
         int i = 0;
         for (List<Task> tasks : topTasks.values()) {
-            final int size = tasks.size();
-            for (int j = 0; j < size; j++) {
+            for (int j = 0; j < TOP_TASKS_SIZE; j++) {
                 message.addReaction(AllReactables.emojiAlphabet.get(i++)).queue();
             }
         }
@@ -104,7 +105,10 @@ public class ProfileMessage implements ReactableMessage {
         for (Map.Entry<String, List<Task>> topTaskCategory : topTasks.entrySet()) {
             description.append(String.format("**Uncompleted %s**\n", Pretty.upperCaseFirst(topTaskCategory.getKey())));
             List<String> taskNames = new ArrayList<>();
-            for (Task task : topTaskCategory.getValue()) {
+            List<Task> tasks = topTaskCategory.getValue();
+            int upper = Math.min(((page + 1) * TOP_TASKS_SIZE), tasks.size());
+            for (int lower = page * TOP_TASKS_SIZE; lower < upper; lower++) {
+                Task task = tasks.get(lower);
                 taskNames.add(String.format("%s %s (%d EP)",
                         AllReactables.emojiAlphabet.get(emojiAt++),
                         task.taskName,
@@ -120,11 +124,10 @@ public class ProfileMessage implements ReactableMessage {
             description.append("There is no submission history");
         } else {
             List<OldSubmission> submissions = player.submissions;
-            int i = 0;
-            for (OldSubmission submission : submissions) {
-                if (i++ == SUBMISSION_HISTORY_SIZE) break;
-                description.append(submission.makeSubmissionHistoryMessage());
-                description.append("\n");
+            int upper = Math.min(((page + 1) * SUBMISSIONS_PER_PAGE), submissions.size());
+            for (int lower = page * SUBMISSIONS_PER_PAGE; lower < upper; lower++) {
+                description.append(submissions.get(lower).makeSubmissionHistoryMessage());
+                description.append('\n');
             }
         }
         embed.setDescription(description);
@@ -136,30 +139,62 @@ public class ProfileMessage implements ReactableMessage {
     public void dealWithReaction(AllReactables.Reactable reactable, String reaction, MessageReactionAddEvent event) {
         User user = event.getUser();
         if (user == null) return;
-        if (reactable == AllReactables.Reactable.ALPHABET) {
-            final int size = AllReactables.emojiAlphabet.size();
-            for (int i = 0; i < size; i++) {
-                if (AllReactables.emojiAlphabet.get(i).equals(event.getReactionEmote().getName())) {
-                    // we found the emote
-                    int j = 0;
-                    for (List<Task> tasks : topTasks.values()) {
-                        if (tasks.size() + j > i) {
-                            Task taskFound = tasks.get(i - j);
-                            if (taskFound != null) {
-                                message.editMessage(PostcardDisplay.getMessage(taskFound)).queue();
+        switch (reactable) {
+            case ALPHABET:
+                final int size = AllReactables.emojiAlphabet.size();
+                for (int i = 0; i < size; i++) {
+                    if (AllReactables.emojiAlphabet.get(i).equals(event.getReactionEmote().getName())) {
+                        // we found the emote
+                        int j = 0;
+                        for (List<Task> tasks : topTasks.values()) {
+                            if (tasks.size() + j > i) {
+                                Task taskFound = tasks.get(i - j);
+                                if (taskFound != null) {
+                                    message.editMessage(PostcardDisplay.getMessage(taskFound)).queue();
+                                }
+                                break;
                             }
-                            break;
+                            j += tasks.size();
                         }
-                        j += tasks.size();
+                        event.getReaction().removeReaction(user).queue();
                     }
-                    event.getReaction().removeReaction(user).queue();
                 }
-            }
-            lastUpdated = System.currentTimeMillis();
-        } else if (reactable == AllReactables.Reactable.TOP) {
-            message.editMessage(makeMessage()).queue();
-            event.getReaction().removeReaction(user).queue();
+                lastUpdated = System.currentTimeMillis();
+                break;
+            case TOP:
+                message.editMessage(makeMessage()).queue();
+                event.getReaction().removeReaction(user).queue();
+                break;
+            case LEFT:
+                backward();
+                event.getReaction().removeReaction(user).queue();
+                break;
+            case RIGHT:
+                forward();
+                event.getReaction().removeReaction(user).queue();
+                break;
         }
+    }
+
+    private void forward() {
+        int maxTopTasks = 0;
+        for (List<Task> category : topTasks.values()) {
+            maxTopTasks = Math.max(category.size(), maxTopTasks);
+        }
+        if ((player.submissions.size() - 1) / SUBMISSIONS_PER_PAGE >= page + 1 ||
+                (maxTopTasks - 1) / SUBMISSIONS_PER_PAGE >= page + 1) {
+            page++;
+            message.editMessage(makeMessage()).queue();
+        }
+        this.lastUpdated = System.currentTimeMillis();
+    }
+
+    private void backward() {
+        if (page != 0) {
+            page--;
+            message.editMessage(makeMessage()).queue();
+        }
+        this.lastUpdated = System.currentTimeMillis();
     }
 
     @Override

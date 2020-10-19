@@ -106,6 +106,7 @@ public class HistoryMessage implements ReactableMessage {
     private void timeRight() {
         timeLookingAt.add(timeField, timeInterval);
         message.editMessage(makeMessage()).queue();
+        this.lastUpdated = System.currentTimeMillis();
     }
 
     private void timeLeft() {
@@ -113,11 +114,13 @@ public class HistoryMessage implements ReactableMessage {
             return;
         timeLookingAt.add(timeField, -timeInterval);
         message.editMessage(makeMessage()).queue();
+        this.lastUpdated = System.currentTimeMillis();
     }
 
     private void top() {
         page = 0;
         message.editMessage(makeMessage()).queue();
+        this.lastUpdated = System.currentTimeMillis();
     }
 
     private void right() {

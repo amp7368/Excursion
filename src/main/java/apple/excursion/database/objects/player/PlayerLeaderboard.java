@@ -14,13 +14,13 @@ public class PlayerLeaderboard {
         }
         leaderboard.sort((o1, o2) -> o2.score - o1.score);
         final int size = leaderboard.size();
-        long totalEp = 0;
+        long topPlayerScore = 0;
         for (PlayerLeaderboardEntry entry : leaderboard)
-            totalEp += entry.score;
+            topPlayerScore = Math.max(entry.score, topPlayerScore);
         for (int i = 0; i < size; i++) {
             PlayerLeaderboardEntry entry = leaderboard.get(i);
             entry.rank = i;
-            entry.everyonesScore = totalEp;
+            entry.topPlayerScore = topPlayerScore;
         }
     }
 
