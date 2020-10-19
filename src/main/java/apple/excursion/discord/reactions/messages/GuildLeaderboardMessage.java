@@ -18,7 +18,7 @@ public class GuildLeaderboardMessage implements ReactableMessage {
     private final Message message;
     private int page;
     private long lastUpdated;
-    private final LeaderboardOfGuilds leaderboard = GetDB.getGuildList();
+    private final LeaderboardOfGuilds leaderboard = GetDB.getGuildLeaderboard();
 
     public GuildLeaderboardMessage(MessageChannel channel) throws SQLException {
         this.page = 0;

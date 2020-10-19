@@ -8,7 +8,6 @@ import java.util.Iterator;
 import java.util.List;
 
 public class Profile {
-    private static final int TOP_TASKS_SIZE = 5;
     private List<TaskSimple> tasksNotDone = new ArrayList<>();
     private List<TaskSimpleCompleted> tasksDone = new ArrayList<>();
     private int totalEp = 0;
@@ -137,7 +136,7 @@ public class Profile {
         for (TaskSimple task : tasksNotDone) {
             if (task.category.equals(taskType)) {
                 topTasks.add(task);
-                if (topTasks.size() == TOP_TASKS_SIZE)
+                if (topTasks.size() == 0)
                     return topTasks;
             }
         }

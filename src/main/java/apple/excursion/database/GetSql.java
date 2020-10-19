@@ -97,7 +97,7 @@ class GetSql {
 
     // all the get sql
     @NotNull
-    public static String getSqlGetPlayerSubmissionHistory(long id) {
+    public static String getSqlGetPlayerSubmissionHistory(long id, int submissionsToGet) {
         return String.format("SELECT group_concat(players.player_name),\n" +
                 "       data.submitter_name,\n" +
                 "       data.date_submitted,\n" +
@@ -114,7 +114,7 @@ class GetSql {
                 "                                      ON submissions_link.submission_id = submissions.id\n" +
                 "                  WHERE submissions_link.player_id = %d\n" +
                 "                  ORDER BY submissions.date_submitted DESC\n" +
-                "                  LIMIT 5\n" +
+                (submissionsToGet == -1 ? "" : String.format("LIMIT %d ", submissionsToGet)) +
                 "              ) as s\n" +
                 "                  INNER JOIN players\n" +
                 "                             ON s.submitter = players.player_uid\n" +

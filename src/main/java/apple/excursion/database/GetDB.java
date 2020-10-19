@@ -16,9 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GetDB {
-    public static PlayerData getPlayerData(Pair<Long, String> id) throws SQLException {
+    public static PlayerData getPlayerData(Pair<Long, String> id,int submissionSize) throws SQLException {
         String sql = GetSql.getSqlGetPlayerAll(id.getKey());
-        System.out.println(sql);
         Statement statement = VerifyDB.database.createStatement();
         ResultSet response = statement.executeQuery(sql);
         String playerName;
@@ -44,7 +43,7 @@ public class GetDB {
         int soulJuice = response.getInt(5);
         response.close();
         List<OldSubmission> submissions = new ArrayList<>();
-        sql = GetSql.getSqlGetPlayerSubmissionHistory(id.getKey());
+        sql = GetSql.getSqlGetPlayerSubmissionHistory(id.getKey(), submissionSize);
         response = statement.executeQuery(sql);
         while (response.next()) {
             submissions.add(new OldSubmission(response));
@@ -57,7 +56,7 @@ public class GetDB {
     }
 
 
-    public static LeaderboardOfGuilds getGuildList() throws SQLException {
+    public static LeaderboardOfGuilds getGuildLeaderboard() throws SQLException {
         String sql = GetSql.getSqlGetGuilds();
         Statement statement = VerifyDB.database.createStatement();
         ResultSet response = statement.executeQuery(sql);

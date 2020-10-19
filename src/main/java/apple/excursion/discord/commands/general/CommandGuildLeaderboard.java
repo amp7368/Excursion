@@ -37,7 +37,7 @@ public class CommandGuildLeaderboard implements DoCommand {
 
         LeaderboardOfGuilds leaderboard;
         try {
-            leaderboard = GetDB.getGuildList();
+            leaderboard = GetDB.getGuildLeaderboard();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
             return;

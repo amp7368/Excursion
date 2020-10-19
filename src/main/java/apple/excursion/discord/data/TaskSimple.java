@@ -18,14 +18,5 @@ public class TaskSimple {
             this.category = category.toLowerCase().substring(0, categoryChars.length - 1);
         } else
             this.category = category.toLowerCase();
-        TaskCategory.taskTypes.add(this.category);
-    }
-
-    public static class TaskCategory {
-        private static final ConcurrentHashSet<String> taskTypes = new ConcurrentHashSet<>();
-
-        public static Collection<String> values() {
-            return new ArrayList<>(taskTypes);
-        }
     }
 }

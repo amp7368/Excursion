@@ -1,6 +1,7 @@
 package apple.excursion.database.objects.player;
 
 import apple.excursion.database.objects.OldSubmission;
+import apple.excursion.discord.data.Task;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +15,7 @@ public class PlayerData {
     public final int score;
     private final int soulJuice;
 
-    public PlayerData(String playerName, String guildName, String guildTag, List<OldSubmission> submissions, int score,int soulJuice) {
+    public PlayerData(String playerName, String guildName, String guildTag, List<OldSubmission> submissions, int score, int soulJuice) {
         this.name = playerName;
         this.guildName = guildName;
         this.guildTag = guildTag;
@@ -37,5 +38,12 @@ public class PlayerData {
                 this.name,
                 guildTag == null ? "" : String.format("in [%s] ", guildTag),
                 submissionsThatMatch.stream().map(OldSubmission::makeSubmissionHistoryMessage).collect(Collectors.joining("\n")));
+    }
+
+    public boolean containsSubmission(Task task) {
+        for (OldSubmission submission : submissions) {
+            if (submission.taskName.equalsIgnoreCase(task.taskName)) return true;
+        }
+        return false;
     }
 }

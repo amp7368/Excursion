@@ -1,10 +1,10 @@
 package apple.excursion.database.objects.player;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class PlayerLeaderboard {
-    private List<PlayerLeaderboardEntry> leaderboard;
-    private long totalEp = 0;
+    private final List<PlayerLeaderboardEntry> leaderboard;
 
     public PlayerLeaderboard(List<PlayerLeaderboardEntry> entries) {
         leaderboard = entries;
@@ -13,10 +13,13 @@ public class PlayerLeaderboard {
         }
         leaderboard.sort((o1, o2) -> o2.score - o1.score);
         final int size = leaderboard.size();
+        long totalEp = 0;
+        for (PlayerLeaderboardEntry entry : leaderboard)
+            totalEp += entry.score;
         for (int i = 0; i < size; i++) {
             PlayerLeaderboardEntry entry = leaderboard.get(i);
             entry.rank = i;
-            totalEp += entry.score;
+            entry.everyonesScore = totalEp;
         }
     }
 
@@ -33,5 +36,15 @@ public class PlayerLeaderboard {
 
     public int size() {
         return leaderboard.size();
+    }
+
+    public List<PlayerLeaderboardEntry> getPlayersWithName(String name) {
+        List<PlayerLeaderboardEntry> players = new ArrayList<>();
+        for (PlayerLeaderboardEntry entry : leaderboard) {
+            if (entry.nameIsSimilar(name)) {
+                players.add(entry);
+            }
+        }
+        return players;
     }
 }

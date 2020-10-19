@@ -10,6 +10,7 @@ import apple.excursion.discord.data.AllProfiles;
 import apple.excursion.discord.data.TaskSimple;
 import apple.excursion.discord.data.answers.SubmissionData;
 import apple.excursion.discord.reactions.AllReactables;
+import apple.excursion.discord.reactions.messages.ProfileMessage;
 import apple.excursion.discord.reactions.messages.SubmissionMessage;
 import apple.excursion.sheets.SheetsPlayerStats;
 import apple.excursion.utils.Pair;
@@ -30,6 +31,7 @@ import java.util.stream.Collectors;
 
 public class CommandSubmit implements DoCommand {
     private static final String REVIEWERS_FILE_PATH = getPath();
+    private static final int SUBMISSION_HISTORY_SIZE = 5;
 
     private static String getPath() {
         List<String> list = Arrays.asList(ExcursionMain.class.getProtectionDomain().getCodeSource().getLocation().getPath().split("/"));
@@ -120,7 +122,7 @@ public class CommandSubmit implements DoCommand {
             List<PlayerData> playersData = new ArrayList<>();
             for (Pair<Long, String> player : idToName) {
                 try {
-                    playersData.add(GetDB.getPlayerData(player));
+                    playersData.add(GetDB.getPlayerData(player, SUBMISSION_HISTORY_SIZE));
                 } catch (SQLException throwables) {
                     //todo deal with error
                     throwables.printStackTrace();
