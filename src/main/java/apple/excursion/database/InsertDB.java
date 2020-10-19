@@ -13,7 +13,6 @@ import static apple.excursion.database.VerifyDB.DEFAULT_GUILD_NAME;
 import static apple.excursion.database.VerifyDB.DEFAULT_GUILD_TAG;
 
 public class InsertDB {
-    // todo deal with this constant
     public static void insertSubmission(SubmissionData data) throws SQLException {
         VerifyDB.verify();
         synchronized (VerifyDB.syncDB) {
