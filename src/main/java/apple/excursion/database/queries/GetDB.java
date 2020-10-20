@@ -30,11 +30,23 @@ public class GetDB {
             String playerName;
             // if the player doesn't exist
             if (response.isClosed() || (playerName = response.getString(2)) == null) {
-                // add the player
-                InsertDB.insertPlayer(id, null, null);
-                response.close();
-                statement.close();
-                return new PlayerData(id.getKey(), id.getValue(), null, null, new ArrayList<>(), 0, 0);
+                // the player definitely has no score. decide whether they don't exist of they only have no score
+                sql = GetSql.getSqlGetPlayerGuild(id.getKey());
+                response = statement.executeQuery(sql);
+                String guildName;
+                if (response.isClosed() || (guildName = response.getString(1)) == null) {
+                    // add the player
+                    InsertDB.insertPlayer(id, null, null);
+                    statement.close();
+                    return new PlayerData(id.getKey(), id.getValue(), null, null, new ArrayList<>(), 0, 0);
+                } else {
+                    // the player exists
+                    String guildTag = response.getString(2);
+                    response.close();
+                    statement.close();
+                    return new PlayerData(id.getKey(), id.getValue(), guildName, guildTag, new ArrayList<>(), 0, 0);
+                }
+
             }
             // if the player has the wrong playerName
             if (!playerName.equals(id.getValue())) {
@@ -185,7 +197,10 @@ public class GetDB {
                     players.add(new PlayerHeader(response.getLong(1),
                             response.getString(2),
                             response.getInt(3),
-                            response.getInt(4)));
+                            response.getInt(4),
+                            response.getString(5),
+                            response.getString(6)
+                    ));
                 }
             sql = GetSql.getSqlGetPlayerHeadersNoScore();
             response = statement.executeQuery(sql);
@@ -202,7 +217,10 @@ public class GetDB {
                         players.add(new PlayerHeader(id,
                                 response.getString(2),
                                 response.getInt(3),
-                                0));
+                                0,
+                                response.getString(4),
+                                response.getString(5)
+                        ));
                 }
             statement.close();
             return players;

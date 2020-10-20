@@ -98,7 +98,7 @@ public class ProfileMessage implements ReactableMessage {
         description.append('\n');
 
         // put player info
-        description.append(String.format("Player rank #%d\n", playerLeaderboardEntry.rank));
+        description.append(String.format("Player rank #%d\n", playerLeaderboardEntry.rank + 1));
         description.append(Pretty.getProgressBar(playerLeaderboardEntry.getProgress()));
         description.append('\n');
         description.append(String.format("%d out of %d tasks done\n", countTasksDone, allTasks.size()));

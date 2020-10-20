@@ -21,6 +21,14 @@ public class GuildLeaderboardEntry {
         this.topPlayerPoints = playerScore;
     }
 
+    public GuildLeaderboardEntry(String name, String tag) {
+        this.guildName= name;
+        this.guildTag = tag;
+        this.score = 0;
+        this.topPlayer = "nobody";
+        this.topPlayerPoints=0;
+    }
+
     public boolean isDefault() {
         return guildTag.equals(VerifyDB.DEFAULT_GUILD_TAG);
     }

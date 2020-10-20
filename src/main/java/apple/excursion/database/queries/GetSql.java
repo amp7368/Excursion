@@ -376,7 +376,7 @@ public class GetSql {
 
     @NotNull
     static String getSqlGetPlayerHeaders() {
-        return "SELECT players.player_uid, players.player_name, players.soul_juice, playerData.score\n" +
+        return "SELECT players.player_uid, players.player_name, players.soul_juice, playerData.score, players.guild_name, players.guild_tag\n" +
                 "FROM (\n" +
                 "         SELECT sum(submissions.score) AS score, player_uid\n" +
                 "         FROM players\n" +
@@ -390,7 +390,7 @@ public class GetSql {
 
     @NotNull
     static String getSqlGetPlayerHeadersNoScore() {
-        return "SELECT players.player_uid, players.player_name, players.soul_juice FROM players";
+        return "SELECT players.player_uid, players.player_name, players.soul_juice, players.guild_name, players.guild_tag FROM players";
     }
 
     @NotNull

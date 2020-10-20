@@ -22,6 +22,14 @@ public class PlayerLeaderboardEntry {
         id = response.getLong(5);
     }
 
+    public PlayerLeaderboardEntry(String playerName, String guildTag, String guildName, int score, long id) {
+        this.playerName = playerName;
+        this.guildTag = guildTag;
+        this.guildName = guildName;
+        this.score = score;
+        this.id = id;
+    }
+
     public boolean hasId(long id) {
         return this.id == id;
     }

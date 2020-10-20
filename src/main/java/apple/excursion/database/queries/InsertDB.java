@@ -67,11 +67,17 @@ public class InsertDB {
         }
     }
 
-    static void insertPlayer(Pair<Long, String> id, String guildTag, String guildName) throws SQLException {
+    public static void insertPlayer(Pair<Long, String> id, String guildTag, String guildName) throws SQLException {
         // no sync because this should be called while synced already
         try {
             SheetsPlayerStats.addProfile(id.getKey(), id.getValue());
         } catch (IOException ignored) { //this is fine because updates will add this player later somehow
+        }
+        if(guildName!=null){
+            try {
+                SheetsPlayerStats.updateGuild(guildName,guildTag,id.getKey(),id.getValue());
+            } catch (IOException ignored) { //this is fine because updates will add this player later somehow
+            }
         }
         Statement statement = VerifyDB.database.createStatement();
         statement.execute(GetSql.getSqlInsertPlayers(id, guildName, guildTag));

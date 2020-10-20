@@ -24,6 +24,22 @@ public class PlayerLeaderboard {
         }
     }
 
+    public PlayerLeaderboardEntry add(PlayerHeader player) {
+        PlayerLeaderboardEntry thisEntry = new PlayerLeaderboardEntry(player.name, player.guildTag, player.guildName, player.score, player.id);
+        leaderboard.add(thisEntry);
+        leaderboard.sort((o1, o2) -> o2.score - o1.score);
+        final int size = leaderboard.size();
+        long topPlayerScore = 0;
+        for (PlayerLeaderboardEntry entry : leaderboard)
+            topPlayerScore = Math.max(entry.score, topPlayerScore);
+        for (int i = 0; i < size; i++) {
+            PlayerLeaderboardEntry entry = leaderboard.get(i);
+            entry.rank = i;
+            entry.topPlayerScore = topPlayerScore;
+        }
+        return thisEntry;
+    }
+
     public PlayerLeaderboardEntry get(int i) {
         return leaderboard.get(i);
     }
@@ -62,4 +78,6 @@ public class PlayerLeaderboard {
         }
         return players;
     }
+
+
 }
