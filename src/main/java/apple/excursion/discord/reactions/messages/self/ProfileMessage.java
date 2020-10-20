@@ -10,7 +10,6 @@ import apple.excursion.discord.reactions.AllReactables;
 import apple.excursion.discord.reactions.ReactableMessage;
 import apple.excursion.sheets.SheetsTasks;
 import apple.excursion.utils.ColoredName;
-import apple.excursion.utils.GetColoredName;
 import apple.excursion.utils.PostcardDisplay;
 import apple.excursion.utils.Pretty;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -25,7 +24,6 @@ import java.util.*;
 import java.util.List;
 
 public class ProfileMessage implements ReactableMessage {
-    private static final Color BOT_COLOR = new Color(0x4e80f7);
     private static final int TOP_TASKS_SIZE = 4;
     public static final int SUBMISSIONS_PER_PAGE = 5;
 
@@ -111,14 +109,17 @@ public class ProfileMessage implements ReactableMessage {
             description.append(String.format("**Uncompleted %s**\n", Pretty.upperCaseFirst(topTaskCategory.getKey())));
             List<String> taskNames = new ArrayList<>();
             List<Task> tasks = topTaskCategory.getValue();
-            int upper = Math.min(((page + 1) * TOP_TASKS_SIZE), tasks.size());
+            int upper = (page + 1) * TOP_TASKS_SIZE;
             for (int lower = page * TOP_TASKS_SIZE; lower < upper; lower++) {
-                Task task = tasks.get(lower);
-                taskNames.add(String.format("%s %s (%d EP)",
-                        AllReactables.emojiAlphabet.get(emojiAt++),
-                        task.taskName,
-                        task.ep
-                ));
+                if (lower >= tasks.size()) emojiAt++;
+                else {
+                    Task task = tasks.get(lower);
+                    taskNames.add(String.format("%s %s (%d EP)",
+                            AllReactables.emojiAlphabet.get(emojiAt++),
+                            task.taskName,
+                            task.ep
+                    ));
+                }
             }
             description.append(String.join("\n", taskNames));
             description.append('\n');
@@ -146,24 +147,8 @@ public class ProfileMessage implements ReactableMessage {
         if (user == null) return;
         switch (reactable) {
             case ALPHABET:
-                final int size = AllReactables.emojiAlphabet.size();
-                for (int i = 0; i < size; i++) {
-                    if (AllReactables.emojiAlphabet.get(i).equals(event.getReactionEmote().getName())) {
-                        // we found the emote
-                        int j = 0;
-                        for (List<Task> tasks : topTasks.values()) {
-                            if (tasks.size() + j > i) {
-                                Task taskFound = tasks.get(i - j);
-                                if (taskFound != null) {
-                                    message.editMessage(PostcardDisplay.getMessage(taskFound)).queue();
-                                }
-                                break;
-                            }
-                            j += tasks.size();
-                        }
-                        event.getReaction().removeReaction(user).queue();
-                    }
-                }
+                alphabet(event.getReactionEmote().getName());
+                event.getReaction().removeReaction(user).queue();
                 lastUpdated = System.currentTimeMillis();
                 break;
             case TOP:
@@ -179,6 +164,29 @@ public class ProfileMessage implements ReactableMessage {
                 forward();
                 event.getReaction().removeReaction(user).queue();
                 break;
+        }
+    }
+
+    private void alphabet(String emojiName) {
+        final int size = AllReactables.emojiAlphabet.size();
+        for (int emojiIndex = 0; emojiIndex < size; emojiIndex++) {
+            if (AllReactables.emojiAlphabet.get(emojiIndex).equals(emojiName)) {
+                // we found the emote
+                int i = page * TOP_TASKS_SIZE;
+                for (List<Task> tasks : topTasks.values()) {
+                    if (emojiIndex < TOP_TASKS_SIZE) {
+                        if (tasks.size() > i + emojiIndex) {
+                            Task task = tasks.get(i + emojiIndex);
+                            if (task == null) return;
+                            message.editMessage(PostcardDisplay.getMessage(task)).queue();
+                        }
+                        return;
+                    } else {
+                        emojiIndex -= TOP_TASKS_SIZE;
+                    }
+                }
+
+            }
         }
     }
 
