@@ -53,6 +53,7 @@ public class GetDB {
             response.close();
             List<OldSubmission> submissions = new ArrayList<>();
             sql = GetSql.getSqlGetPlayerSubmissionHistory(id.getKey(), submissionSize);
+            System.out.println(sql);
             response = statement.executeQuery(sql);
             while (response.next()) {
                 submissions.add(new OldSubmission(response));

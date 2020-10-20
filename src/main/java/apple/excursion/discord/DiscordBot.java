@@ -26,6 +26,7 @@ public class DiscordBot extends ListenerAdapter {
     public static final String PREFIX = "t!";
     public static final long EXCURSION_GUILD_ID = 555318916344184834L;
     public static final long APPLEPTR16 = 253646208084475904L;
+    public static final int BOT_COLOR = 0x4e80f7;
 
     public static String discordToken; // my bot
     public static JDA client;
