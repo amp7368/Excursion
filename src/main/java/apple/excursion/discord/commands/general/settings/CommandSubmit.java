@@ -69,28 +69,27 @@ public class CommandSubmit implements DoCommand {
             // the author doesn't even exist atm
             return;
         }
-        // change all the idToNames to the correct name based on The Farplane discord names
-        for (Pair<Long, String> idToName : idsToNames) {
-            ColoredName coloredName = GetColoredName.get(idToName.getKey());
-            if (coloredName.getName() != null)
-                idToName.setValue(coloredName.getName());
-        }
 
-        ColoredName coloredName = GetColoredName.get(author.getIdLong());
-        nickName = coloredName.getName() == null ? author.getEffectiveName() : coloredName.getName();
 
-        idsToNames.add(new Pair<>(author.getIdLong(), nickName));
-        String submitterName = nickName;
+        idsToNames.add(new Pair<>(author.getIdLong(), author.getEffectiveName()));
 
         Message eventMessage = event.getMessage();
-        String content = eventMessage.getContentStripped();
+        String content = eventMessage.getContentDisplay();
         List<String> contentList = Arrays.asList(content.split(" "));
         content = String.join(" ", contentList.subList(1, contentList.size()));
         for (Pair<Long, String> pair : idsToNames) {
             String other = pair.getValue();
             content = content.replace("@" + other, "");
         }
-        content = content.replace("@" + submitterName, "").trim();
+
+        // change all the idToNames to the correct name based on The Farplane discord names
+        for (Pair<Long, String> idToName : idsToNames) {
+            ColoredName coloredName = GetColoredName.get(idToName.getKey());
+            if (coloredName.getName() != null)
+                idToName.setValue(coloredName.getName());
+        }
+        ColoredName coloredName = GetColoredName.get(author.getIdLong());
+        String submitterName = coloredName.getName() == null ? author.getEffectiveName() : coloredName.getName();
 
         String[] contentArray = content.split(" ");
         StringBuilder questNameBuilder = new StringBuilder();
