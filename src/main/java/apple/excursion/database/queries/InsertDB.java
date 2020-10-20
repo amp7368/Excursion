@@ -59,7 +59,6 @@ public class InsertDB {
                 }
                 response.close();
                 insertSql = GetSql.getSqlInsertSubmissionLink(VerifyDB.currentSubmissionId, id.getKey(), guildTag);
-                System.out.println(insertSql);
                 statement.execute(insertSql);
             }
             statement.executeBatch();

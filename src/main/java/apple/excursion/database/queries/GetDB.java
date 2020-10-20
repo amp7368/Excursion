@@ -317,7 +317,6 @@ public class GetDB {
         try {
             response = statement.executeQuery(sql);
         } catch (SQLException e) {
-            System.out.println(e.getErrorCode());
             if (e.getErrorCode() == 101) {
                 return Collections.singletonList("done");
             }

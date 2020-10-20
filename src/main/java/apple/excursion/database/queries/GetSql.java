@@ -182,17 +182,15 @@ public class GetSql {
 
     @NotNull
     static String getSqlGetPlayerAll(long id) {
-        return String.format("SELECT(\n" +
-                "          SELECT sum(submissions.score)\n" +
-                "          FROM players\n" +
-                "                   INNER JOIN submissions_link ON players.player_uid = submissions_link.player_id\n" +
-                "                   INNER JOIN submissions ON submissions_link.submission_id = submissions.id\n" +
-                "          WHERE players.player_uid = %d) as score,\n" +
-                "      players.player_name,\n" +
-                "      players.guild_tag,\n" +
-                "      players.guild_name,\n" +
-                "      players.soul_juice\n" +
-                "FROM players;", id);
+        return "SELECT sum(submissions.score),\n" +
+                "       players.player_name,\n" +
+                "       players.guild_tag,\n" +
+                "       players.guild_name,\n" +
+                "       players.soul_juice\n" +
+                "FROM players\n" +
+                "         INNER JOIN submissions_link ON players.player_uid = submissions_link.player_id\n" +
+                "         INNER JOIN submissions ON submissions_link.submission_id = submissions.id\n" +
+                "WHERE players.player_uid = " + id + ";";
     }
 
 
