@@ -11,13 +11,20 @@ public class GetColoredName {
     private static Collection<Long> roles = new HashSet<>();
 
     static {
-        roles.add(555342151135920138L); // Excusionist
-        roles.add(757738058656252034L); // Masonry
         roles.add(555340987086667776L); // Farplane Resident
-        roles.add(570490957959790593L); // Buke
-        roles.add(570096950695821332L); // Shogunate
-        roles.add(570069084591358000L); // Regent
-        roles.add(555342023180288002L); // Yako Dynasty
+        roles.add(757738058656252034L); // Masonry Top
+        roles.add(744702853398003794L); // Purple
+        roles.add(728080120761417828L); // Indigo
+        roles.add(728080122258653316L); // Green
+        roles.add(744469914508853258L); // Blue
+        roles.add(744702664201470022L); // Green
+        roles.add(744702524640198727L); // Yellow
+        roles.add(728080119012393031L); // Magenta
+        roles.add(727021694761566311L); // Dare Red
+        roles.add(728080112532324363L); // Mustard
+        roles.add(727023199161679912L); // Orange
+        roles.add(555342268912107521L); // Masonry One
+        roles.add(555342151135920138L); // Excursionist
     }
 
     public static ColoredName get(long id) {

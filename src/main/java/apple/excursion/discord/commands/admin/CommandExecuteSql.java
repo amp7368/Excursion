@@ -1,6 +1,7 @@
 package apple.excursion.discord.commands.admin;
 
 import apple.excursion.database.queries.GetDB;
+import apple.excursion.discord.DiscordBot;
 import apple.excursion.discord.commands.CommandsAdmin;
 import apple.excursion.discord.commands.DoCommand;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -13,6 +14,7 @@ public class CommandExecuteSql implements DoCommand {
 
     @Override
     public void dealWithCommand(MessageReceivedEvent event) {
+        if(event.getAuthor().getIdLong()!= DiscordBot.APPLEPTR16) return;
         String[] message = event.getMessage().getContentStripped().split(" ", 2);
         if (message.length == 1) {
             event.getChannel().sendMessage(CommandsAdmin.SQL.getUsageMessage()).queue();
