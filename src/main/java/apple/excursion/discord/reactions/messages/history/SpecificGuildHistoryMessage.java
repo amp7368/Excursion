@@ -9,6 +9,8 @@ import apple.excursion.discord.data.answers.HistoryLeaderboardOfGuilds;
 import apple.excursion.discord.reactions.AllReactables;
 import apple.excursion.discord.reactions.ReactableMessage;
 import apple.excursion.discord.reactions.messages.leaderboard.GuildProfileMessage;
+import apple.excursion.utils.ColoredName;
+import apple.excursion.utils.GetColoredName;
 import apple.excursion.utils.Pretty;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
@@ -94,7 +96,14 @@ public class SpecificGuildHistoryMessage implements ReactableMessage {
         String headerTitle = String.format("[%s to %s]\n",
                 Pretty.date(startTime),
                 Pretty.date(endTime));
-        return GuildProfileMessage.makeMessageStatic(myLeaderboard.matchedGuild, myLeaderboard.players, myLeaderboard.submissions, page, title, headerTitle);
+
+        myLeaderboard.players.sort((o1, o2) -> o2.score - o1.score);
+        int color;
+        if (myLeaderboard.players.isEmpty())
+            color = ColoredName.getGuestColor();
+        else
+            color = GetColoredName.get(myLeaderboard.players.get(0).id).getColor();
+        return GuildProfileMessage.makeMessageStatic(myLeaderboard.matchedGuild, myLeaderboard.players, myLeaderboard.submissions, page, title, headerTitle, color);
     }
 
     @Override

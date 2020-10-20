@@ -5,6 +5,8 @@ import apple.excursion.database.objects.player.PlayerData;
 import apple.excursion.database.objects.guild.GuildLeaderboardEntry;
 import apple.excursion.discord.reactions.AllReactables;
 import apple.excursion.discord.reactions.ReactableMessage;
+import apple.excursion.utils.ColoredName;
+import apple.excursion.utils.GetColoredName;
 import apple.excursion.utils.Pretty;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
@@ -24,12 +26,17 @@ public class GuildProfileMessage implements ReactableMessage {
     private final List<OldSubmission> submissions;
     private int page = 0;
     private long lastUpdated = System.currentTimeMillis();
+    private final int color;
 
     public GuildProfileMessage(List<OldSubmission> submissions, GuildLeaderboardEntry matchedGuild, List<PlayerData> players, MessageChannel channel) {
         this.matchedGuild = matchedGuild;
         this.players = players;
         this.submissions = submissions;
         this.players.sort((o1, o2) -> o2.score - o1.score);
+        if (players.isEmpty())
+            color = ColoredName.getGuestColor();
+        else
+            color = GetColoredName.get(players.get(0).id).getColor();
         this.message = channel.sendMessage(makeMessage()).complete();
         message.addReaction(AllReactables.Reactable.LEFT.getFirstEmoji()).queue();
         message.addReaction(AllReactables.Reactable.RIGHT.getFirstEmoji()).queue();
@@ -40,13 +47,16 @@ public class GuildProfileMessage implements ReactableMessage {
 
     private MessageEmbed makeMessage() {
         String title = String.format("%s [%s]", matchedGuild.getGuildName(), matchedGuild.getGuildTag());
-        return makeMessageStatic(matchedGuild, players, submissions, page, title, "");
+        return makeMessageStatic(matchedGuild, players, submissions, page, title, "",color);
 
     }
 
-    public static MessageEmbed makeMessageStatic(GuildLeaderboardEntry matchedGuild, List<PlayerData> players, List<OldSubmission> submissions, int page, String title, String headerTitle) {
+    public static MessageEmbed makeMessageStatic(
+            GuildLeaderboardEntry matchedGuild, List<PlayerData> players, List<OldSubmission> submissions, int page,
+            String title, String headerTitle,int color) {
         EmbedBuilder embed = new EmbedBuilder();
         embed.setTitle(title);
+        embed.setColor(color);
         StringBuilder header = new StringBuilder();
         header.append(headerTitle);
         header.append(String.format("Guild rank : #%d\n", matchedGuild.rank));
