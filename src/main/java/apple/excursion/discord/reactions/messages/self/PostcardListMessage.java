@@ -35,6 +35,11 @@ public class PostcardListMessage implements ReactableMessage {
         initialize(channel);
     }
 
+    public PostcardListMessage(MessageChannel channel, List<Task> allTasks) {
+        this.allTasks = allTasks;
+        initialize(channel);
+    }
+
     private void initialize(MessageChannel channel) {
         dares = new ArrayList<>(allTasks);
         excursions = new ArrayList<>(allTasks);
@@ -60,11 +65,6 @@ public class PostcardListMessage implements ReactableMessage {
             this.message.addReaction(letter).queue();
         }
         AllReactables.add(this);
-    }
-
-    public PostcardListMessage(MessageChannel channel, List<Task> allTasks) {
-        this.allTasks = allTasks;
-        initialize(channel);
     }
 
     private String makeMessage() {
@@ -140,29 +140,36 @@ public class PostcardListMessage implements ReactableMessage {
                 event.getReaction().removeReaction(user).queue();
                 break;
             case ALPHABET:
+                alphabet(event);
                 event.getReaction().removeReaction(user).queue();
                 this.lastUpdated = System.currentTimeMillis();
-                for (int i = 0; i < AllReactables.emojiAlphabet.size(); i++) {
-                    if (AllReactables.emojiAlphabet.get(i).equals(event.getReactionEmote().getName())) {
-                        // this is the reaction we're looking at
-                        this.lastUpdated = System.currentTimeMillis();
-
-                        if (taskLookingAt == i) {
-                            taskLookingAt = -1;
-                            message.editMessage(makeMessage()).queue();
-                            return;
-                        }
-
-                        List<Task> tasks = getCurrentTasks();
-                        if (i >= ENTRIES_PER_PAGE || i >= tasks.size()) {
-                            // they reacted too high
-                            return;
-                        }
-                        message.editMessage(PostcardDisplay.getMessage(tasks.get(i))).queue();
-                        taskLookingAt = i;
-                    }
-                }
                 break;
+        }
+    }
+
+    private void alphabet(MessageReactionAddEvent event) {
+        for (int i = 0; i < AllReactables.emojiAlphabet.size(); i++) {
+            if (AllReactables.emojiAlphabet.get(i).equals(event.getReactionEmote().getName())) {
+                // this is the reaction we're looking at
+                this.lastUpdated = System.currentTimeMillis();
+
+                if (taskLookingAt == i) {
+                    taskLookingAt = -1;
+                    message.editMessage(makeMessage()).queue();
+                    return;
+                }
+
+                List<Task> tasks = getCurrentTasks();
+                if (i >= ENTRIES_PER_PAGE)
+                    // they reacted too high
+                    return;
+                i += page * ENTRIES_PER_PAGE;
+                if (i >= tasks.size())
+                    // they reacted too high
+                    return;
+                message.editMessage(PostcardDisplay.getMessage(tasks.get(i))).queue();
+                taskLookingAt = i;
+            }
         }
     }
 
