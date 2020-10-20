@@ -22,7 +22,7 @@ public class UpdateDB {
                 statement.execute(sql);
             } else {
                 // the player doesn't exist so add an entry
-                InsertDB.insertPlayer(new Pair<>(id, playerName), guildName, guildTag);
+                InsertDB.insertPlayer(new Pair<>(id, playerName), guildTag, guildName);
             }
             response.close();
             statement.close();

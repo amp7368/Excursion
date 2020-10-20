@@ -16,6 +16,8 @@ import java.util.Arrays;
 import java.util.List;
 
 public class CommandGuild implements DoCommand {
+    private static final int GUILD_NAME_LENGTH_LIMIT = 20;
+
     @Override
     public void dealWithCommand(MessageReceivedEvent event) {
         String[] contentSplit = event.getMessage().getContentStripped().split(" ");
@@ -34,6 +36,13 @@ public class CommandGuild implements DoCommand {
         guildNameSplit.remove(0);
         String guildName = String.join(" ", guildNameSplit);
         final String guildTag = contentSplit[1];
+        if (!guildTag.matches("[a-zA-Z]*")) {
+            event.getChannel().sendMessage(String.format("'%s' has invalid characters that cannot be used in tags.", guildTag)).queue();
+            return;
+        } else if (guildTag.length() != 3) {
+            event.getChannel().sendMessage("A guild tag must be 3 characters in length").queue();
+            return;
+        }
         GuildHeader match = null;
         for (GuildHeader guild : guilds) {
             if (guild.tag.equals(guildTag) || guildName.equals(guild.name)) {
@@ -55,6 +64,14 @@ public class CommandGuild implements DoCommand {
             }
             guildNameSplit.remove(0); // get rid of the tag
             guildName = String.join(" ", guildNameSplit);
+            if (!guildName.matches("[a-zA-Z\\s]*")) {
+                event.getChannel().sendMessage(String.format("'%s' has invalid characters that cannot be used in guildName", guildName)).queue();
+                return;
+            } else if (guildName.length() > GUILD_NAME_LENGTH_LIMIT) {
+                event.getChannel().sendMessage(String.format("The character limit for a guild is %d. '%s' is %d characters", GUILD_NAME_LENGTH_LIMIT, guildName, guildName.length())).queue();
+                return;
+            }
+
             // ask the player if they want to create the guild
             new CreateGuildMessage(guildName, guildTag, playerId, playerName, event.getChannel());
             return;
