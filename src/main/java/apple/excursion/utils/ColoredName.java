@@ -1,7 +1,7 @@
 package apple.excursion.utils;
 
 public class ColoredName {
-    private static final int DEFAULT_COLOR = 0x000000;
+    private static final int DEFAULT_COLOR = 0x999999;
     private final String name;
     private final int color;
     private final boolean colorExists;
