@@ -18,6 +18,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.List;
 
 public class GetDB {
@@ -310,5 +311,30 @@ public class GetDB {
         start.set(Calendar.AM_PM, Calendar.AM);
     }
 
+    public static List<String> executeSql(String sql) throws SQLException {
+        Statement statement = VerifyDB.database.createStatement();
+        ResultSet response;
+        try {
+            response = statement.executeQuery(sql);
+        } catch (SQLException e) {
+            System.out.println(e.getErrorCode());
+            if (e.getErrorCode() == 101) {
+                return Collections.singletonList("done");
+            }
+            throw e;
+        }
 
+        List<String> returnVal = new ArrayList<>();
+        if (!response.isClosed()) {
+            int i = 1;
+            while (response.next()) {
+                try {
+                    returnVal.add(response.getString(i++));
+                } catch (SQLException e) {
+                    break;
+                }
+            }
+        }
+        return returnVal;
+    }
 }
