@@ -71,9 +71,10 @@ public class ProfileMessage implements ReactableMessage {
         message.addReaction(AllReactables.Reactable.TOP.getFirstEmoji()).queue();
 
         int size = topTasks.size();
-        for (int i = 0; i< size; i++) {
+        int count = 0;
+        for (int i = 0; i < size; i++) {
             for (int j = 0; j < TOP_TASKS_SIZE; j++) {
-                message.addReaction(AllReactables.emojiAlphabet.get(i)).queue();
+                message.addReaction(AllReactables.emojiAlphabet.get(count++)).queue();
             }
         }
         AllReactables.add(this);
