@@ -1,5 +1,6 @@
 package apple.excursion.discord.commands.general.leaderboard;
 
+import apple.excursion.database.objects.guild.GuildHeader;
 import apple.excursion.database.queries.GetDB;
 import apple.excursion.database.objects.OldSubmission;
 import apple.excursion.database.objects.player.PlayerData;
@@ -41,8 +42,34 @@ public class CommandGuildLeaderboard implements DoCommand {
             throwables.printStackTrace();
             return;
         }
-        GuildLeaderboardEntry matchedGuild = leaderboard.get(inputAsGuildTag, inputAsGuildName);
-
+        GuildLeaderboardEntry matchedGuild;
+        try {
+            LeaderboardOfGuilds guildLeaderboard = GetDB.getGuildLeaderboard();
+            matchedGuild = guildLeaderboard.get(inputAsGuildTag,inputAsGuildName);
+            if (matchedGuild == null) {
+                // the guild for sure doesn't have a score. check if they exist or just have no score
+                List<GuildHeader> guildList = GetDB.getGuildNameList();
+                for (GuildHeader header : guildList) {
+                    if (header.tag.equals(inputAsGuildTag)) {
+                        matchedGuild = guildLeaderboard.add(header);
+                        break;
+                    }
+                }
+                if(matchedGuild == null) {
+                    // try case insensitive
+                    for (GuildHeader header : guildList) {
+                        if (header.tag.equalsIgnoreCase(inputAsGuildTag)) {
+                            matchedGuild = guildLeaderboard.add(header);
+                            break;
+                        }
+                    }
+                }
+                // this guild doesn't exist so leave it as null
+            }
+        } catch (SQLException throwables) {
+            throwables.printStackTrace(); //todo
+            return;
+        }
         if (matchedGuild == null) {
             event.getChannel().sendMessage(String.format("There is no guild with tag **[%s]** nor with name **%s**", inputAsGuildTag, inputAsGuildName)).queue();
             return;

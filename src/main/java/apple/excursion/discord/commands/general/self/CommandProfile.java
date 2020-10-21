@@ -124,6 +124,14 @@ public class CommandProfile implements DoCommand {
                             break;
                         }
                     }
+                    if (guild == null) {
+                        for (GuildHeader header : guildList) {
+                            if (header.tag.equalsIgnoreCase(playerLeaderboardEntry.guildTag)) {
+                                guild = guildLeaderboard.add(header);
+                                break;
+                            }
+                        }
+                    }
                     // this guild doesn't exist so leave it as null
                 }
             } catch (SQLException throwables) {
