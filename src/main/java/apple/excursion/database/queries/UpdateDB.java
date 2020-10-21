@@ -38,4 +38,13 @@ public class UpdateDB {
             statement.close();
         }
     }
+
+    public static void updateResponseStatus(boolean isAccepted, boolean isCompleted, int responseId) throws SQLException {
+        synchronized (VerifyDB.syncDB) {
+            Statement statement = VerifyDB.database.createStatement();
+            String sql = GetSql.getSqlUpdateResponseStatus(isAccepted, isCompleted, responseId);
+            statement.execute(sql);
+            statement.close();
+        }
+    }
 }

@@ -1,6 +1,8 @@
 package apple.excursion.discord.data.answers;
 
 import apple.excursion.database.objects.player.PlayerData;
+import apple.excursion.database.queries.InsertDB;
+import apple.excursion.database.queries.UpdateDB;
 import apple.excursion.discord.DiscordBot;
 import apple.excursion.discord.data.TaskSimple;
 import apple.excursion.discord.reactions.AllReactables;
@@ -11,6 +13,8 @@ import net.dv8tion.jda.api.entities.PrivateChannel;
 import net.dv8tion.jda.api.entities.User;
 
 import javax.annotation.Nullable;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -18,13 +22,10 @@ import java.util.stream.Collectors;
 import static apple.excursion.discord.commands.general.postcard.CommandSubmit.BOT_COLOR;
 
 public class SubmissionData {
-    public final Object sync = new Object();
     private boolean isAccepted = false;
     private boolean isCompleted = false;
 
-    private final Map<Long, Long> reviewerIdToMessageId = new HashMap<>();
-    private final List<Message> reviewerMessages = new ArrayList<>();
-    private final long epochTimeOfSubmission = Instant.now().getEpochSecond() * 1000;
+    private final long epochTimeOfSubmission;
 
     @Nullable
     private final String attachmentsUrl;
@@ -48,8 +49,27 @@ public class SubmissionData {
         this.submitterId = submitterId;
         this.allSubmitters = otherSubmitters;
         this.taskSubmissionType = taskType;
+        this.epochTimeOfSubmission = Instant.now().getEpochSecond() * 1000;
         this.submissionHistoryMessage = makeSubmissionHistoryMessage(playersData);
     }
+
+    public SubmissionData(boolean isAccepted, boolean isCompleted, long epochTimeOfSubmission, @Nullable String attachmentsUrl,
+                          List<String> links, TaskSimple task, TaskSubmissionType taskSubmissionType,
+                          String submitterName, long submitterId, List<Pair<Long, String>> idToNames, List<PlayerData> playersData, int color) {
+        this.isAccepted = isAccepted;
+        this.isCompleted = isCompleted;
+        this.epochTimeOfSubmission = epochTimeOfSubmission;
+        this.attachmentsUrl = attachmentsUrl;
+        this.links = links;
+        this.task = task;
+        this.taskSubmissionType = taskSubmissionType;
+        this.submitter = submitterName;
+        this.submitterId = submitterId;
+        this.color = color;
+        this.allSubmitters = idToNames;
+        this.submissionHistoryMessage = makeSubmissionHistoryMessage(playersData);
+    }
+
 
     private String makeSubmissionHistoryMessage(List<PlayerData> playersData) {
         List<PlayerData> playerDataTemp = new ArrayList<>(playersData);
@@ -58,10 +78,62 @@ public class SubmissionData {
         return playerDataTemp.stream().map(playerData -> playerData.makeSubmissionHistoryMessage(task.name)).collect(Collectors.joining("\n\n"));
     }
 
-    public void addMessage(Message message, PrivateChannel reviewer) {
-        synchronized (sync) {
-            this.reviewerIdToMessageId.put(reviewer.getIdLong(), message.getIdLong());
-            this.reviewerMessages.add(message);
+
+    public void completeSubmit(boolean isAccepted, List<Pair<Long, Long>> reviewerMessages, String reviewerName) throws SQLException {
+        if (isCompleted) return;
+        isCompleted = true;
+        InsertDB.insertSubmission(this);
+        for (Pair<Long, Long> channelMessageAndId : reviewerMessages) {
+            PrivateChannel channel = DiscordBot.client.getPrivateChannelById(channelMessageAndId.getKey());
+            if (channel == null) continue;
+            Message other = channel.retrieveMessageById(channelMessageAndId.getValue()).complete();
+            if (other == null) continue;
+            if (isAccepted)
+                other.editMessage("**" + reviewerName + " accepted the submission**\n" + other.getContentStripped()).queue();
+            else
+                other.editMessage("**" + reviewerName + " denied the submission**\n" + other.getContentStripped()).queue();
+
+            other.removeReaction(AllReactables.Reactable.ACCEPT.getFirstEmoji()).queue();
+            other.removeReaction(AllReactables.Reactable.REJECT.getFirstEmoji()).queue();
+        }
+
+        EmbedBuilder embed = new EmbedBuilder();
+        embed.setTitle("You have submitted: " + task.name);
+        embed.setColor(BOT_COLOR);
+        if (attachmentsUrl != null)
+            embed.setImage(attachmentsUrl);
+        for (Pair<Long, String> userRaw : allSubmitters) {
+            User user = DiscordBot.client.getUserById(userRaw.getKey());
+            if (user != null) {
+                if (user.isBot() || user.isFake()) return;
+                PrivateChannel channel = user.openPrivateChannel().complete();
+                List<String> otherSubmitters = new ArrayList<>();
+                for (Pair<Long, String> otherUserRaw : allSubmitters) {
+                    if (!otherUserRaw.getKey().equals(userRaw.getKey())) {
+                        otherSubmitters.add(otherUserRaw.getValue());
+                    }
+                }
+                StringBuilder text = new StringBuilder();
+                text.append(String.format("**The evidence has been %s**", this.isAccepted ? "accepted!" : "denied."));
+                text.append("\n");
+                if (otherSubmitters.isEmpty()) {
+                    text.append("There were no other submitters.");
+                } else {
+                    text.append("Players submitted: *");
+                    text.append(String.join(", ", otherSubmitters));
+                    text.append("*");
+                    text.append('.');
+                }
+                if (!links.isEmpty()) {
+                    text.append("\nLinks include:");
+                    for (String link : links) {
+                        text.append("\n");
+                        text.append(link);
+                    }
+                }
+                embed.setDescription(text);
+                channel.sendMessage(embed.build()).queue();
+            }
         }
     }
 
@@ -73,8 +145,8 @@ public class SubmissionData {
         isAccepted = true;
     }
 
-    public boolean isNotAccepted() {
-        return !isAccepted;
+    public boolean isAccepted() {
+        return isAccepted;
     }
 
     public String getTaskName() {
@@ -98,62 +170,6 @@ public class SubmissionData {
         return attachmentsUrl;
     }
 
-    public void completeSubmit(boolean isAccepted, User reviewer) {
-        synchronized (sync) {
-            if (isCompleted) return;
-            isCompleted = true;
-            for (Message other : reviewerMessages) {
-                AllReactables.remove(other.getIdLong());
-                if (isAccepted)
-                    other.editMessage("**" + reviewer.getName() + " accepted the submission**\n" + other.getContentStripped()).queue();
-                else
-                    other.editMessage("**" + reviewer.getName() + " denied the submission**\n" + other.getContentStripped()).queue();
-
-                other.removeReaction(AllReactables.Reactable.ACCEPT.getFirstEmoji()).queue();
-                other.removeReaction(AllReactables.Reactable.REJECT.getFirstEmoji()).queue();
-            }
-
-            EmbedBuilder embed = new EmbedBuilder();
-            embed.setTitle("You have submitted: " + task.name);
-            embed.setColor(BOT_COLOR);
-            if (attachmentsUrl != null)
-                embed.setImage(attachmentsUrl);
-            for (Pair<Long, String> userRaw : allSubmitters) {
-                User user = DiscordBot.client.getUserById(userRaw.getKey());
-                if (user != null) {
-                    if (user.isBot() || user.isFake()) return;
-                    PrivateChannel channel = user.openPrivateChannel().complete();
-                    List<String> otherSubmitters = new ArrayList<>();
-                    for (Pair<Long, String> otherUserRaw : allSubmitters) {
-                        if (!otherUserRaw.getKey().equals(userRaw.getKey())) {
-                            otherSubmitters.add(otherUserRaw.getValue());
-                        }
-                    }
-                    StringBuilder text = new StringBuilder();
-                    text.append(String.format("**The evidence has been %s**", this.isAccepted ? "accepted!" : "denied."));
-                    text.append("\n");
-                    if (otherSubmitters.isEmpty()) {
-                        text.append("There were no other submitters.");
-                    } else {
-                        text.append("Players submitted: *");
-                        text.append(String.join(", ", otherSubmitters));
-                        text.append("*");
-                        text.append('.');
-                    }
-                    if (!links.isEmpty()) {
-                        text.append("\nLinks include:");
-                        for (String link : links) {
-                            text.append("\n");
-                            text.append(link);
-                        }
-                    }
-                    embed.setDescription(text);
-                    channel.sendMessage(embed.build()).queue();
-                }
-            }
-        }
-    }
-
     public long getTimeEpoch() {
         return epochTimeOfSubmission;
     }
@@ -172,6 +188,10 @@ public class SubmissionData {
 
     public String getCategory() {
         return task.category;
+    }
+
+    public boolean isCompleted() {
+        return isCompleted;
     }
 
     public enum TaskSubmissionType {

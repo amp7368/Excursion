@@ -414,7 +414,7 @@ public class GetSql {
     @NotNull
     public static String getSqlInsertResponse(int currentResponseId, SubmissionData submissionData) {
         return String.format("INSERT INTO response " +
-                        "VALUES (%d,0,0,%d,%s,%s,'%s','%s',%d,'%s');",
+                        "VALUES (%d,0,0,%d,%s,%s,'%s','%s',%d,'%s','%s',%d);",
                 currentResponseId,
                 submissionData.getTimeEpoch(),
                 submissionData.getAttachment() == null ? null : "'" + submissionData.getAttachment() + "'",
@@ -422,7 +422,9 @@ public class GetSql {
                 submissionData.getCategory(),
                 convertTaskNameToSql(submissionData.getTaskName()),
                 submissionData.getTaskScore(),
-                submissionData.getType().name()
+                submissionData.getType().name(),
+                submissionData.getSubmitterName(),
+                submissionData.getSubmitterId()
         );
     }
 
@@ -436,5 +438,31 @@ public class GetSql {
     public static String getSqlInsertResponseLink(long messageId, long channelId, int responseId) {
         return String.format("INSERT INTO response_link " +
                 "VALUES (%d,%d,%d);", messageId, channelId, responseId);
+    }
+
+    public static String getSqlGetResponseSubmissionData(long channelId, long messageId) {
+        return String.format("SELECT response.*\n" +
+                "FROM response_link\n" +
+                "         INNER JOIN response ON response.response_id = response_link.response_id\n" +
+                "WHERE channel_id = %d\n" +
+                "  AND message_id = %d;", channelId, messageId);
+    }
+
+    public static String getSqlGetResponseSubmissionNames(int responseId) {
+        return String.format("SELECT response_submitters.submitter_id, response_submitters.submitter_name\n" +
+                "FROM response_submitters\n" +
+                "WHERE response_id = %d;", responseId);
+    }
+
+    public static String getSqlGetResponseReviewerMessages(int responseId) {
+        return String.format("SELECT channel_id,message_id\n" +
+                "FROM response_link\n" +
+                "WHERE response_id = %d;", responseId);
+    }
+
+    public static String getSqlUpdateResponseStatus(boolean isAccepted, boolean isCompleted, int responseId) {
+        return String.format("UPDATE response\n" +
+                "SET is_accepted = %b, is_completed = %b\n" +
+                "WHERE response_id = %d;", isAccepted, isCompleted, responseId);
     }
 }

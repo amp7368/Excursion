@@ -61,7 +61,9 @@ public class VerifyDB {
             "    task_category        TEXT      NOT NULL,\n" +
             "    task_name            TEXT      NOT NULL,\n" +
             "    task_points          INTEGER   NOT NULL,\n" +
-            "    task_submission_type TEXT      NOT NULL\n" +
+            "    task_submission_type TEXT      NOT NULL,\n" +
+            "    submitter_name       TEXT      NOT NULL,\n" +
+            "    submitter_id         TEXT      NOT NULL" +
             ");";
     private static final String BUILD_TABLE_SQL_RESPONSE_SUBMITTERS = "CREATE TABLE IF NOT EXISTS response_submitters\n" +
             "(\n" +

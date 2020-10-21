@@ -30,7 +30,7 @@ import java.util.List;
 
 public class CommandSubmit implements DoCommand {
     private static final String REVIEWERS_FILE_PATH = getPath();
-    private static final int SUBMISSION_HISTORY_SIZE = 5;
+    public static final int SUBMISSION_HISTORY_SIZE = 5;
 
     private static String getPath() {
         List<String> list = Arrays.asList(ExcursionMain.class.getProtectionDomain().getCodeSource().getLocation().getPath().split("/"));
@@ -70,8 +70,7 @@ public class CommandSubmit implements DoCommand {
             // the author doesn't even exist atm
             return;
         }
-
-
+        event.getMessage().addReaction(AllReactables.Reactable.WORKING.getFirstEmoji()).queue();
         idsToNames.add(new Pair<>(author.getIdLong(), author.getEffectiveName()));
 
         Message eventMessage = event.getMessage();
@@ -114,6 +113,7 @@ public class CommandSubmit implements DoCommand {
             final TaskSimple task = SheetsPlayerStats.getTaskSimple(questName);
             if (task == null) {
                 event.getChannel().sendMessage(String.format("'%s' is not a valid task name", questName)).queue();
+                event.getMessage().removeReaction(AllReactables.Reactable.WORKING.getFirstEmoji(), DiscordBot.client.getSelfUser()).queue();
                 return;
             }
 
@@ -123,6 +123,7 @@ public class CommandSubmit implements DoCommand {
                     playersData.add(GetDB.getPlayerData(player, SUBMISSION_HISTORY_SIZE));
                 } catch (SQLException throwables) {
                     //todo deal with error
+                    event.getMessage().removeReaction(AllReactables.Reactable.WORKING.getFirstEmoji(), DiscordBot.client.getSelfUser()).queue();
                     throwables.printStackTrace();
                 }
             }
@@ -143,7 +144,7 @@ public class CommandSubmit implements DoCommand {
                     int responseId = InsertDB.insertIncompleteSubmission(submissionData);
 
                     for (User reviewer : reviewers) {
-                        new SubmissionMessage(submissionData, reviewer.openPrivateChannel().complete(), responseId);
+                        SubmissionMessage.initialize(submissionData, reviewer.openPrivateChannel().complete(), responseId);
                     }
                 } catch (SQLException throwables) {
                     throwables.printStackTrace(); //todo
@@ -151,6 +152,8 @@ public class CommandSubmit implements DoCommand {
             }
             eventMessage.addReaction(AllReactables.Reactable.ACCEPT.getFirstEmoji()).queue();
         }
+        event.getMessage().removeReaction(AllReactables.Reactable.WORKING.getFirstEmoji(), DiscordBot.client.getSelfUser()).queue();
+
     }
 
     private SubmissionData.TaskSubmissionType getTaskType(String name) {

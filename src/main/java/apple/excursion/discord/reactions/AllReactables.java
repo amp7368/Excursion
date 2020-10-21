@@ -60,7 +60,9 @@ public class AllReactables {
         EXCURSIONS(Collections.singletonList("excursionemoji"), Collections.singletonList(765315908738482176L)),
         MISSIONS(Collections.singletonList("missionemoji"), Collections.singletonList(765315910806011914L)),
         ALL_CATEGORIES(Collections.singletonList("\u274C")),
-        ALPHABET(emojiAlphabet);
+        ALPHABET(emojiAlphabet),
+        WORKING(Collections.singletonList("\uD83D\uDEE0")),
+        RESPOND(Collections.singletonList("\uD83D\uDCE8"));
 
         private final List<String> emojis;
         private final List<Long> ids;

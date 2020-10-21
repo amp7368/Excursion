@@ -101,5 +101,6 @@ public class DiscordBot extends ListenerAdapter {
             return;
         }
         AllReactables.dealWithReaction(event);
+        DatabaseReactable.dealWithReaction(event);
     }
 }
