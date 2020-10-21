@@ -51,11 +51,42 @@ public class VerifyDB {
             "FOREIGN KEY (guild_tag) REFERENCES guilds (guild_tag) " +
             ");";
     private static final String INSERT_DEFAULT_GUILD = "INSERT INTO guilds VALUES ('" + DEFAULT_GUILD_TAG + "','" + DEFAULT_GUILD_NAME + "');";
+    private static final String BUILD_TABLE_SQL_RESPONSE = "CREATE TABLE IF NOT EXISTS response (\n" +
+            "    response_id          INTEGER   NOT NULL UNIQUE PRIMARY KEY,\n" +
+            "    is_accepted          BOOLEAN   NOT NULL CHECK (is_accepted IN (0, 1)),\n" +
+            "    is_completed         BOOLEAN   NOT NULL CHECK (is_completed IN (0, 1)),\n" +
+            "    time_of_submission   TIMESTAMP NOT NULL,\n" +
+            "    attachment_url       TEXT,\n" +
+            "    links                TEXT,\n" +
+            "    task_category        TEXT      NOT NULL,\n" +
+            "    task_name            TEXT      NOT NULL,\n" +
+            "    task_points          INTEGER   NOT NULL,\n" +
+            "    task_submission_type TEXT      NOT NULL\n" +
+            ");";
+    private static final String BUILD_TABLE_SQL_RESPONSE_SUBMITTERS = "CREATE TABLE IF NOT EXISTS response_submitters\n" +
+            "(\n" +
+            "    response_id    BIGINT NOT NULL,\n" +
+            "    submitter_id   BIGINT NOT NULL,\n" +
+            "    submitter_name BIGINT NOT NULL,\n" +
+            "    UNIQUE (response_id, submitter_id),\n" +
+            "    PRIMARY KEY (response_id, submitter_id),\n" +
+            "    FOREIGN KEY (response_id) REFERENCES response\n" +
+            ");";
+    private static final String BUILD_TABLE_SQL_RESPONSE_LINK = "CREATE TABLE IF NOT EXISTS response_link\n" +
+            "(\n" +
+            "    message_id  BIGINT  NOT NULL,\n" +
+            "    channel_id  BIGINT  NOT NULL,\n" +
+            "    response_id INTEGER NOT NULL,\n" +
+            "    UNIQUE (message_id, channel_id),\n" +
+            "    PRIMARY KEY (message_id, channel_id),\n" +
+            "    FOREIGN KEY (response_id) REFERENCES response\n" +
+            ");";
     public static Connection database;
     public static Connection calendarDbConnection;
 
     public static final Object syncDB = new Object();
     public static int currentSubmissionId;
+    public static int currentResponseId;
 
     static {
         List<String> list = Arrays.asList(ExcursionMain.class.getProtectionDomain().getCodeSource().getLocation().getPath().split("/"));
@@ -90,16 +121,26 @@ public class VerifyDB {
         buildTableSql = BUILD_TABLE_SQL_GUILDS;
         statement.execute(buildTableSql);
 
+        buildTableSql = BUILD_TABLE_SQL_SUBMISSION_LINK;
+        statement.execute(buildTableSql);
+
         buildTableSql = INSERT_DEFAULT_GUILD;
         try {
             statement.execute(buildTableSql);
         } catch (SQLException ignored) {
         }
 
-        buildTableSql = BUILD_TABLE_SQL_SUBMISSION_LINK;
+        buildTableSql = BUILD_TABLE_SQL_RESPONSE;
+        statement.execute(buildTableSql);
+
+        buildTableSql = BUILD_TABLE_SQL_RESPONSE_SUBMITTERS;
+        statement.execute(buildTableSql);
+
+        buildTableSql = BUILD_TABLE_SQL_RESPONSE_LINK;
         statement.execute(buildTableSql);
 
         currentSubmissionId = statement.executeQuery("SELECT MAX(id) FROM submissions;").getInt(1) + 1;
+        currentResponseId = statement.executeQuery("SELECT MAX(response_id) FROM response;").getInt(1) + 1;
         statement.close();
 
         buildTableSql = "CREATE TABLE IF NOT EXISTS calendar ("

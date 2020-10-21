@@ -24,17 +24,17 @@ public class SubmissionData {
 
     private final Map<Long, Long> reviewerIdToMessageId = new HashMap<>();
     private final List<Message> reviewerMessages = new ArrayList<>();
-    private final long epochTimeOfSubmission = Instant.now().getEpochSecond();
+    private final long epochTimeOfSubmission = Instant.now().getEpochSecond() * 1000;
 
     @Nullable
     private final String attachmentsUrl;
     private final List<String> links;
     private final TaskSimple task;
+    private final TaskSubmissionType taskSubmissionType;
     private final String submitter;
     private final long submitterId;
     private final List<Pair<Long, String>> allSubmitters;
     public final String submissionHistoryMessage;
-    private final TaskSubmissionType taskSubmissionType;
     private final int color;
 
     public SubmissionData(List<Message.Attachment> attachments, List<String> links,
@@ -54,10 +54,11 @@ public class SubmissionData {
     private String makeSubmissionHistoryMessage(List<PlayerData> playersData) {
         List<PlayerData> playerDataTemp = new ArrayList<>(playersData);
         playerDataTemp.removeIf(Objects::isNull);
+        playerDataTemp.removeIf(PlayerData::hasSubmissionHistory);
         return playerDataTemp.stream().map(playerData -> playerData.makeSubmissionHistoryMessage(task.name)).collect(Collectors.joining("\n\n"));
     }
 
-    public void addMessage(Message message, User reviewer) {
+    public void addMessage(Message message, PrivateChannel reviewer) {
         synchronized (sync) {
             this.reviewerIdToMessageId.put(reviewer.getIdLong(), message.getIdLong());
             this.reviewerMessages.add(message);
@@ -167,6 +168,10 @@ public class SubmissionData {
 
     public TaskSubmissionType getType() {
         return taskSubmissionType;
+    }
+
+    public String getCategory() {
+        return task.category;
     }
 
     public enum TaskSubmissionType {

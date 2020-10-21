@@ -4,6 +4,7 @@ import apple.excursion.ExcursionMain;
 import apple.excursion.database.queries.GetCalendarDB;
 import apple.excursion.database.queries.GetDB;
 import apple.excursion.database.objects.player.PlayerData;
+import apple.excursion.database.queries.InsertDB;
 import apple.excursion.discord.DiscordBot;
 import apple.excursion.discord.commands.DoCommand;
 import apple.excursion.discord.data.TaskSimple;
@@ -138,8 +139,14 @@ public class CommandSubmit implements DoCommand {
                         playersData,
                         taskType
                 );
-                for (User reviewer : reviewers) {
-                    new SubmissionMessage(submissionData, reviewer);
+                try {
+                    int responseId = InsertDB.insertIncompleteSubmission(submissionData);
+
+                    for (User reviewer : reviewers) {
+                        new SubmissionMessage(submissionData, reviewer.openPrivateChannel().complete(), responseId);
+                    }
+                } catch (SQLException throwables) {
+                    throwables.printStackTrace(); //todo
                 }
             }
             eventMessage.addReaction(AllReactables.Reactable.ACCEPT.getFirstEmoji()).queue();

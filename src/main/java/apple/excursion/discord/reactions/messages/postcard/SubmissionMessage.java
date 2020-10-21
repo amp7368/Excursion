@@ -1,6 +1,7 @@
 package apple.excursion.discord.reactions.messages.postcard;
 
 import apple.excursion.database.queries.InsertDB;
+import apple.excursion.discord.DiscordBot;
 import apple.excursion.discord.data.answers.SubmissionData;
 import apple.excursion.discord.reactions.AllReactables;
 import apple.excursion.discord.reactions.ReactableMessage;
@@ -8,6 +9,7 @@ import apple.excursion.utils.Pair;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.PrivateChannel;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 
@@ -16,17 +18,18 @@ import java.util.stream.Collectors;
 
 public class SubmissionMessage implements ReactableMessage {
     private SubmissionData data;
-    private User thisReviewer;
+    private PrivateChannel thisReviewer;
 
     private Message message;
 
-    public SubmissionMessage(SubmissionData data, User reviewer) {
+    public SubmissionMessage(SubmissionData data, PrivateChannel reviewer, int responseId) throws SQLException {
         thisReviewer = reviewer;
         this.data = data;
-        message = thisReviewer.openPrivateChannel().complete().sendMessage(makeMessage()).complete();
+        message = thisReviewer.sendMessage(makeMessage()).complete();
         message.addReaction("\u2705").queue();
         message.addReaction("\u274C").queue();
         this.data.addMessage(message, thisReviewer);
+        InsertDB.insertIncompleteSubmissionLink(message.getIdLong(), reviewer.getIdLong(), responseId);
         AllReactables.add(this);
     }
 
