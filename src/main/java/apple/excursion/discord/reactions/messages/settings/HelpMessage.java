@@ -4,6 +4,7 @@ import apple.excursion.discord.DiscordBot;
 import apple.excursion.discord.reactions.AllReactables;
 import apple.excursion.discord.reactions.ReactableMessage;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -53,6 +54,9 @@ public class HelpMessage implements ReactableMessage {
         embed.setTitle(helpTitlePages.get(page));
         embed.setDescription(helpPages.get(page));
         embed.setColor(DiscordBot.BOT_COLOR);
+        if(page == 0){
+            embed.setImage("https://cdn.discordapp.com/attachments/567540311870668800/767941477527453716/info1.gif");
+        }
         return embed.build();
     }
 
