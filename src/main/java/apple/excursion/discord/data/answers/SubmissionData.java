@@ -2,7 +2,6 @@ package apple.excursion.discord.data.answers;
 
 import apple.excursion.database.objects.player.PlayerData;
 import apple.excursion.database.queries.InsertDB;
-import apple.excursion.database.queries.UpdateDB;
 import apple.excursion.discord.DiscordBot;
 import apple.excursion.discord.data.TaskSimple;
 import apple.excursion.discord.reactions.AllReactables;
@@ -13,7 +12,6 @@ import net.dv8tion.jda.api.entities.PrivateChannel;
 import net.dv8tion.jda.api.entities.User;
 
 import javax.annotation.Nullable;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.*;

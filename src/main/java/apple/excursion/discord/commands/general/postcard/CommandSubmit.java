@@ -57,6 +57,10 @@ public class CommandSubmit implements DoCommand {
         }
     }
 
+    public static List<User> listReviewers() {
+        return new ArrayList<>(reviewers);
+    }
+
     public void dealWithCommand(MessageReceivedEvent event) {
         List<Member> tags = event.getMessage().getMentionedMembers();
         Map<Long, String> idsToNamesMap = new HashMap<>();
