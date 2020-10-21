@@ -1,8 +1,6 @@
 package apple.excursion.discord.commands;
 
-import apple.excursion.discord.commands.admin.CommandAddReviewer;
-import apple.excursion.discord.commands.admin.CommandRemoveReviewer;
-import apple.excursion.discord.commands.admin.CommandSheetImport;
+import apple.excursion.discord.commands.admin.*;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 import java.util.Collections;
@@ -17,7 +15,11 @@ public enum CommandsAdmin {
     REMOVE_REVIEWER(Collections.singletonList("remove_reviewer"), "Removes a reviewer from the list of reviewers",
             "[@mention]", new CommandRemoveReviewer()),
     SHEET_IMPORT(Collections.singletonList("sheet_import"), "Imports the data from the google sheet to make sure everything is synced",
-            "", new CommandSheetImport());
+            "", new CommandSheetImport()),
+    FAKE_SUBMIT(Collections.singletonList("fake_submit"), "Submits something as if another player submitted it and it was accepted",
+            "<submitterId> <points> <submitterName> <taskCategory> <taskName>", new CommandFakeSubmit()),
+    SQL(Collections.singletonList("sql"), "executes sql",
+            "<sql>", new CommandExecuteSql());
 
     private final List<String> commandNames;
     private final String helpMessage;

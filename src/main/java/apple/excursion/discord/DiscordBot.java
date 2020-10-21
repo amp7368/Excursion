@@ -2,7 +2,7 @@ package apple.excursion.discord;
 
 import apple.excursion.ExcursionMain;
 import apple.excursion.discord.commands.*;
-import apple.excursion.discord.commands.general.CommandSubmit;
+import apple.excursion.discord.commands.general.postcard.CommandSubmit;
 import apple.excursion.discord.reactions.*;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -15,7 +15,6 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.security.auth.login.LoginException;
-import java.awt.*;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -26,7 +25,8 @@ import java.util.List;
 public class DiscordBot extends ListenerAdapter {
     public static final String PREFIX = "t!";
     public static final long EXCURSION_GUILD_ID = 555318916344184834L;
-    private static final int DEFAULT_COLOR = 0x000000;
+    public static final long APPLEPTR16 = 253646208084475904L;
+    public static final int BOT_COLOR = 0x4e80f7;
 
     public static String discordToken; // my bot
     public static JDA client;
@@ -55,16 +55,6 @@ public class DiscordBot extends ListenerAdapter {
             System.exit(1);
         }
 
-    }
-
-    public static int getColor(Member member) {
-        if (member == null) return DEFAULT_COLOR;
-        for( Role role:member.getRoles()){
-            final Color color = role.getColor();
-            if(color == null) return DEFAULT_COLOR;
-            return color.getRGB();
-        }
-        return DEFAULT_COLOR;
     }
 
     public void enableDiscord() throws LoginException {

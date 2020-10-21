@@ -1,6 +1,7 @@
 package apple.excursion.database.objects.guild;
 
 import apple.excursion.database.VerifyDB;
+import apple.excursion.utils.GetColoredName;
 
 public class GuildLeaderboardEntry {
     public String guildName;
@@ -11,12 +12,21 @@ public class GuildLeaderboardEntry {
     public int topGuildScore;
     public int rank;
 
-    public GuildLeaderboardEntry(String guildTag, String guildName, int guildScore, String playerName, int playerScore) {
+    public GuildLeaderboardEntry(String guildTag, String guildName, int guildScore, String playerName, long playerId, int playerScore) {
         this.guildName = guildName;
         this.guildTag = guildTag;
         this.score = guildScore;
-        this.topPlayer = playerName;
+        String coloredName = GetColoredName.get(playerId).getName();
+        this.topPlayer = coloredName == null ? playerName : coloredName;
         this.topPlayerPoints = playerScore;
+    }
+
+    public GuildLeaderboardEntry(String name, String tag) {
+        this.guildName= name;
+        this.guildTag = tag;
+        this.score = 0;
+        this.topPlayer = "nobody";
+        this.topPlayerPoints=0;
     }
 
     public boolean isDefault() {

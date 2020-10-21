@@ -1,6 +1,10 @@
 package apple.excursion.discord.commands;
 
-import apple.excursion.discord.commands.general.*;
+import apple.excursion.discord.commands.general.benchmark.*;
+import apple.excursion.discord.commands.general.settings.CommandHelp;
+import apple.excursion.discord.commands.general.postcard.CommandPostcard;
+import apple.excursion.discord.commands.general.settings.CommandGuild;
+import apple.excursion.discord.commands.general.postcard.CommandSubmit;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 import java.util.Arrays;

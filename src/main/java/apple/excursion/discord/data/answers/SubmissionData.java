@@ -15,7 +15,7 @@ import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static apple.excursion.discord.commands.general.CommandSubmit.BOT_COLOR;
+import static apple.excursion.discord.commands.general.postcard.CommandSubmit.BOT_COLOR;
 
 public class SubmissionData {
     public final Object sync = new Object();
@@ -34,14 +34,16 @@ public class SubmissionData {
     private final long submitterId;
     private final List<Pair<Long, String>> allSubmitters;
     public final String submissionHistoryMessage;
-    private TaskSubmissionType taskSubmissionType;
+    private final TaskSubmissionType taskSubmissionType;
+    private final int color;
 
     public SubmissionData(List<Message.Attachment> attachments, List<String> links,
-                          TaskSimple task, String submitter, long submitterId, List<Pair<Long, String>> otherSubmitters,
+                          TaskSimple task, String submitter, int color, long submitterId, List<Pair<Long, String>> otherSubmitters,
                           List<PlayerData> playersData, TaskSubmissionType taskType) {
         this.attachmentsUrl = attachments.isEmpty() ? null : attachments.get(0).getUrl();
         this.links = links;
         this.task = task;
+        this.color = color;
         this.submitter = submitter;
         this.submitterId = submitterId;
         this.allSubmitters = otherSubmitters;
@@ -60,6 +62,10 @@ public class SubmissionData {
             this.reviewerIdToMessageId.put(reviewer.getIdLong(), message.getIdLong());
             this.reviewerMessages.add(message);
         }
+    }
+
+    public int getColor() {
+        return color;
     }
 
     public void setAccepted() {

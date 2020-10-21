@@ -3,12 +3,23 @@ package apple.excursion.database.objects.guild;
 import java.util.*;
 
 public class LeaderboardOfGuilds {
-    private List<GuildLeaderboardEntry> leaderboard;
+    private final List<GuildLeaderboardEntry> leaderboard;
     private GuildLeaderboardEntry noGuildsEntry;
     private long totalEp;
 
     public LeaderboardOfGuilds(List<GuildLeaderboardEntry> guilds) {
         this.leaderboard = guilds;
+        initialize();
+    }
+
+    public GuildLeaderboardEntry add(GuildHeader header) {
+        GuildLeaderboardEntry thisEntry = new GuildLeaderboardEntry(header.name, header.tag);
+        leaderboard.add(thisEntry);
+        initialize();
+        return thisEntry;
+    }
+
+    private void initialize() {
         Iterator<GuildLeaderboardEntry> iterator = leaderboard.iterator();
         while (iterator.hasNext()) {
             GuildLeaderboardEntry guild = iterator.next();
@@ -23,7 +34,7 @@ public class LeaderboardOfGuilds {
             topScore = Integer.MAX_VALUE;
         } else {
             leaderboard.sort((o1, o2) -> o2.score - o1.score);
-            topScore = guilds.get(0).score;
+            topScore = leaderboard.get(0).score;
         }
         int totalEp = 0;
         final int size = leaderboard.size();

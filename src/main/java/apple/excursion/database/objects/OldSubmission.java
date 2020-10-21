@@ -1,7 +1,7 @@
 package apple.excursion.database.objects;
 
 
-import apple.excursion.database.GetSql;
+import apple.excursion.database.queries.GetSql;
 import apple.excursion.discord.data.answers.SubmissionData;
 import apple.excursion.utils.Pretty;
 
