@@ -1,7 +1,7 @@
-package apple.excursion.discord.commands.general.leaderboard;
+package apple.excursion.discord.commands.general.benchmark;
 
 import apple.excursion.discord.commands.DoCommand;
-import apple.excursion.discord.reactions.messages.leaderboard.LeaderboardMessage;
+import apple.excursion.discord.reactions.messages.benchmark.LeaderboardMessage;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 import java.sql.SQLException;

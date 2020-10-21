@@ -1,4 +1,4 @@
-package apple.excursion.discord.commands.general.self;
+package apple.excursion.discord.commands.general.benchmark;
 
 import apple.excursion.database.objects.guild.GuildHeader;
 import apple.excursion.database.objects.guild.LeaderboardOfGuilds;
@@ -10,7 +10,7 @@ import apple.excursion.database.objects.player.PlayerData;
 import apple.excursion.database.objects.player.PlayerLeaderboardEntry;
 import apple.excursion.database.queries.InsertDB;
 import apple.excursion.discord.commands.DoCommand;
-import apple.excursion.discord.reactions.messages.self.ProfileMessage;
+import apple.excursion.discord.reactions.messages.benchmark.ProfileMessage;
 import apple.excursion.utils.ColoredName;
 import apple.excursion.utils.GetColoredName;
 import apple.excursion.utils.Pair;

@@ -1,10 +1,10 @@
-package apple.excursion.discord.reactions.messages.history;
+package apple.excursion.discord.reactions.messages.benchmark.history;
 
 import apple.excursion.database.queries.GetDB;
-import apple.excursion.discord.data.answers.HistoryLeaderboardOfGuilds;
+import apple.excursion.discord.data.answers.HistoryPlayerLeaderboard;
 import apple.excursion.discord.reactions.AllReactables;
 import apple.excursion.discord.reactions.ReactableMessage;
-import apple.excursion.discord.reactions.messages.leaderboard.GuildLeaderboardMessage;
+import apple.excursion.discord.reactions.messages.benchmark.LeaderboardMessage;
 import apple.excursion.utils.Pretty;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
@@ -16,13 +16,12 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
-import static apple.excursion.discord.reactions.messages.leaderboard.CalendarMessage.EPOCH_START_OF_EXCURSION;
-import static apple.excursion.discord.reactions.messages.leaderboard.CalendarMessage.EPOCH_START_OF_SUBMISSION_HISTORY;
+import static apple.excursion.discord.reactions.messages.benchmark.CalendarMessage.EPOCH_START_OF_EXCURSION;
+import static apple.excursion.discord.reactions.messages.benchmark.CalendarMessage.EPOCH_START_OF_SUBMISSION_HISTORY;
 
-
-public class GuildHistoryMessage implements ReactableMessage {
+public class HistoryMessage implements ReactableMessage {
     private final Message message;
-    private final Map<Long, HistoryLeaderboardOfGuilds> leaderboard = new HashMap<>();
+    private final Map<Long, HistoryPlayerLeaderboard> leaderboard = new HashMap<>();
     private final Calendar timeLookingAt = Calendar.getInstance();
     private final Calendar later;
     private final int timeInterval;
@@ -30,7 +29,7 @@ public class GuildHistoryMessage implements ReactableMessage {
     private long lastUpdated = System.currentTimeMillis();
     private int page = 0;
 
-    public GuildHistoryMessage(MessageChannel channel, int timeInterval, int timeField) {
+    public HistoryMessage(MessageChannel channel, int timeInterval, int timeField) {
         later = Calendar.getInstance();
         later.setTimeInMillis(timeLookingAt.getTimeInMillis());
         later.add(timeField, timeInterval);
@@ -51,10 +50,10 @@ public class GuildHistoryMessage implements ReactableMessage {
         if (later.getTimeInMillis() <= timeLookingAt.getTimeInMillis()) {
             return "```\nFuture\nThis data for this time is not available yet\n```";
         }
-        HistoryLeaderboardOfGuilds myLeaderboard = leaderboard.get(timeLookingAt.getTimeInMillis());
+        HistoryPlayerLeaderboard myLeaderboard = leaderboard.get(timeLookingAt.getTimeInMillis());
         if (myLeaderboard == null) {
             try {
-                myLeaderboard = GetDB.getGuildLeaderboard(timeField, timeInterval, timeLookingAt);
+                myLeaderboard = GetDB.getPlayerLeaderboard(timeField, timeInterval, timeLookingAt);
                 leaderboard.put(timeLookingAt.getTimeInMillis(), myLeaderboard);
 
             } catch (SQLException throwables) {
@@ -70,7 +69,7 @@ public class GuildHistoryMessage implements ReactableMessage {
                 page + 1,
                 Pretty.date(startTime),
                 Pretty.date(endTime));
-        return GuildLeaderboardMessage.makeMessageStatic(myLeaderboard.leaderboard, page, title);
+        return LeaderboardMessage.makeMessageStatic(myLeaderboard.leaderboard, page, title);
     }
 
     @Override
@@ -122,8 +121,8 @@ public class GuildHistoryMessage implements ReactableMessage {
     }
 
     private void right() {
-        HistoryLeaderboardOfGuilds myLeaderboard = leaderboard.get(timeLookingAt.getTimeInMillis());
-        if ((myLeaderboard.leaderboard.size() - 1) / GuildLeaderboardMessage.ENTRIES_PER_PAGE >= page + 1) {
+        HistoryPlayerLeaderboard myLeaderboard = leaderboard.get(timeLookingAt.getTimeInMillis());
+        if ((myLeaderboard.leaderboard.size() - 1) / LeaderboardMessage.ENTRIES_PER_PAGE >= page + 1) {
             page++;
             message.editMessage(makeMessage()).queue();
         }

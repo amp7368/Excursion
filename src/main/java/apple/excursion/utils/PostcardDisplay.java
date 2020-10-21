@@ -1,7 +1,7 @@
 package apple.excursion.utils;
 
 import apple.excursion.discord.data.Task;
-import apple.excursion.discord.reactions.messages.self.PostcardListMessage;
+import apple.excursion.discord.reactions.messages.postcard.PostcardListMessage;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 

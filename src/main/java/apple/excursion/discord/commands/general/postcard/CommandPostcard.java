@@ -1,8 +1,8 @@
-package apple.excursion.discord.commands.general.self;
+package apple.excursion.discord.commands.general.postcard;
 
 import apple.excursion.discord.commands.DoCommand;
 import apple.excursion.discord.data.Task;
-import apple.excursion.discord.reactions.messages.self.PostcardListMessage;
+import apple.excursion.discord.reactions.messages.postcard.PostcardListMessage;
 import apple.excursion.sheets.SheetsTasks;
 import apple.excursion.utils.PostcardDisplay;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;

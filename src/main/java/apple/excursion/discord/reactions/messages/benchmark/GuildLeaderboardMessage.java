@@ -1,4 +1,4 @@
-package apple.excursion.discord.reactions.messages.leaderboard;
+package apple.excursion.discord.reactions.messages.benchmark;
 
 import apple.excursion.database.objects.guild.LeaderboardOfGuilds;
 import apple.excursion.database.objects.guild.GuildLeaderboardEntry;

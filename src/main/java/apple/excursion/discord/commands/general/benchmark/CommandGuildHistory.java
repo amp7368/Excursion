@@ -1,11 +1,11 @@
-package apple.excursion.discord.commands.general.leaderboard;
+package apple.excursion.discord.commands.general.benchmark;
 
 import apple.excursion.database.queries.GetDB;
 import apple.excursion.database.objects.guild.GuildHeader;
 import apple.excursion.discord.commands.DetermineArguments;
 import apple.excursion.discord.commands.DoCommand;
-import apple.excursion.discord.reactions.messages.history.SpecificGuildHistoryMessage;
-import apple.excursion.discord.reactions.messages.history.GuildHistoryMessage;
+import apple.excursion.discord.reactions.messages.benchmark.history.SpecificGuildHistoryMessage;
+import apple.excursion.discord.reactions.messages.benchmark.history.GuildHistoryMessage;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 import java.sql.SQLException;

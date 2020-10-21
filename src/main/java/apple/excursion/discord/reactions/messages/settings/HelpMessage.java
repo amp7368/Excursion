@@ -1,4 +1,4 @@
-package apple.excursion.discord.reactions.messages.self;
+package apple.excursion.discord.reactions.messages.settings;
 
 import apple.excursion.discord.DiscordBot;
 import apple.excursion.discord.reactions.AllReactables;

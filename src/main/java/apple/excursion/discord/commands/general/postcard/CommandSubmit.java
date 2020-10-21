@@ -1,4 +1,4 @@
-package apple.excursion.discord.commands.general.settings;
+package apple.excursion.discord.commands.general.postcard;
 
 import apple.excursion.ExcursionMain;
 import apple.excursion.database.queries.GetCalendarDB;
@@ -9,7 +9,7 @@ import apple.excursion.discord.commands.DoCommand;
 import apple.excursion.discord.data.TaskSimple;
 import apple.excursion.discord.data.answers.SubmissionData;
 import apple.excursion.discord.reactions.AllReactables;
-import apple.excursion.discord.reactions.messages.settings.SubmissionMessage;
+import apple.excursion.discord.reactions.messages.postcard.SubmissionMessage;
 import apple.excursion.sheets.SheetsPlayerStats;
 import apple.excursion.utils.ColoredName;
 import apple.excursion.utils.GetColoredName;

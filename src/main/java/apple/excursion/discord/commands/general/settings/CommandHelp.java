@@ -1,8 +1,8 @@
-package apple.excursion.discord.commands.general.self;
+package apple.excursion.discord.commands.general.settings;
 
 
 import apple.excursion.discord.commands.DoCommand;
-import apple.excursion.discord.reactions.messages.self.HelpMessage;
+import apple.excursion.discord.reactions.messages.settings.HelpMessage;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 public class CommandHelp implements DoCommand {
