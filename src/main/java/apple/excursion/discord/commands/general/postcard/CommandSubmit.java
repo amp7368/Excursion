@@ -59,11 +59,11 @@ public class CommandSubmit implements DoCommand {
 
     public void dealWithCommand(MessageReceivedEvent event) {
         List<Member> tags = event.getMessage().getMentionedMembers();
-        List<Pair<Long, String>> idsToNames = new ArrayList<>();
+        Map<Long, String> idsToNamesMap = new HashMap<>();
         String nickName;
         for (Member member : tags) {
             nickName = member.getEffectiveName();
-            idsToNames.add(new Pair<>(member.getIdLong(), nickName));
+            idsToNamesMap.put(member.getIdLong(), nickName);
         }
         Member author = event.getMember();
         if (author == null) {
@@ -71,15 +71,20 @@ public class CommandSubmit implements DoCommand {
             return;
         }
         event.getMessage().addReaction(AllReactables.Reactable.WORKING.getFirstEmoji()).queue();
-        idsToNames.add(new Pair<>(author.getIdLong(), author.getEffectiveName()));
+        idsToNamesMap.put(author.getIdLong(), author.getEffectiveName());
+
+        List<Pair<Long, String>> idsToNames = new ArrayList<>();
+        for (Map.Entry<Long, String> entry : idsToNamesMap.entrySet()) {
+            idsToNames.add(new Pair<>(entry.getKey(), entry.getValue()));
+        }
 
         Message eventMessage = event.getMessage();
-        String content = eventMessage.getContentDisplay();
+        String content = eventMessage.getContentStripped();
         List<String> contentList = Arrays.asList(content.split(" "));
+        contentList.removeIf(String::isBlank);
         content = String.join(" ", contentList.subList(1, contentList.size()));
-        for (Pair<Long, String> pair : idsToNames) {
-            String other = pair.getValue();
-            content = content.replace("@" + other, "");
+        for (Pair<Long, String> mention : idsToNames) {
+            content = content.replace("@" + mention.getValue(), "");
         }
 
         // change all the idToNames to the correct name based on The Farplane discord names

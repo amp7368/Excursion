@@ -3,6 +3,7 @@ package apple.excursion.discord.reactions;
 import apple.excursion.database.queries.GetDB;
 import apple.excursion.database.queries.UpdateDB;
 import apple.excursion.discord.data.answers.SubmissionData;
+import apple.excursion.discord.listener.ResponseListener;
 import apple.excursion.utils.GetColoredName;
 import apple.excursion.utils.Pair;
 import net.dv8tion.jda.api.entities.ChannelType;
@@ -12,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import java.sql.SQLException;
 import java.util.List;
 
-public class DatabaseReactable {
+public class DatabaseResponseReactable {
     public static synchronized void dealWithReaction(@NotNull MessageReactionAddEvent event) {
         if (event.getUser() == null) return;
         if (event.getChannelType() == ChannelType.PRIVATE) {
@@ -47,7 +48,7 @@ public class DatabaseReactable {
                         UpdateDB.updateResponseStatus(false, true, responseId);
                     }
                 } else if (emoji.equals(AllReactables.Reactable.RESPOND.getFirstEmoji())) {
-
+                    new ResponseListener(event.getChannel(), submissionData.getSubmittersNameAndIds());
                 }
             } catch (SQLException throwables) {
                 throwables.printStackTrace();

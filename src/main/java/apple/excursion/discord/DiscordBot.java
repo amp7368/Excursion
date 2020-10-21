@@ -3,6 +3,7 @@ package apple.excursion.discord;
 import apple.excursion.ExcursionMain;
 import apple.excursion.discord.commands.*;
 import apple.excursion.discord.commands.general.postcard.CommandSubmit;
+import apple.excursion.discord.listener.AllChannelListeners;
 import apple.excursion.discord.reactions.*;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -71,7 +72,11 @@ public class DiscordBot extends ListenerAdapter {
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
 
-        if (event.getAuthor().isBot() || event.getChannelType() != ChannelType.TEXT) {
+        if (event.getAuthor().isBot()) {
+            return;
+        }
+        AllChannelListeners.dealWithMessage(event);
+        if (event.getChannelType() != ChannelType.TEXT) {
             return;
         }
         // the author is not a bot
@@ -101,6 +106,6 @@ public class DiscordBot extends ListenerAdapter {
             return;
         }
         AllReactables.dealWithReaction(event);
-        DatabaseReactable.dealWithReaction(event);
+        DatabaseResponseReactable.dealWithReaction(event);
     }
 }

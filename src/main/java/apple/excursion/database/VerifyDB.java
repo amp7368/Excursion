@@ -142,7 +142,11 @@ public class VerifyDB {
         statement.execute(buildTableSql);
 
         currentSubmissionId = statement.executeQuery("SELECT MAX(id) FROM submissions;").getInt(1) + 1;
+        currentSubmissionId = Math.max(statement.executeQuery("SELECT MAX(submission_id) FROM submissions_link;").getInt(1) + 1, currentSubmissionId);
+
         currentResponseId = statement.executeQuery("SELECT MAX(response_id) FROM response;").getInt(1) + 1;
+        currentResponseId = Math.max(statement.executeQuery("SELECT MAX(response_id) FROM response_link;").getInt(1) + 1, currentResponseId);
+        currentResponseId = Math.max(statement.executeQuery("SELECT MAX(response_id) FROM response_submitters;").getInt(1) + 1, currentResponseId);
         statement.close();
 
         buildTableSql = "CREATE TABLE IF NOT EXISTS calendar ("

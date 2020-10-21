@@ -18,11 +18,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class SubmissionMessage {
-    private SubmissionData data;
-    private PrivateChannel thisReviewer;
-
-    private Message message;
-
     public static void initialize(SubmissionData data, PrivateChannel reviewer, int responseId) throws SQLException {
         Message message = reviewer.sendMessage(makeMessage(data)).complete();
         message.addReaction(AllReactables.Reactable.ACCEPT.getFirstEmoji()).queue();
