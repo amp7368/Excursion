@@ -1,6 +1,7 @@
 package apple.excursion.discord.reactions.messages.postcard;
 
 import apple.excursion.database.queries.InsertDB;
+import apple.excursion.discord.DiscordBot;
 import apple.excursion.discord.data.answers.SubmissionData;
 import apple.excursion.discord.reactions.AllReactables;
 import apple.excursion.discord.reactions.ReactableMessage;
@@ -8,29 +9,24 @@ import apple.excursion.utils.Pair;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.PrivateChannel;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 
 import java.sql.SQLException;
+import java.util.List;
 import java.util.stream.Collectors;
 
-public class SubmissionMessage implements ReactableMessage {
-    private SubmissionData data;
-    private User thisReviewer;
-
-    private Message message;
-
-    public SubmissionMessage(SubmissionData data, User reviewer) {
-        thisReviewer = reviewer;
-        this.data = data;
-        message = thisReviewer.openPrivateChannel().complete().sendMessage(makeMessage()).complete();
-        message.addReaction("\u2705").queue();
-        message.addReaction("\u274C").queue();
-        this.data.addMessage(message, thisReviewer);
-        AllReactables.add(this);
+public class SubmissionMessage {
+    public static void initialize(SubmissionData data, PrivateChannel reviewer, int responseId) throws SQLException {
+        Message message = reviewer.sendMessage(makeMessage(data)).complete();
+        message.addReaction(AllReactables.Reactable.ACCEPT.getFirstEmoji()).queue();
+        message.addReaction(AllReactables.Reactable.REJECT.getFirstEmoji()).queue();
+        message.addReaction(AllReactables.Reactable.RESPOND.getFirstEmoji()).queue();
+        InsertDB.insertIncompleteSubmissionLink(message.getIdLong(), reviewer.getIdLong(), responseId);
     }
 
-    private MessageEmbed makeMessage() {
+    private static MessageEmbed makeMessage(SubmissionData data) {
         StringBuilder text = new StringBuilder();
         text.append("**");
         text.append(data.getSubmitterName());
@@ -69,49 +65,5 @@ public class SubmissionMessage implements ReactableMessage {
             embed.setImage(data.getAttachment());
 
         return embed.build();
-    }
-
-
-    public void acceptSubmit() throws SQLException {
-        synchronized (data.sync) {
-            if (data.isNotAccepted()) {
-                data.setAccepted();
-                InsertDB.insertSubmission(data);
-            }
-        }
-    }
-
-    public void completeSubmit(boolean isAccepted, User reviewer) {
-        // find all the messages sent to other reviewers
-        data.completeSubmit(isAccepted, reviewer);
-    }
-
-    @Override
-    public void dealWithReaction(AllReactables.Reactable reactable, String reaction, MessageReactionAddEvent event) {
-        switch (reactable) {
-            case ACCEPT:
-                try {
-                    acceptSubmit();
-                } catch (SQLException throwables) {
-                    // todo give error message
-                    throwables.printStackTrace();
-                }
-                completeSubmit(true, event.getUser());
-                break;
-            case REJECT:
-                completeSubmit(false, event.getUser());
-                break;
-        }
-    }
-
-    @Override
-    public Long getId() {
-        return message.getIdLong();
-    }
-
-    @Override
-    public long getLastUpdated() {
-        // never return a value that would lead to deleting the memory of this message
-        return System.currentTimeMillis();
     }
 }

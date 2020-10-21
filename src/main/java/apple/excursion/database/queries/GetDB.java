@@ -9,17 +9,19 @@ import apple.excursion.database.objects.guild.LeaderboardOfGuilds;
 import apple.excursion.database.objects.player.PlayerHeader;
 import apple.excursion.database.objects.player.PlayerLeaderboard;
 import apple.excursion.database.objects.player.PlayerLeaderboardEntry;
+import apple.excursion.discord.commands.general.postcard.CommandSubmit;
+import apple.excursion.discord.data.TaskSimple;
 import apple.excursion.discord.data.answers.HistoryLeaderboardOfGuilds;
 import apple.excursion.discord.data.answers.HistoryPlayerLeaderboard;
+import apple.excursion.discord.data.answers.SubmissionData;
+import apple.excursion.utils.GetColoredName;
 import apple.excursion.utils.Pair;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class GetDB {
     public static PlayerData getPlayerData(Pair<Long, String> id, int submissionSize) throws SQLException {
@@ -353,5 +355,71 @@ public class GetDB {
             }
         }
         return returnVal;
+    }
+
+    @Nullable
+    public static Pair<Integer, SubmissionData> getSubmissionData(long channelId, long messageId) throws SQLException {
+        Statement statement = VerifyDB.database.createStatement();
+        String sql = GetSql.getSqlGetResponseSubmissionData(channelId, messageId);
+        ResultSet response = statement.executeQuery(sql);
+        if (!response.isClosed()) {
+            int responseId = response.getInt(1);
+
+            boolean isAccepted = response.getBoolean(2);
+            boolean isCompleted = response.getBoolean(3);
+            long epochTimeOfSubmission = response.getTimestamp(4).getTime();
+            String attachmentsUrl = response.getString(5);
+            List<String> links = Arrays.asList(response.getString(6).split("`"));
+            TaskSimple task = new TaskSimple(
+                    response.getInt(9),
+                    response.getString(8),
+                    response.getString(7)
+            );
+            SubmissionData.TaskSubmissionType taskSubmissionType = SubmissionData.TaskSubmissionType.valueOf(response.getString(10));
+            String submitterName = response.getString(11);
+            long submitterId = response.getLong(12);
+            response.close();
+
+            // get the idToNames
+            sql = GetSql.getSqlGetResponseSubmissionNames(responseId);
+            response = statement.executeQuery(sql);
+            List<Pair<Long, String>> idToNames = new ArrayList<>();
+            if (!response.isClosed())
+                while (response.next()) {
+                    idToNames.add(new Pair<>(
+                            response.getLong(1),
+                            response.getString(2)
+                    ));
+                }
+
+            // get the playersdata for submissionHistory
+            List<PlayerData> players = new ArrayList<>();
+            for (Pair<Long, String> idToName : idToNames) {
+                players.add(GetDB.getPlayerData(idToName, CommandSubmit.SUBMISSION_HISTORY_SIZE));
+            }
+            response.close();
+            statement.close();
+            // get the color
+            return new Pair<>(
+                    responseId,
+                    new SubmissionData(isAccepted, isCompleted, epochTimeOfSubmission, attachmentsUrl, links, task,
+                            taskSubmissionType, submitterName, submitterId, idToNames, players, GetColoredName.get(submitterId).getColor()));
+        }
+        return null;
+    }
+
+    public static List<Pair<Long, Long>> getResponseMessages(int responseId) throws SQLException {
+        String sql = GetSql.getSqlGetResponseReviewerMessages(responseId);
+        Statement statement = VerifyDB.database.createStatement();
+        ResultSet response = statement.executeQuery(sql);
+        List<Pair<Long,Long>> messages = new ArrayList<>();
+        if(!response.isClosed()){
+            while(response.next()){
+                messages.add(new Pair<>(response.getLong(1),response.getLong(2)));
+            }
+        }
+        response.close();
+        statement.close();
+        return messages;
     }
 }

@@ -1,5 +1,6 @@
 package apple.excursion.database.objects.player;
 
+import apple.excursion.database.VerifyDB;
 import apple.excursion.database.objects.OldSubmission;
 import apple.excursion.discord.data.Task;
 
@@ -16,7 +17,7 @@ public class PlayerData {
     private final int soulJuice;
     public final long id;
 
-    public PlayerData(long id,String playerName, String guildName, String guildTag, List<OldSubmission> submissions, int score, int soulJuice) {
+    public PlayerData(long id, String playerName, String guildName, String guildTag, List<OldSubmission> submissions, int score, int soulJuice) {
         this.id = id;
         this.name = playerName;
         this.guildName = guildName;
@@ -38,7 +39,7 @@ public class PlayerData {
         return String.format(
                 "The last time(s) %s %shas done this task:\n%s",
                 this.name,
-                guildTag == null ? "" : String.format("in [%s] ", guildTag),
+                guildTag.equals(VerifyDB.DEFAULT_GUILD_TAG) ? "" : String.format("in [%s] ", guildTag),
                 submissionsThatMatch.stream().map(OldSubmission::makeSubmissionHistoryMessage).collect(Collectors.joining("\n")));
     }
 
@@ -55,11 +56,15 @@ public class PlayerData {
 
     public int getScoreOfSubmissionsWithName(String taskName) {
         int score = 0;
-        for(OldSubmission submission:submissions){
-            if(submission.taskName.equalsIgnoreCase(taskName)){
+        for (OldSubmission submission : submissions) {
+            if (submission.taskName.equalsIgnoreCase(taskName)) {
                 score += submission.score;
             }
         }
         return score;
+    }
+
+    public boolean hasSubmissionHistory() {
+        return !submissions.isEmpty();
     }
 }

@@ -18,26 +18,29 @@ public class HelpMessage implements ReactableMessage {
     private final Message message;
     private long lastUpdated = System.currentTimeMillis();
     private int page = 0;
-    private static final List<String> helpPages = Arrays.asList(
+    private static final List<String> helpPages = Arrays.asList("Want to create your own tasks, help with the management of submissions," +
+                    " have a different title other than guest and different colors for your profile, be the first to know of our raffles or " +
+                    "join a community of dedicated explores and adventurers from all kinds of guilds and levels? Join the Farplane discord! <https://discord.gg/6je2sZj>",
             "**y!lb:** player leaderboard. it ranks players by their EP of all time, shows their guild, and also shows how much EP a player has earned during the month and the last month.\n\n" +
                     "**y!glb:** guild leaderboard. it ranks guilds by their EP of all time, shows their player who contributed the most EP, and also shows much much EP a guild has earned during the month and the last month. \n\n" +
-                    "**t!history or t!ghistory** - gives a per month leaderboard for players or guilds or a specific guild. " + AllReactables.Reactable.LEFT.getFirstEmoji() + " and "
+                    "**y!history or y!ghistory** - gives a per month leaderboard for players or guilds or a specific guild. " + AllReactables.Reactable.LEFT.getFirstEmoji() + " and "
                     + AllReactables.Reactable.RIGHT.getFirstEmoji() + "  changes pages on this leaderboard " + AllReactables.Reactable.CLOCK_LEFT.getFirstEmoji() + "  and "
                     + AllReactables.Reactable.CLOCK_LEFT.getFirstEmoji() + "  changes the month forward and backwards \n" +
-                    "**t!history -m (optional #)** - same thing as t!history, but if you add the # it will be that many months at a time\n" +
-                    "**t!history -w (optional #)**  - same thing as t!history, but in weeks. and if the # is provided, then it does that many weeks at a time\n" +
-                    "**t!history -d (optional #)**  - same thing as t!history, but in days. and if the # is provided, then it does that many days at a time\n" +
+                    "**y!history -m (optional #)** - same thing as y!history, but if you add the # it will be that many months at a time\n" +
+                    "**y!history -w (optional #)**  - same thing as y!history, but in weeks. and if the # is provided, then it does that many weeks at a time\n" +
+                    "**y!history -d (optional #)**  - same thing as y!history, but in days. and if the # is provided, then it does that many days at a time\n" +
                     "if you supply the option argument of a guild name or guild tag, then it gives the leaderboard for that guild  and same thing as before \n\n" +
                     "**y!glb [guild]:** search for guild profile. it displays the guild progress bar, a ranked list of every player in the guild, and a submission record.\n\n" +
-                    "**y!profile** [player]:** search for player profile. it displays your progress bar for EP, a progress bar for your guild, a personalised recommendation list of tasks by most EP and a submission record.",
+                    "**y!profile [player]:** search for player profile. it displays your progress bar for EP, a progress bar for your guild, a personalised recommendation list of tasks by most EP and a submission record.",
             "**y!postcard:** list of missions, excursions, dares and total tasks organised in Alphabetical order.\n\n" +
                     "**y!postcard [task]:** search for an specific task and receive its information. it displays the full description, the EP amount and the task creator. \n\n" +
                     "**y!calendar:** weekly calendar of daily tasks. It displays 3 tasks per week day and 10 tasks for the weekend. These tasks are different every day of the year!\n\n" +
                     "**y!submit [task name] [link]:** submit tasks when completing them for the first time. This command is also is used for repeating tasks by submitting daily tasks from the calendar to earn soul juice or raise your monthly EP count too to participate in Excursion raffles and win LE for you and your guild. ",
             "**y!guild [tag]:** join a guild or change your guild.\n\n" +
-                    "**y!help:** the command showing you this list"
+                    "**y!help:** the command showing you this list.\n\n" +
+                    "**y!bug [message with an optional image]** sends a bug report"
     );
-    private static final List<String> helpTitlePages = Arrays.asList(
+    private static final List<String> helpTitlePages = Arrays.asList("Discord Info:",
             "Excursion Benchmarks commands:", "Postcard Task commands:", "Settings commands:"
     );
 
@@ -54,7 +57,7 @@ public class HelpMessage implements ReactableMessage {
         embed.setTitle(helpTitlePages.get(page));
         embed.setDescription(helpPages.get(page));
         embed.setColor(DiscordBot.BOT_COLOR);
-        if(page == 0){
+        if (page == 0) {
             embed.setImage("https://cdn.discordapp.com/attachments/567540311870668800/767941477527453716/info1.gif");
         }
         return embed.build();
@@ -63,7 +66,7 @@ public class HelpMessage implements ReactableMessage {
     @Override
     public void dealWithReaction(AllReactables.Reactable reactable, String reaction, MessageReactionAddEvent event) {
         User user = event.getUser();
-        if(user == null){
+        if (user == null) {
             return;
         }
         switch (reactable) {

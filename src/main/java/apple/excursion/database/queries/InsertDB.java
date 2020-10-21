@@ -12,8 +12,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import static apple.excursion.database.VerifyDB.DEFAULT_GUILD_NAME;
-import static apple.excursion.database.VerifyDB.DEFAULT_GUILD_TAG;
+import static apple.excursion.database.VerifyDB.*;
 
 public class InsertDB {
     private static final int SOUL_JUICE_FOR_DAILY = 1;
@@ -58,12 +57,38 @@ public class InsertDB {
                     guildTag = response.getString(2);
                 }
                 response.close();
-                insertSql = GetSql.getSqlInsertSubmissionLink(VerifyDB.currentSubmissionId, id.getKey(), guildTag);
+                insertSql = GetSql.getSqlInsertSubmissionLink(currentSubmissionId, id.getKey(), guildTag);
                 statement.execute(insertSql);
             }
             statement.executeBatch();
             statement.close();
-            VerifyDB.currentSubmissionId++;
+            currentSubmissionId++;
+        }
+    }
+
+    public static int insertIncompleteSubmission(SubmissionData submissionData) throws SQLException {
+        int id;
+        synchronized (syncDB) {
+            Statement statement = database.createStatement();
+            String insertSql = GetSql.getSqlInsertResponse(currentResponseId, submissionData);
+            statement.execute(insertSql);
+            for (Pair<Long, String> idAndName : submissionData.getSubmittersNameAndIds()) {
+                insertSql = GetSql.getSqlInsertResponseSubmitters(currentResponseId, idAndName.getKey(), idAndName.getValue());
+                statement.execute(insertSql);
+            }
+            statement.close();
+            id = currentResponseId;
+            currentResponseId++;
+        }
+        return id;
+    }
+
+    public static void insertIncompleteSubmissionLink(long messageId, long channelId, int responseId) throws SQLException {
+        synchronized (syncDB) {
+            Statement statement = database.createStatement();
+            String sql = GetSql.getSqlInsertResponseLink(messageId, channelId, responseId);
+            statement.execute(sql);
+            statement.close();
         }
     }
 
@@ -73,9 +98,9 @@ public class InsertDB {
             SheetsPlayerStats.addProfile(id.getKey(), id.getValue());
         } catch (IOException ignored) { //this is fine because updates will add this player later somehow
         }
-        if(guildName!=null){
+        if (guildName != null) {
             try {
-                SheetsPlayerStats.updateGuild(guildName,guildTag,id.getKey(),id.getValue());
+                SheetsPlayerStats.updateGuild(guildName, guildTag, id.getKey(), id.getValue());
             } catch (IOException ignored) { //this is fine because updates will add this player later somehow
             }
         }
@@ -83,5 +108,4 @@ public class InsertDB {
         statement.execute(GetSql.getSqlInsertPlayers(id, guildName, guildTag));
         statement.close();
     }
-
 }

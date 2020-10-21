@@ -8,7 +8,7 @@ import java.util.*;
 
 public class AllReactables {
     private static final long STOP_WATCHING_DIFFERENCE = 1000 * 60 * 20; // 20 minutes
-    private static final Map<Long, ReactableMessage> pageableMessages = new HashMap<>();
+    private static final Map<Long, ReactableMessage> reactableMessages = new HashMap<>();
     private static final Object mapSyncObject = new Object();
 
     public final static List<String> emojiAlphabet = Arrays.asList("\uD83C\uDDE6", "\uD83C\uDDE7", "\uD83C\uDDE8", "\uD83C\uDDE9", "\uD83C\uDDEA", "\uD83C\uDDEB", "\uD83C\uDDEC", "\uD83C\uDDED",
@@ -17,34 +17,36 @@ public class AllReactables {
 
     public static void add(ReactableMessage message) {
         synchronized (mapSyncObject) {
-            pageableMessages.put(message.getId(), message);
+            reactableMessages.put(message.getId(), message);
         }
     }
 
     public static void remove(long id) {
         synchronized (mapSyncObject) {
-            pageableMessages.remove(id);
+            reactableMessages.remove(id);
         }
     }
 
-    public synchronized static void dealWithReaction(@NotNull MessageReactionAddEvent event) {
+    public static void dealWithReaction(@NotNull MessageReactionAddEvent event) {
         String reaction = event.getReactionEmote().getName();
-        for (Reactable reactable : Reactable.values()) {
-            if (reactable.isEmoji(reaction)) {
-                ReactableMessage message = pageableMessages.get(event.getMessageIdLong());
-                if (message != null) {
-                    message.dealWithReaction(reactable, reaction, event);
-                    trimOldMessages();
-                    return;
+        synchronized (mapSyncObject) {
+            for (Reactable reactable : Reactable.values()) {
+                if (reactable.isEmoji(reaction)) {
+                    ReactableMessage message = reactableMessages.get(event.getMessageIdLong());
+                    if (message != null) {
+                        message.dealWithReaction(reactable, reaction, event);
+                        trimOldMessages();
+                        return;
+                    }
                 }
             }
+            trimOldMessages();
         }
-        trimOldMessages();
     }
 
     private static void trimOldMessages() {
         synchronized (mapSyncObject) {
-            pageableMessages.values().removeIf(msg -> System.currentTimeMillis() - msg.getLastUpdated() > STOP_WATCHING_DIFFERENCE);
+            reactableMessages.values().removeIf(msg -> System.currentTimeMillis() - msg.getLastUpdated() > STOP_WATCHING_DIFFERENCE);
         }
     }
 
@@ -60,7 +62,9 @@ public class AllReactables {
         EXCURSIONS(Collections.singletonList("excursionemoji"), Collections.singletonList(765315908738482176L)),
         MISSIONS(Collections.singletonList("missionemoji"), Collections.singletonList(765315910806011914L)),
         ALL_CATEGORIES(Collections.singletonList("\u274C")),
-        ALPHABET(emojiAlphabet);
+        ALPHABET(emojiAlphabet),
+        WORKING(Collections.singletonList("\uD83D\uDEE0")),
+        RESPOND(Collections.singletonList("\uD83D\uDCE8"));
 
         private final List<String> emojis;
         private final List<Long> ids;

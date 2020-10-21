@@ -4,6 +4,7 @@ import apple.excursion.ExcursionMain;
 import apple.excursion.database.queries.GetCalendarDB;
 import apple.excursion.database.queries.GetDB;
 import apple.excursion.database.objects.player.PlayerData;
+import apple.excursion.database.queries.InsertDB;
 import apple.excursion.discord.DiscordBot;
 import apple.excursion.discord.commands.DoCommand;
 import apple.excursion.discord.data.TaskSimple;
@@ -29,7 +30,7 @@ import java.util.List;
 
 public class CommandSubmit implements DoCommand {
     private static final String REVIEWERS_FILE_PATH = getPath();
-    private static final int SUBMISSION_HISTORY_SIZE = 5;
+    public static final int SUBMISSION_HISTORY_SIZE = 5;
 
     private static String getPath() {
         List<String> list = Arrays.asList(ExcursionMain.class.getProtectionDomain().getCodeSource().getLocation().getPath().split("/"));
@@ -56,30 +57,38 @@ public class CommandSubmit implements DoCommand {
         }
     }
 
+    public static List<User> listReviewers() {
+        return new ArrayList<>(reviewers);
+    }
+
     public void dealWithCommand(MessageReceivedEvent event) {
         List<Member> tags = event.getMessage().getMentionedMembers();
-        List<Pair<Long, String>> idsToNames = new ArrayList<>();
+        Map<Long, String> idsToNamesMap = new HashMap<>();
         String nickName;
         for (Member member : tags) {
             nickName = member.getEffectiveName();
-            idsToNames.add(new Pair<>(member.getIdLong(), nickName));
+            idsToNamesMap.put(member.getIdLong(), nickName);
         }
         Member author = event.getMember();
         if (author == null) {
             // the author doesn't even exist atm
             return;
         }
+        event.getMessage().addReaction(AllReactables.Reactable.WORKING.getFirstEmoji()).queue();
+        idsToNamesMap.put(author.getIdLong(), author.getEffectiveName());
 
-
-        idsToNames.add(new Pair<>(author.getIdLong(), author.getEffectiveName()));
+        List<Pair<Long, String>> idsToNames = new ArrayList<>();
+        for (Map.Entry<Long, String> entry : idsToNamesMap.entrySet()) {
+            idsToNames.add(new Pair<>(entry.getKey(), entry.getValue()));
+        }
 
         Message eventMessage = event.getMessage();
-        String content = eventMessage.getContentDisplay();
+        String content = eventMessage.getContentStripped();
         List<String> contentList = Arrays.asList(content.split(" "));
+        contentList.removeIf(String::isBlank);
         content = String.join(" ", contentList.subList(1, contentList.size()));
-        for (Pair<Long, String> pair : idsToNames) {
-            String other = pair.getValue();
-            content = content.replace("@" + other, "");
+        for (Pair<Long, String> mention : idsToNames) {
+            content = content.replace("@" + mention.getValue(), "");
         }
 
         // change all the idToNames to the correct name based on The Farplane discord names
@@ -113,6 +122,7 @@ public class CommandSubmit implements DoCommand {
             final TaskSimple task = SheetsPlayerStats.getTaskSimple(questName);
             if (task == null) {
                 event.getChannel().sendMessage(String.format("'%s' is not a valid task name", questName)).queue();
+                event.getMessage().removeReaction(AllReactables.Reactable.WORKING.getFirstEmoji(), DiscordBot.client.getSelfUser()).queue();
                 return;
             }
 
@@ -122,6 +132,7 @@ public class CommandSubmit implements DoCommand {
                     playersData.add(GetDB.getPlayerData(player, SUBMISSION_HISTORY_SIZE));
                 } catch (SQLException throwables) {
                     //todo deal with error
+                    event.getMessage().removeReaction(AllReactables.Reactable.WORKING.getFirstEmoji(), DiscordBot.client.getSelfUser()).queue();
                     throwables.printStackTrace();
                 }
             }
@@ -138,12 +149,20 @@ public class CommandSubmit implements DoCommand {
                         playersData,
                         taskType
                 );
-                for (User reviewer : reviewers) {
-                    new SubmissionMessage(submissionData, reviewer);
+                try {
+                    int responseId = InsertDB.insertIncompleteSubmission(submissionData);
+
+                    for (User reviewer : reviewers) {
+                        SubmissionMessage.initialize(submissionData, reviewer.openPrivateChannel().complete(), responseId);
+                    }
+                } catch (SQLException throwables) {
+                    throwables.printStackTrace(); //todo
                 }
             }
             eventMessage.addReaction(AllReactables.Reactable.ACCEPT.getFirstEmoji()).queue();
         }
+        event.getMessage().removeReaction(AllReactables.Reactable.WORKING.getFirstEmoji(), DiscordBot.client.getSelfUser()).queue();
+
     }
 
     private SubmissionData.TaskSubmissionType getTaskType(String name) {

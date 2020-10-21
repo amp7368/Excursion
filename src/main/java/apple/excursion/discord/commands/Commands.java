@@ -1,6 +1,7 @@
 package apple.excursion.discord.commands;
 
 import apple.excursion.discord.commands.general.benchmark.*;
+import apple.excursion.discord.commands.general.settings.CommandBugReport;
 import apple.excursion.discord.commands.general.settings.CommandHelp;
 import apple.excursion.discord.commands.general.postcard.CommandPostcard;
 import apple.excursion.discord.commands.general.settings.CommandGuild;
@@ -24,6 +25,7 @@ public enum Commands {
     CALENDAR(Collections.singletonList("calendar"), "Gives a list of daily tasks", "", new CommandCalendar()),
     SUBMIT(Collections.singletonList("submit"), "Submits the attached evidence to be reviewed", "[url or attach image]", new CommandSubmit()),
     GUILD(Collections.singletonList("guild"), "Change your guild", "[guild tag]", new CommandGuild()),
+    BUG_REPORT(Collections.singletonList("bug"), "Reports the following message (with an optional image) as a bug", "", new CommandBugReport()),
     HELP(Collections.singletonList("help"), "Gives this help message", "", new CommandHelp());
 
     private final List<String> commandNames;
