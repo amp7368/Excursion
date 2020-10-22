@@ -72,7 +72,7 @@ public class SubmissionData {
     private String makeSubmissionHistoryMessage(List<PlayerData> playersData) {
         List<PlayerData> playerDataTemp = new ArrayList<>(playersData);
         playerDataTemp.removeIf(Objects::isNull);
-        playerDataTemp.removeIf(PlayerData::hasSubmissionHistory);
+        playerDataTemp.removeIf(playerData -> !playerData.hasSubmissionHistory());
         return playerDataTemp.stream().map(playerData -> playerData.makeSubmissionHistoryMessage(task.name)).collect(Collectors.joining("\n\n"));
     }
 
