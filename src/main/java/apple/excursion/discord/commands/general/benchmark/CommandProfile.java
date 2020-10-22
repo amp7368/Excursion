@@ -94,7 +94,7 @@ public class CommandProfile implements DoCommand {
                     if ((playerName = coloredName.getName()) == null) {
                         Member member = event.getMember();
                         if (member == null) playerName = event.getAuthor().getName();
-                        else playerName = member.getEffectiveName();
+                        else playerName = ColoredName.getGuestName(member.getEffectiveName());
                     }
                     try {
                         InsertDB.insertPlayer(new Pair<>(discordId, playerName), null, null);

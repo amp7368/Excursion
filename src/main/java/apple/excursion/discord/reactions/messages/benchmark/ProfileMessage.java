@@ -80,7 +80,7 @@ public class ProfileMessage implements ReactableMessage {
 
     private MessageEmbed makeMessage() {
         EmbedBuilder embed = new EmbedBuilder();
-        embed.setTitle(coloredName.getName() == null ? ColoredName.getGuestName(player.name) : coloredName.getName());
+        embed.setTitle(coloredName.getName() == null ? player.name : coloredName.getName());
         StringBuilder description = new StringBuilder();
         description.append(String.format("Soul juice: %d\n\n", player.getSoulJuice()));
         // put guild info

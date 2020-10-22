@@ -33,7 +33,7 @@ public class ColoredName {
     }
 
     public static String getGuestName(String name) {
-        return "Guest " + name;
+        return "Guest " + Pretty.upperCaseFirst(name);
     }
     public static int getGuestColor() {
         return DEFAULT_COLOR;

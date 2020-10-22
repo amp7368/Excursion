@@ -6,6 +6,8 @@ import apple.excursion.database.objects.guild.GuildHeader;
 import apple.excursion.discord.commands.Commands;
 import apple.excursion.discord.commands.DoCommand;
 import apple.excursion.discord.reactions.messages.settings.CreateGuildMessage;
+import apple.excursion.utils.ColoredName;
+import apple.excursion.utils.GetColoredName;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
@@ -52,8 +54,9 @@ public class CommandGuild implements DoCommand {
         }
         final Member member = event.getMember();
         if (member == null) return;
-        final String playerName = member.getEffectiveName();
         final long playerId = event.getAuthor().getIdLong();
+        ColoredName coloredName = GetColoredName.get(playerId);
+        final String playerName = coloredName.getName() == null ? ColoredName.getGuestName(member.getEffectiveName()) : coloredName.getName();
         if (match == null) {
             if (contentSplit.length < 3) {
                 event.getChannel().sendMessage(

@@ -95,8 +95,11 @@ public class CommandSubmit implements DoCommand {
         // change all the idToNames to the correct name based on The Farplane discord names
         for (Pair<Long, String> idToName : idsToNames) {
             ColoredName coloredName = GetColoredName.get(idToName.getKey());
-            if (coloredName.getName() != null)
+            if (coloredName.getName() != null) {
                 idToName.setValue(coloredName.getName());
+            } else {
+                idToName.setValue(ColoredName.getGuestName(idToName.getValue()));
+            }
         }
         ColoredName coloredName = GetColoredName.get(author.getIdLong());
         String submitterName = coloredName.getName() == null ? author.getEffectiveName() : coloredName.getName();
