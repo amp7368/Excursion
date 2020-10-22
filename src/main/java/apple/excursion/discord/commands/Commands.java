@@ -6,6 +6,7 @@ import apple.excursion.discord.commands.general.settings.CommandHelp;
 import apple.excursion.discord.commands.general.postcard.CommandPostcard;
 import apple.excursion.discord.commands.general.settings.CommandGuild;
 import apple.excursion.discord.commands.general.postcard.CommandSubmit;
+import apple.excursion.discord.commands.general.settings.CommandTitle;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 import java.util.Arrays;
@@ -25,6 +26,7 @@ public enum Commands {
     CALENDAR(Collections.singletonList("calendar"), "Gives a list of daily tasks", "", new CommandCalendar()),
     SUBMIT(Collections.singletonList("submit"), "Submits the attached evidence to be reviewed", "[url or attach image]", new CommandSubmit()),
     GUILD(Collections.singletonList("guild"), "Change your guild", "[guild tag]", new CommandGuild()),
+    TITLE(Collections.singletonList("title"), "Change your rank and title", "[title]", new CommandTitle()),
     BUG_REPORT(Collections.singletonList("bug"), "Reports the following message (with an optional image) as a bug", "", new CommandBugReport()),
     HELP(Collections.singletonList("help"), "Gives this help message", "", new CommandHelp());
 

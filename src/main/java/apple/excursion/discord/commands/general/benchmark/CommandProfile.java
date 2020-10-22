@@ -31,7 +31,7 @@ public class CommandProfile implements DoCommand {
         try {
             leaderboard = GetDB.getPlayerLeaderboard();
         } catch (SQLException throwables) {
-            throwables.printStackTrace(); //todo
+            event.getChannel().sendMessage("There has been an SQLException getting the player leaderboard.").queue();
             return;
         }
         if (eventContentSplitOnce.length > 1) {
@@ -49,7 +49,7 @@ public class CommandProfile implements DoCommand {
                 try {
                     playerHeaders = GetDB.getPlayerHeaders();
                 } catch (SQLException throwables) {
-                    throwables.printStackTrace(); //todo
+                    event.getChannel().sendMessage("There has been an SQLException getting all the player names").queue();
                     return;
                 }
                 PlayerHeader player = null;
@@ -81,7 +81,13 @@ public class CommandProfile implements DoCommand {
             playerLeaderboardEntry = leaderboard.get(discordId);
             if (playerLeaderboardEntry == null) {
                 // it's possible that the person exists, but just hasn't submitted anything
-                PlayerHeader player = getPlayerFromHeaders(discordId);
+                PlayerHeader player;
+                try {
+                    player = getPlayerFromHeaders(discordId);
+                } catch (SQLException throwables) {
+                    event.getChannel().sendMessage("There has been an SQLException getting the player data").queue();
+                    return;
+                }
                 if (player == null) {
                     ColoredName coloredName = GetColoredName.get(discordId);
                     String playerName;
@@ -93,10 +99,15 @@ public class CommandProfile implements DoCommand {
                     try {
                         InsertDB.insertPlayer(new Pair<>(discordId, playerName), null, null);
                     } catch (SQLException throwables) {
-                        throwables.printStackTrace();//todo
+                        event.getChannel().sendMessage("There has been an SQLException making your profile").queue();
                         return;
                     }
-                    player = getPlayerFromHeaders(discordId);
+                    try {
+                        player = getPlayerFromHeaders(discordId);
+                    } catch (SQLException throwables) {
+                        event.getChannel().sendMessage("There has been an SQLException getting the player data").queue();
+                        return;
+                    }
                     if (player == null) {
                         // return and throw errors
                         return;
@@ -135,7 +146,7 @@ public class CommandProfile implements DoCommand {
                     // this guild doesn't exist so leave it as null
                 }
             } catch (SQLException throwables) {
-                throwables.printStackTrace(); //todo
+                event.getChannel().sendMessage("There was an SQLException getting the guild leaderboard or all the guild names.").queue();
                 return;
             }
         }
@@ -148,7 +159,7 @@ public class CommandProfile implements DoCommand {
                             coloredName.getName() == null ? playerLeaderboardEntry.playerName : coloredName.getName()),
                     -1); //get all of them
         } catch (SQLException throwables) {
-            throwables.printStackTrace();//todo
+            event.getChannel().sendMessage("There has been an SQL Exception getting the player data").queue();
             return;
         }
         new ProfileMessage(playerLeaderboardEntry, player, guild, coloredName, event.getChannel());
@@ -156,14 +167,9 @@ public class CommandProfile implements DoCommand {
     }
 
     @Nullable
-    private PlayerHeader getPlayerFromHeaders(long discordId) {
+    private PlayerHeader getPlayerFromHeaders(long discordId) throws SQLException {
         List<PlayerHeader> playerHeaders;
-        try {
-            playerHeaders = GetDB.getPlayerHeaders();
-        } catch (SQLException throwables) {
-            throwables.printStackTrace(); //todo
-            return null;
-        }
+        playerHeaders = GetDB.getPlayerHeaders();
         PlayerHeader player = null;
         for (PlayerHeader playerHeader : playerHeaders) {
             if (playerHeader.id == discordId) {

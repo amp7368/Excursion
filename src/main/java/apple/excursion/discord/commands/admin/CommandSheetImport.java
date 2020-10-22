@@ -45,8 +45,8 @@ public class CommandSheetImport implements DoCommand {
         }
         try {
             event.getMessage().addReaction(WORKING_EMOJI).queue();
-            List<String> logs = SyncDB.sync(sheetData, databasePlayers,playerData, databaseGuilds);
-            PrivateChannel dms = DiscordBot.client.getUserById(253646208084475904L).openPrivateChannel().complete();
+            List<String> logs = SyncDB.sync(sheetData, databasePlayers, playerData, databaseGuilds);
+            PrivateChannel dms = DiscordBot.client.getUserById(DiscordBot.APPLEPTR16).openPrivateChannel().complete();
             StringBuilder builder = new StringBuilder();
             for (String log : logs) {
                 if (log.length() + builder.length() > 1999) {

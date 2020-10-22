@@ -26,8 +26,8 @@ public class CommandGuildLeaderboard implements DoCommand {
                 LeaderboardOfGuilds leaderboard = GetDB.getGuildLeaderboard();
                 new GuildLeaderboardMessage(event.getChannel(), leaderboard);
             } catch (SQLException throwables) {
-                //todo deal with error
-                throwables.printStackTrace();
+                event.getChannel().sendMessage("There has been an SQLException trying to get the guild leaderboard.").queue();
+                return;
             }
             return;
         }
@@ -35,17 +35,10 @@ public class CommandGuildLeaderboard implements DoCommand {
         String inputAsGuildTag = contentSplit.get(0);
         String inputAsGuildName = String.join(" ", contentSplit);
 
-        LeaderboardOfGuilds leaderboard;
-        try {
-            leaderboard = GetDB.getGuildLeaderboard();
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-            return;
-        }
         GuildLeaderboardEntry matchedGuild;
         try {
             LeaderboardOfGuilds guildLeaderboard = GetDB.getGuildLeaderboard();
-            matchedGuild = guildLeaderboard.get(inputAsGuildTag,inputAsGuildName);
+            matchedGuild = guildLeaderboard.get(inputAsGuildTag, inputAsGuildName);
             if (matchedGuild == null) {
                 // the guild for sure doesn't have a score. check if they exist or just have no score
                 List<GuildHeader> guildList = GetDB.getGuildNameList();
@@ -55,7 +48,7 @@ public class CommandGuildLeaderboard implements DoCommand {
                         break;
                     }
                 }
-                if(matchedGuild == null) {
+                if (matchedGuild == null) {
                     // try case insensitive
                     for (GuildHeader header : guildList) {
                         if (header.tag.equalsIgnoreCase(inputAsGuildTag)) {
@@ -67,7 +60,7 @@ public class CommandGuildLeaderboard implements DoCommand {
                 // this guild doesn't exist so leave it as null
             }
         } catch (SQLException throwables) {
-            throwables.printStackTrace(); //todo
+            event.getChannel().sendMessage("There has been an SQLException getting the guild leaderboard or all the guild names.").queue();
             return;
         }
         if (matchedGuild == null) {
@@ -79,14 +72,14 @@ public class CommandGuildLeaderboard implements DoCommand {
         try {
             playersInGuild = GetDB.getPlayersInGuild(matchedGuild.guildTag, -1, -1);
         } catch (SQLException throwables) {
-            throwables.printStackTrace();
+            event.getChannel().sendMessage("There was an SQLException getting the playerLeaderboard in this guild").queue();
             return;
         }
         List<OldSubmission> submissions;
         try {
             submissions = GetDB.getGuildSubmissions(matchedGuild.guildTag, -1, -1);
         } catch (SQLException throwables) {
-            throwables.printStackTrace(); //todo fix
+            event.getChannel().sendMessage("There has been an SQLException getting the submissions for the guild.").queue();
             return;
         }
         new GuildProfileMessage(submissions, matchedGuild, playersInGuild, event.getChannel());

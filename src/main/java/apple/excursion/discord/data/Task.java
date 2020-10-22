@@ -7,16 +7,16 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 public class Task {
-    public String category; // is lowercase
-    public String taskName;
-    public String description;
+    public final String category; // is lowercase
+    public final String taskName;
+    public final String description;
     @Nullable
-    public String coordinates;
+    public final String coordinates;
     public int ep;
-    public String createdBy;
+    public final String createdBy;
     @Nullable
-    public String images;
-    public boolean isFail;
+    public final String images;
+    public final boolean isFail;
 
     public Task(List<Object> row) {
         String category = row.get(0).toString().toLowerCase();
@@ -25,7 +25,6 @@ public class Task {
             this.category = category.toLowerCase().substring(0, categoryChars.length - 1);
         } else
             this.category = category.toLowerCase();
-        TaskCategory.taskTypes.add(this.category);
         taskName = row.get(1).toString();
         description = row.get(2).toString();
         coordinates = row.get(3) == null ? null : row.get(0).toString();
@@ -50,10 +49,5 @@ public class Task {
     @Override
     public boolean equals(Object other) {
         return other instanceof Task && ((Task) other).taskName.equalsIgnoreCase(taskName);
-    }
-
-    public static class TaskCategory {
-        private static final ConcurrentHashSet<String> taskTypes = new ConcurrentHashSet<>();
-
     }
 }

@@ -17,13 +17,10 @@ public class Profile {
     private String guild;
     private String guildTag;
     private boolean complete = false;
-    private int row;
-    private List<TaskSimple> tasksNotDone = new ArrayList<>();
-    public List<TaskSimpleCompleted> tasksDone = new ArrayList<>();
+    private final List<TaskSimple> tasksNotDone = new ArrayList<>();
+    public final List<TaskSimpleCompleted> tasksDone = new ArrayList<>();
 
-    public Profile(Iterator<Object> profileRow, int row) {
-        this.row = row;
-
+    public Profile(Iterator<Object> profileRow) {
         if (!profileRow.hasNext()) return;
         discordId = GetFromObject.getLong(profileRow.next());
         if (GetFromObject.longFail(discordId))
@@ -55,28 +52,8 @@ public class Profile {
         complete = true;
     }
 
-    public Profile(String name, long id, int row, Profile other) {
-        this.discordId = id;
-        this.row = row;
-        this.name = name;
-        this.guild = "";
-        this.guildTag = "";
-    }
-
     public boolean isFail() {
         return !complete;
-    }
-
-    /**
-     * @param name the name to get but lowercase
-     * @return true if this profile matches. otherwise false
-     */
-    public boolean hasName(String name) {
-        return this.name.toLowerCase().equals(name);
-    }
-
-    public boolean nameContains(String name) {
-        return this.name.toLowerCase().contains(name);
     }
 
     public boolean hasId(long id) {

@@ -12,7 +12,7 @@ public class CommandLeaderboard implements DoCommand {
         try {
             new LeaderboardMessage(event.getChannel());
         } catch (SQLException throwables) {
-            throwables.printStackTrace();//todo
+            event.getChannel().sendMessage("There has been an SQLException making the Leaderboard message").queue();
         }
     }
 }

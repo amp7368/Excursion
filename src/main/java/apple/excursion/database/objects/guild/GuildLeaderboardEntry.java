@@ -4,11 +4,11 @@ import apple.excursion.database.VerifyDB;
 import apple.excursion.utils.GetColoredName;
 
 public class GuildLeaderboardEntry {
-    public String guildName;
-    public String guildTag;
-    public int score;
-    public String topPlayer;
-    public int topPlayerPoints;
+    public final String guildName;
+    public final String guildTag;
+    public final int score;
+    public final String topPlayer;
+    public final int topPlayerPoints;
     public int topGuildScore;
     public int rank;
 

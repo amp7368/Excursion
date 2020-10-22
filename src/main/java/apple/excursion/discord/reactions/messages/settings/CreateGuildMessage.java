@@ -60,9 +60,12 @@ public class CreateGuildMessage implements ReactableMessage {
                         embed.setDescription(String.format("%s [%s] has been created", guildName, guildTag));
                         event.getChannel().sendMessage(embed.build()).queue();
                         message.clearReactions().queue();
-                    } catch (SQLException | IOException throwables) {
-                        // todo deal with error
-                        throwables.printStackTrace();
+                    } catch (SQLException throwables) {
+                        event.getChannel().sendMessage("There was an SQL Exception creating this guild").queue();
+                        return;
+                    } catch (IOException throwables) {
+                        event.getChannel().sendMessage("There was an IOException creating this guild. Please try again even if you're in the correct guild.").queue();
+                        return;
                     }
                 } else {
                     lastUpdated = System.currentTimeMillis();

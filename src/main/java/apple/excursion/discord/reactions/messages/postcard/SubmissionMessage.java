@@ -1,20 +1,15 @@
 package apple.excursion.discord.reactions.messages.postcard;
 
 import apple.excursion.database.queries.InsertDB;
-import apple.excursion.discord.DiscordBot;
 import apple.excursion.discord.data.answers.SubmissionData;
 import apple.excursion.discord.reactions.AllReactables;
-import apple.excursion.discord.reactions.ReactableMessage;
 import apple.excursion.utils.Pair;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.PrivateChannel;
-import net.dv8tion.jda.api.entities.User;
-import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 
 import java.sql.SQLException;
-import java.util.List;
 import java.util.stream.Collectors;
 
 public class SubmissionMessage {

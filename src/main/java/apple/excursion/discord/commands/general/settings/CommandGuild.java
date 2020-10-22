@@ -29,7 +29,7 @@ public class CommandGuild implements DoCommand {
         try {
             guilds = GetDB.getGuildNameList();
         } catch (SQLException throwables) {
-            throwables.printStackTrace();
+            event.getChannel().sendMessage("There was an SQLException getting all the guild's names").queue();
             return;
         }
         List<String> guildNameSplit = new ArrayList<>(Arrays.asList(contentSplit));
@@ -81,11 +81,9 @@ public class CommandGuild implements DoCommand {
             UpdateDB.updateGuild(match.name, match.tag, playerId, playerName);
             event.getChannel().sendMessage(String.format("You are now in **%s [%s]**", match.name, match.tag)).queue();
         } catch (SQLException throwables) {
-            //todo deal with errors
-            throwables.printStackTrace();
+            event.getChannel().sendMessage("There has been an SQLException updating your guild").queue();
         } catch (IOException e) {
-            // todo deal with errors
-            e.printStackTrace();
+            event.getChannel().sendMessage("There was an IOException updating your guild. Please try again even if you're in the correct guild.").queue();
         }
     }
 }

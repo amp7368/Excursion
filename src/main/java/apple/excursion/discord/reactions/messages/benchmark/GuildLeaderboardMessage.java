@@ -9,7 +9,6 @@ import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 
-import java.sql.SQLException;
 
 
 public class GuildLeaderboardMessage implements ReactableMessage {
@@ -19,7 +18,7 @@ public class GuildLeaderboardMessage implements ReactableMessage {
     private long lastUpdated;
     private final LeaderboardOfGuilds leaderboard;
 
-    public GuildLeaderboardMessage(MessageChannel channel, LeaderboardOfGuilds leaderboard) throws SQLException {
+    public GuildLeaderboardMessage(MessageChannel channel, LeaderboardOfGuilds leaderboard) {
         this.leaderboard = leaderboard;
         this.page = 0;
         this.message = channel.sendMessage(makeMessage()).complete();

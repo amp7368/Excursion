@@ -220,7 +220,7 @@ public class PostcardListMessage implements ReactableMessage {
         ALL(0xffffff),
         MISSION(0xc3993e);
 
-        public int color;
+        public final int color;
 
         Category(int color) {
             this.color = color;

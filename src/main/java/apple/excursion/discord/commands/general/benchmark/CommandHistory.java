@@ -20,8 +20,6 @@ public class CommandHistory implements DoCommand {
         DetermineArguments.ArgumentInt weeks = DetermineArguments.determineInt("-w", contentSplit);
         DetermineArguments.ArgumentInt days = DetermineArguments.determineInt("-d", contentSplit);
 
-        // todo deal with the guild side of this command
-
         if (months.exists) {
             // deal with history in months
             if (months.hasValue) {
