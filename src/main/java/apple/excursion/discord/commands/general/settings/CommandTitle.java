@@ -7,8 +7,11 @@ import apple.excursion.discord.commands.DoCommand;
 import apple.excursion.utils.ColoredName;
 import apple.excursion.utils.GetColoredName;
 import apple.excursion.utils.Pair;
+import apple.excursion.utils.Pretty;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.exceptions.PermissionException;
 
@@ -127,37 +130,69 @@ public class CommandTitle implements DoCommand {
             helpEmbed.setColor(coloredName.getColor());
             event.getChannel().sendMessage(helpEmbed.build()).queue();
         } else {
+            Member member = event.getMember();
+            if (member == null) return;
+            Guild guild = member.getGuild();
+            if (guild.getIdLong() != DiscordBot.EXCURSION_GUILD_ID) {
+                event.getChannel().sendMessage(String.format("You need to be in the The Farplane discord server <%s> to have a custom title or color", DiscordBot.EXCURSION_GUILD_INVITE)).queue();
+                return;
+            }
+
             // the player tried to change their title or color
             List<String> contentList = new ArrayList<>(Arrays.asList(content));
             contentList.remove(0);
-            String titleOrName = String.join(" ", contentList);
+            String titleOrColor = String.join(" ", contentList);
             Title matchedTitle = null;
             for (Title title : titles) {
-                if (title.title.equalsIgnoreCase(titleOrName)) {
+                if (title.title.equalsIgnoreCase(titleOrColor)) {
                     matchedTitle = title;
                     break;
                 }
             }
             if (matchedTitle == null) {
                 // try to find the color
-                // todo
+                ColorRole matchedColor = null;
+                for (ColorRole colorRole : colors) {
+                    if (colorRole.color.equalsIgnoreCase(titleOrColor)) {
+                        matchedColor = colorRole;
+                        break;
+                    }
+                }
+                if (matchedColor == null) {
+                    event.getChannel().sendMessage(String.format("There is no title or color with name of '%s'", titleOrColor)).queue();
+                } else {
+                    if (tasksDone < matchedColor.req) {
+                        event.getChannel().sendMessage(String.format("You've completed %d/%d tasks required to earn this title.", tasksDone, matchedColor.req)).queue();
+                        return;
+                    }
+                    Role role = member.getGuild().getRoleById(matchedColor.role);
+                    if (role == null) {
+                        event.getChannel().sendMessage("I couldn't get that role. Let someone know.").queue();
+                        return;
+                    }
+                    try {
+                        guild.addRoleToMember(member, role).queue();
+                    } catch (PermissionException e) {
+                        event.getChannel().sendMessage("I don't have permission to change your role D:").queue();
+                        return;
+                    }
+                    event.getChannel().sendMessage("Your color has been updated to " + matchedColor.color).queue();
+                }
             } else {
                 // try to change the player's title
                 if (tasksDone < matchedTitle.req) {
                     event.getChannel().sendMessage(String.format("You've completed %d/%d tasks required to earn this title.", tasksDone, matchedTitle.req)).queue();
                     return;
-                } else {
-                    Member member = event.getMember();
-                    if (member == null) return;
-                    try {
-                        member.modifyNickname(matchedTitle.title).queue();
-                    } catch (PermissionException e) {
-                        event.getChannel().sendMessage("I don't have permission to change your nickname D:").queue();
-                        return;
-                    }
-                    event.getChannel().sendMessage("I have updated your title to " + matchedTitle.title).queue();
                 }
+                try {
+                    member.modifyNickname(matchedTitle.title + " " + Pretty.upperCaseFirst(event.getAuthor().getName())).queue();
+                } catch (PermissionException e) {
+                    event.getChannel().sendMessage("I don't have permission to change your nickname D:").queue();
+                    return;
+                }
+                event.getChannel().sendMessage("Your title has been updated to " + matchedTitle.title).queue();
             }
+
         }
     }
 

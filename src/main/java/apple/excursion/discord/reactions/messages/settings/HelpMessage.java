@@ -20,7 +20,7 @@ public class HelpMessage implements ReactableMessage {
     private int page = 0;
     private static final List<String> helpPages = Arrays.asList("Want to create your own tasks, help with the management of submissions," +
                     " have a different title other than guest and different colors for your profile, be the first to know of our raffles or " +
-                    "join a community of dedicated explores and adventurers from all kinds of guilds and levels? Join the Farplane discord! <https://discord.gg/6je2sZj>",
+                    "join a community of dedicated explores and adventurers from all kinds of guilds and levels? Join the Farplane discord! <"+DiscordBot.EXCURSION_GUILD_INVITE+">",
             "**y!lb:** player leaderboard. it ranks players by their EP of all time, shows their guild, and also shows how much EP a player has earned during the month and the last month.\n\n" +
                     "**y!glb:** guild leaderboard. it ranks guilds by their EP of all time, shows their player who contributed the most EP, and also shows much much EP a guild has earned during the month and the last month. \n\n" +
                     "**y!history or y!ghistory** - gives a per month leaderboard for players or guilds or a specific guild. " + AllReactables.Reactable.LEFT.getFirstEmoji() + " and "
