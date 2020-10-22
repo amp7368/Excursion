@@ -84,7 +84,10 @@ public class SpecificGuildHistoryMessage implements ReactableMessage {
                 leaderboard.put(timeLookingAt.getTimeInMillis(), myLeaderboard);
 
             } catch (SQLException throwables) {
-                throwables.printStackTrace();//todo deal with error
+                EmbedBuilder embed = new EmbedBuilder();
+                embed.setTitle("Future");
+                embed.setDescription("There was an SQLException getting the guildLeaderboard");
+                return embed.build();
             }
         }
         long startTime = myLeaderboard.startTime;

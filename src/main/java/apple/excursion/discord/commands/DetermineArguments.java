@@ -26,9 +26,9 @@ public class DetermineArguments {
     }
 
     public static class ArgumentInt {
-        public boolean exists;
-        public boolean hasValue;
-        public int value;
+        public final boolean exists;
+        public final boolean hasValue;
+        public final int value;
 
         public ArgumentInt(boolean b) {
             exists = b;

@@ -58,7 +58,7 @@ public class CommandGuildHistory implements DoCommand {
             try {
                 guildHeaders = GetDB.getGuildNameList();
             } catch (SQLException throwables) {
-                throwables.printStackTrace(); //todo
+                event.getChannel().sendMessage("There has been an SQLException trying to get all the guild names.").queue();
                 return;
             }
             final String guildTag = contentSplit.get(0);

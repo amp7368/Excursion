@@ -12,7 +12,7 @@ import java.util.List;
 
 public class SheetsConstants {
     public static final String SPREADSHEET_ID;
-    public static Sheets.Spreadsheets.Values SHEETS_VALUES = ExcursionMain.service.spreadsheets().values();
+    public static final Sheets.Spreadsheets.Values SHEETS_VALUES = ExcursionMain.service.spreadsheets().values();
 
     static {
         List<String> list = Arrays.asList(apple.excursion.ExcursionMain.class.getProtectionDomain().getCodeSource().getLocation().getPath().split("/"));

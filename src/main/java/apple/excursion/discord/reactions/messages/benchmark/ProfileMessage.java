@@ -19,7 +19,6 @@ import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 
-import java.awt.*;
 import java.util.*;
 import java.util.List;
 

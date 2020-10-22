@@ -1,6 +1,5 @@
 package apple.excursion.discord.data.answers;
 
-import java.util.Calendar;
 import java.util.List;
 
 public class DailyTaskWithDate {
@@ -55,9 +54,4 @@ public class DailyTaskWithDate {
         return dayOfWeekInt == 5 || dayOfWeekInt == 6 || dayOfWeekInt == 7;
     }
 
-    public boolean isToday(Calendar now) {
-        return now.get(Calendar.DAY_OF_MONTH) == this.dayOfMonth &&
-                now.get(Calendar.MONTH) == this.monthInt &&
-                now.get(Calendar.YEAR) == this.yearInt;
-    }
 }

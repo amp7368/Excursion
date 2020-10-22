@@ -8,7 +8,7 @@ import net.dv8tion.jda.api.entities.Role;
 import java.util.*;
 
 public class GetColoredName {
-    private static Collection<Long> roles = new HashSet<>();
+    private static final Collection<Long> roles = new HashSet<>();
 
     static {
         roles.add(555340987086667776L); // Farplane Resident

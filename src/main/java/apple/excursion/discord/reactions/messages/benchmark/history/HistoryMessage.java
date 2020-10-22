@@ -57,7 +57,7 @@ public class HistoryMessage implements ReactableMessage {
                 leaderboard.put(timeLookingAt.getTimeInMillis(), myLeaderboard);
 
             } catch (SQLException throwables) {
-                throwables.printStackTrace();//todo deal with error
+                return "There was an SQLException getting the playerLeaderboard";
             }
         }
         long startTime = myLeaderboard.startTime;

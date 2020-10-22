@@ -80,7 +80,7 @@ public class CommandTitle implements DoCommand {
         try {
             playerData = GetDB.getPlayerData(new Pair<>(event.getAuthor().getIdLong(), name), -1);
         } catch (SQLException throwables) {
-            throwables.printStackTrace(); // todo
+            event.getChannel().sendMessage("There has been an SQLException getting your player data").queue();
             return;
         }
         int tasksDone = playerData.submissions.size();

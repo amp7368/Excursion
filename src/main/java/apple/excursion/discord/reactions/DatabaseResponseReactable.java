@@ -51,6 +51,7 @@ public class DatabaseResponseReactable {
                     new ResponseListener(event.getChannel(), submissionData.getSubmittersNameAndIds());
                 }
             } catch (SQLException throwables) {
+                event.getChannel().sendMessage("There was an SQLException doing stuff").queue();
                 throwables.printStackTrace();
             }
         }

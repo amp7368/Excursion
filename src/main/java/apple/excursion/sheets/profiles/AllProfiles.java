@@ -33,9 +33,8 @@ public class AllProfiles {
             if (questNameIterator.hasNext()) questNameIterator.next();
             if (questEpIterator.hasNext()) questEpIterator.next();
         }
-        int i = 4;
         for (Iterator<Object> profileRow : profileRowIterators) {
-            final Profile profile = new Profile(profileRow, i++);
+            final Profile profile = new Profile(profileRow);
             profiles.add(profile);
             profilesTemp.add(new Pair<>(profileRow, profile));
         }

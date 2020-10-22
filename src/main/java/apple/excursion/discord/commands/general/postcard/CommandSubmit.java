@@ -46,7 +46,8 @@ public class CommandSubmit implements DoCommand {
             try {
                 reviewers = loadReviewers(DiscordBot.client);
             } catch (IOException | ParseException e) {
-                e.printStackTrace();
+                System.err.println("There was an error with the reviewers json");
+                System.exit(1);
             }
         }
     }
@@ -131,9 +132,9 @@ public class CommandSubmit implements DoCommand {
                 try {
                     playersData.add(GetDB.getPlayerData(player, SUBMISSION_HISTORY_SIZE));
                 } catch (SQLException throwables) {
-                    //todo deal with error
+                    event.getChannel().sendMessage("There has been an SQLException getting the submitter's player data").queue();
                     event.getMessage().removeReaction(AllReactables.Reactable.WORKING.getFirstEmoji(), DiscordBot.client.getSelfUser()).queue();
-                    throwables.printStackTrace();
+                    return;
                 }
             }
             SubmissionData.TaskSubmissionType taskType = getTaskType(task.name);
@@ -156,7 +157,8 @@ public class CommandSubmit implements DoCommand {
                         SubmissionMessage.initialize(submissionData, reviewer.openPrivateChannel().complete(), responseId);
                     }
                 } catch (SQLException throwables) {
-                    throwables.printStackTrace(); //todo
+                    event.getChannel().sendMessage("There has been an SQLException adding submission").queue();
+                    return;
                 }
             }
             eventMessage.addReaction(AllReactables.Reactable.ACCEPT.getFirstEmoji()).queue();

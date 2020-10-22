@@ -53,7 +53,8 @@ public class CommandFakeSubmit implements DoCommand {
                     SubmissionData.TaskSubmissionType.SYNC // this is to sync stuff.
             ));
         } catch (SQLException throwables) {
-            throwables.printStackTrace(); //todo
+            event.getChannel().sendMessage("There has been an SQLException trying to insert this submission.").queue();
+            return;
         }
         event.getChannel().sendMessage(String.format("Successfully submitted %s [%s] for %d EP for player <%d,%s>", taskName, taskCategory, points, submitterId, submitterName)).queue();
     }

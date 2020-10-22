@@ -11,8 +11,8 @@ public class HistoryGuildLeaderboard {
     public final GuildLeaderboardEntry matchedGuild;
     public final long startTime;
     public final long endTime;
-    public List<PlayerData> players;
-    public List<OldSubmission> submissions;
+    public final List<PlayerData> players;
+    public final List<OldSubmission> submissions;
 
     public HistoryGuildLeaderboard(GuildLeaderboardEntry matchedGuild, List<PlayerData> players, List<OldSubmission> submissions, long startTime, long endTime) {
         this.matchedGuild = matchedGuild;

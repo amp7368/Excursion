@@ -1,9 +1,9 @@
 package apple.excursion.discord.data;
 
 public class TaskSimple {
-    public int points;
-    public String name;
-    public String category;
+    public final int points;
+    public final String name;
+    public final String category;
 
     public TaskSimple(int points, String name, String category) {
         this.points = points;
