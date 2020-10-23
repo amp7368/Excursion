@@ -3,6 +3,7 @@ package apple.excursion.database.objects.player;
 import apple.excursion.database.VerifyDB;
 import apple.excursion.database.objects.OldSubmission;
 import apple.excursion.discord.data.Task;
+import apple.excursion.discord.data.answers.SubmissionData;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,8 +25,14 @@ public class PlayerData {
         this.guildTag = guildTag;
         this.submissions = submissions;
         this.soulJuice = soulJuice;
-        if (submissions != null)
+        if (submissions != null) {
+            this.submissions.removeIf(oldSubmission -> oldSubmission.score < 0);
+            this.submissions.removeIf(oldSubmission -> oldSubmission.submissionType== SubmissionData.TaskSubmissionType.SYNC);
+            if (submissions.isEmpty()) submissions = null;
+        }
+        if (submissions != null) {
             this.submissions.sort((o1, o2) -> (int) (o2.dateSubmitted / 1000L - o1.dateSubmitted / 1000L));
+        }
         this.score = score;
     }
 
@@ -45,7 +52,7 @@ public class PlayerData {
 
     public boolean containsSubmission(Task task) {
         for (OldSubmission submission : submissions) {
-            if (submission.taskName.equalsIgnoreCase(task.taskName)) return true;
+            if (submission.taskName.equalsIgnoreCase(task.name)) return true;
         }
         return false;
     }

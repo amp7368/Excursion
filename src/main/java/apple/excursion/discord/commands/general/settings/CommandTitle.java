@@ -74,7 +74,7 @@ public class CommandTitle implements DoCommand {
         if ((name = coloredName.getName()) == null) {
             Member member = event.getMember();
             if (member == null) return;
-            name = member.getEffectiveName();
+            name = ColoredName.getGuestName( member.getEffectiveName());
         }
         PlayerData playerData;
         try {

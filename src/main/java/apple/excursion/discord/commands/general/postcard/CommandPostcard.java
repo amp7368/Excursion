@@ -29,7 +29,7 @@ public class CommandPostcard implements DoCommand {
         List<Task> tasks = SheetsTasks.getTasks();
         List<Task> answers = new ArrayList<>();
         for (Task task : tasks) {
-            if (task.taskName.toLowerCase().contains(taskNameLowercase))
+            if (task.name.toLowerCase().contains(taskNameLowercase))
                 answers.add(task);
         }
         if (answers.isEmpty()) {

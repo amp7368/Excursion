@@ -3,6 +3,7 @@ package apple.excursion.discord.reactions.messages.benchmark;
 import apple.excursion.database.objects.OldSubmission;
 import apple.excursion.database.objects.player.PlayerData;
 import apple.excursion.database.objects.guild.GuildLeaderboardEntry;
+import apple.excursion.discord.data.answers.SubmissionData;
 import apple.excursion.discord.reactions.AllReactables;
 import apple.excursion.discord.reactions.ReactableMessage;
 import apple.excursion.utils.ColoredName;
@@ -32,7 +33,14 @@ public class GuildProfileMessage implements ReactableMessage {
         this.matchedGuild = matchedGuild;
         this.players = players;
         this.submissions = submissions;
-        this.players.sort((o1, o2) -> o2.score - o1.score);
+        if (submissions != null) {
+            this.submissions.removeIf(oldSubmission -> oldSubmission.score < 0);
+            this.submissions.removeIf(oldSubmission -> oldSubmission.submissionType== SubmissionData.TaskSubmissionType.SYNC);
+            if (submissions.isEmpty()) submissions = null;
+        }
+        if (submissions != null) {
+            this.submissions.sort((o1, o2) -> (int) (o2.dateSubmitted / 1000L - o1.dateSubmitted / 1000L));
+        }
         if (players.isEmpty())
             color = ColoredName.getGuestColor();
         else
@@ -54,6 +62,9 @@ public class GuildProfileMessage implements ReactableMessage {
     public static MessageEmbed makeMessageStatic(
             GuildLeaderboardEntry matchedGuild, List<PlayerData> players, List<OldSubmission> submissions, int page,
             String title, String headerTitle,int color) {
+
+
+
         EmbedBuilder embed = new EmbedBuilder();
         embed.setTitle(title);
         embed.setColor(color);

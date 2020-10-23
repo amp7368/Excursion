@@ -2,6 +2,7 @@ package apple.excursion;
 
 import apple.excursion.database.VerifyDB;
 import apple.excursion.discord.DiscordBot;
+import apple.excursion.utils.MigrateOldSubmissions;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
@@ -66,7 +67,7 @@ public class ExcursionMain {
         return user;
     }
 
-    public static void main(String... args) throws IOException, GeneralSecurityException, SQLException, ClassNotFoundException {
+    public static void main(String... args) throws IOException, GeneralSecurityException, SQLException, ClassNotFoundException, InterruptedException {
         System.out.println("Starting Excursion");
         // Build a new authorized API client service.
         final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
@@ -80,5 +81,8 @@ public class ExcursionMain {
         } catch (LoginException e) {
             System.err.println("The bot has not logged in!");
         }
+        Thread.sleep(1000);
+//        MigrateOldSubmissions.migrate();
+        new BackupThread().start();
     }
 }

@@ -16,6 +16,8 @@ public enum CommandsAdmin {
             "[@mention]", new CommandRemoveReviewer()),
     SHEET_IMPORT(Collections.singletonList("sheet_import"), "Imports the data from the google sheet to make sure everything is synced",
             "", new CommandSheetImport()),
+    SHEET_VERIFICATION(Collections.singletonList("sheet_verify"), "Verifies the task scores are the same on playerStats and tasks",
+            "", new CommandSheetVerification()),
     FAKE_SUBMIT(Collections.singletonList("fake_submit"), "Submits something as if another player submitted it and it was accepted",
             "<submitterId> <points> <submitterName> <taskCategory> <taskName>", new CommandFakeSubmit()),
     SQL(Collections.singletonList("sql"), "executes sql",

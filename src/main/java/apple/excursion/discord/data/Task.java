@@ -1,18 +1,17 @@
 package apple.excursion.discord.data;
 
 import apple.excursion.utils.GetFromObject;
-import org.eclipse.jetty.util.ConcurrentHashSet;
 
 import javax.annotation.Nullable;
 import java.util.List;
 
 public class Task {
     public final String category; // is lowercase
-    public final String taskName;
+    public final String name;
     public final String description;
     @Nullable
     public final String coordinates;
-    public int ep;
+    public int points;
     public final String createdBy;
     @Nullable
     public final String images;
@@ -25,29 +24,29 @@ public class Task {
             this.category = category.toLowerCase().substring(0, categoryChars.length - 1);
         } else
             this.category = category.toLowerCase();
-        taskName = row.get(1).toString();
+        name = row.get(1).toString().trim();
         description = row.get(2).toString();
         coordinates = row.get(3) == null ? null : row.get(0).toString();
         final Object epObject = row.get(4);
         if (epObject != null) {
             final String epString = epObject.toString();
             if (epString.endsWith(" EP"))
-                ep = GetFromObject.getInt(epString.substring(0, epString.length() - 3));
+                points = GetFromObject.getInt(epString.substring(0, epString.length() - 3));
             else
-                ep = GetFromObject.getInt(epObject);
+                points = GetFromObject.getInt(epObject);
         }
         createdBy = row.get(5).toString();
         images = row.size() < 8 ? null : row.get(7).toString();
-        isFail = GetFromObject.intFail(ep);
+        isFail = GetFromObject.intFail(points);
     }
 
     @Override
     public int hashCode() {
-        return taskName.hashCode();
+        return name.hashCode();
     }
 
     @Override
     public boolean equals(Object other) {
-        return other instanceof Task && ((Task) other).taskName.equalsIgnoreCase(taskName);
+        return other instanceof Task && ((Task) other).name.equalsIgnoreCase(name);
     }
 }

@@ -10,7 +10,7 @@ import apple.excursion.discord.commands.DoCommand;
 import apple.excursion.sheets.profiles.AllProfiles;
 import apple.excursion.sheets.profiles.Profile;
 import apple.excursion.utils.Pair;
-import net.dv8tion.jda.api.entities.PrivateChannel;
+import apple.excursion.utils.SendLogs;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 import java.io.IOException;
@@ -46,18 +46,7 @@ public class CommandSheetImport implements DoCommand {
         try {
             event.getMessage().addReaction(WORKING_EMOJI).queue();
             List<String> logs = SyncDB.sync(sheetData, databasePlayers, playerData, databaseGuilds);
-            PrivateChannel dms = DiscordBot.client.getUserById(DiscordBot.APPLEPTR16).openPrivateChannel().complete();
-            StringBuilder builder = new StringBuilder();
-            for (String log : logs) {
-                if (log.length() + builder.length() > 1999) {
-                    dms.sendMessage(builder.toString()).queue();
-                    builder = new StringBuilder();
-                }
-                builder.append(log);
-                builder.append('\n');
-            }
-            if (builder.length() != 0)
-                dms.sendMessage(builder.toString()).queue();
+            SendLogs.sendLogs(logs);
             event.getChannel().sendMessage(logs.size() + " logs were sent to appleptr16").queue();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
@@ -66,4 +55,5 @@ public class CommandSheetImport implements DoCommand {
         event.getMessage().removeReaction(WORKING_EMOJI, DiscordBot.client.getSelfUser()).queue();
 
     }
+
 }

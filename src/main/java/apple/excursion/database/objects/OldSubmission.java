@@ -12,7 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class OldSubmission {
-    private final SubmissionData.TaskSubmissionType submissionType;
+    public final SubmissionData.TaskSubmissionType submissionType;
     public int id;
     public long dateSubmitted;
     public String taskName;
