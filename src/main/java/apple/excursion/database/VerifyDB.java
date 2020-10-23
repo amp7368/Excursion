@@ -5,6 +5,7 @@ import apple.excursion.database.queries.GetSql;
 import apple.excursion.discord.data.Task;
 import apple.excursion.sheets.SheetsTasks;
 
+import java.io.File;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.time.YearMonth;
@@ -105,6 +106,18 @@ public class VerifyDB {
             verify();
             verifyCalendar();
         }
+    }
+
+    public static List<File> getFiles() {
+        return Arrays.asList(
+                new File(DB_DB),
+                new File(CALENDAR_DB)
+        );
+    }
+
+    public static void closeAll() throws SQLException {
+        database.close();
+        calendarDbConnection.close();
     }
 
     /**
@@ -226,6 +239,4 @@ public class VerifyDB {
         formatter.applyPattern("MMM'_'yyyy");
         return formatter.format(new Date(epochMilliseconds)).toUpperCase();
     }
-
-
 }
