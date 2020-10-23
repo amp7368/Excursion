@@ -24,8 +24,13 @@ public class PlayerData {
         this.guildTag = guildTag;
         this.submissions = submissions;
         this.soulJuice = soulJuice;
-        if (submissions != null)
+        if (submissions != null) {
+            this.submissions.removeIf(oldSubmission -> oldSubmission.score < 0);
+            if (submissions.isEmpty()) submissions = null;
+        }
+        if (submissions != null) {
             this.submissions.sort((o1, o2) -> (int) (o2.dateSubmitted / 1000L - o1.dateSubmitted / 1000L));
+        }
         this.score = score;
     }
 

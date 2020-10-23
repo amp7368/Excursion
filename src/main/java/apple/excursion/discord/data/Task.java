@@ -1,7 +1,6 @@
 package apple.excursion.discord.data;
 
 import apple.excursion.utils.GetFromObject;
-import org.eclipse.jetty.util.ConcurrentHashSet;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -12,7 +11,7 @@ public class Task {
     public final String description;
     @Nullable
     public final String coordinates;
-    public int ep;
+    public int points;
     public final String createdBy;
     @Nullable
     public final String images;
@@ -32,13 +31,13 @@ public class Task {
         if (epObject != null) {
             final String epString = epObject.toString();
             if (epString.endsWith(" EP"))
-                ep = GetFromObject.getInt(epString.substring(0, epString.length() - 3));
+                points = GetFromObject.getInt(epString.substring(0, epString.length() - 3));
             else
-                ep = GetFromObject.getInt(epObject);
+                points = GetFromObject.getInt(epObject);
         }
         createdBy = row.get(5).toString();
         images = row.size() < 8 ? null : row.get(7).toString();
-        isFail = GetFromObject.intFail(ep);
+        isFail = GetFromObject.intFail(points);
     }
 
     @Override

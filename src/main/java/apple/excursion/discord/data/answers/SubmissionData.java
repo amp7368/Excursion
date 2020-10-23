@@ -195,6 +195,8 @@ public class SubmissionData {
     public enum TaskSubmissionType {
         DAILY,
         NORMAL,
-        SYNC
+        SYNC,
+        OLD;
+
     }
 }

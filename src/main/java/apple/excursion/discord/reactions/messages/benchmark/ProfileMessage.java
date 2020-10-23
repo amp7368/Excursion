@@ -59,7 +59,7 @@ public class ProfileMessage implements ReactableMessage {
                 tasksToDoByCategory.add(task);
         }
         for (List<Task> tasks : topTasks.values()) {
-            tasks.sort((o1, o2) -> o2.ep - o1.ep);
+            tasks.sort((o1, o2) -> o2.points - o1.points);
         }
 
         message = channel.sendMessage(makeMessage()).complete();
@@ -116,7 +116,7 @@ public class ProfileMessage implements ReactableMessage {
                     taskNames.add(String.format("%s %s (%d EP)",
                             AllReactables.emojiAlphabet.get(emojiAt++),
                             task.taskName,
-                            task.ep
+                            task.points
                     ));
                 }
             }
