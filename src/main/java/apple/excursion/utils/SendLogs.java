@@ -1,19 +1,55 @@
 package apple.excursion.utils;
 
+import apple.excursion.ExcursionMain;
 import apple.excursion.database.VerifyDB;
 import apple.excursion.discord.DiscordBot;
+import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.PrivateChannel;
+import net.dv8tion.jda.api.entities.TextChannel;
 
+import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.sql.SQLException;
+import java.io.IOException;
+import java.nio.channels.Channel;
+import java.util.Arrays;
 import java.util.List;
 
 public class SendLogs {
+    private static boolean IS_CHANNEL;
+    private static long SENDER;
+
+    static {
+        List<String> list = Arrays.asList(ExcursionMain.class.getProtectionDomain().getCodeSource().getLocation().getPath().split("/"));
+        String path = String.join("/", list.subList(0, list.size() - 1)) + "/config/logSender.data";
+        File file = new File(path);
+        if (!file.exists()) {
+            try {
+                //noinspection ResultOfMethodCallIgnored
+                file.createNewFile();
+            } catch (IOException ignored) {
+            }
+            System.err.println("Please fill in who to send logs to in '" + path + "'");
+            System.exit(1);
+        }
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(file));
+            SENDER = Long.parseLong(reader.readLine());
+            IS_CHANNEL = Boolean.parseBoolean(reader.readLine());
+            reader.close();
+        } catch (IOException e) {
+            System.err.println("Please fill in who to send logs to in '" + path + "'");
+            System.exit(1);
+        }
+    }
+
     public static void sendLogs(List<String> logs) {
-        PrivateChannel dms = DiscordBot.client.getUserById(DiscordBot.APPLEPTR16).openPrivateChannel().complete();
+        MessageChannel dms;
+        if (IS_CHANNEL) {
+            dms = DiscordBot.client.getTextChannelById(SENDER);
+        } else {
+            dms = DiscordBot.client.getUserById(SENDER).openPrivateChannel().complete();
+        }
         StringBuilder builder = new StringBuilder();
         for (String log : logs) {
             if (log.length() + builder.length() > 1999) {
@@ -28,7 +64,12 @@ public class SendLogs {
     }
 
     public static void sendDbBackup() {
-        PrivateChannel dms = DiscordBot.client.getUserById(DiscordBot.APPLEPTR16).openPrivateChannel().complete();
+        MessageChannel dms;
+        if (IS_CHANNEL) {
+            dms = DiscordBot.client.getTextChannelById(SENDER);
+        } else {
+            dms = DiscordBot.client.getUserById(SENDER).openPrivateChannel().complete();
+        }
         dms.sendMessage("Below is the DB as of " + Pretty.date(System.currentTimeMillis())).queue();
         synchronized (VerifyDB.syncDB) {
             List<File> files = VerifyDB.getFiles();

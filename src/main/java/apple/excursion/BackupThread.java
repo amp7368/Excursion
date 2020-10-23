@@ -4,7 +4,6 @@ import apple.excursion.utils.SendLogs;
 
 public class BackupThread extends Thread {
     private static final long WEEK = 7 * 24 * 60 * 60 * 1000;
-
     @Override
     public void run() {
         while (true) {
