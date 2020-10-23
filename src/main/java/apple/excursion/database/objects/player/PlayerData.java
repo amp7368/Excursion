@@ -3,6 +3,7 @@ package apple.excursion.database.objects.player;
 import apple.excursion.database.VerifyDB;
 import apple.excursion.database.objects.OldSubmission;
 import apple.excursion.discord.data.Task;
+import apple.excursion.discord.data.answers.SubmissionData;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +27,7 @@ public class PlayerData {
         this.soulJuice = soulJuice;
         if (submissions != null) {
             this.submissions.removeIf(oldSubmission -> oldSubmission.score < 0);
+            this.submissions.removeIf(oldSubmission -> oldSubmission.submissionType== SubmissionData.TaskSubmissionType.SYNC);
             if (submissions.isEmpty()) submissions = null;
         }
         if (submissions != null) {

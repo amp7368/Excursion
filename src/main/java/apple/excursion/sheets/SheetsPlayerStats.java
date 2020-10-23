@@ -239,7 +239,7 @@ public class SheetsPlayerStats {
                 }
             }
             int score = GetFromObject.getInt(missionScoreValues.next());
-            if (GetFromObject.intFail(score)) tasks.add(new TaskSimple(-1, taskName, currentCategory));
+            if (GetFromObject.intFail(score)) tasks.add(new TaskSimple(-1, taskName.trim(), currentCategory));
             tasks.add(new TaskSimple(score, taskName, currentCategory));
         }
         return tasks;

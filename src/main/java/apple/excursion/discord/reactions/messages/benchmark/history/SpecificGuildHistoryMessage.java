@@ -6,6 +6,7 @@ import apple.excursion.database.objects.guild.GuildLeaderboardEntry;
 import apple.excursion.database.objects.player.PlayerData;
 import apple.excursion.discord.data.answers.HistoryGuildLeaderboard;
 import apple.excursion.discord.data.answers.HistoryLeaderboardOfGuilds;
+import apple.excursion.discord.data.answers.SubmissionData;
 import apple.excursion.discord.reactions.AllReactables;
 import apple.excursion.discord.reactions.ReactableMessage;
 import apple.excursion.discord.reactions.messages.benchmark.GuildProfileMessage;
@@ -20,10 +21,7 @@ import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 
 import java.sql.SQLException;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static apple.excursion.discord.reactions.messages.benchmark.CalendarMessage.EPOCH_START_OF_EXCURSION;
 import static apple.excursion.discord.reactions.messages.benchmark.CalendarMessage.EPOCH_START_OF_SUBMISSION_HISTORY;
@@ -72,6 +70,12 @@ public class SpecificGuildHistoryMessage implements ReactableMessage {
                 HistoryLeaderboardOfGuilds leaderboardOfGuilds = GetDB.getGuildLeaderboard(timeField, timeInterval, timeLookingAt);
                 List<PlayerData> players = GetDB.getPlayersInGuild(guildTag, leaderboardOfGuilds.startTime, leaderboardOfGuilds.endTime);
                 List<OldSubmission> submissions = GetDB.getGuildSubmissions(guildTag, leaderboardOfGuilds.startTime, leaderboardOfGuilds.endTime);
+
+                submissions.removeIf(oldSubmission -> oldSubmission.score < 0);
+                submissions.removeIf(oldSubmission -> oldSubmission.submissionType == SubmissionData.TaskSubmissionType.SYNC);
+                if (submissions.isEmpty()) submissions = new ArrayList<>();
+                submissions.sort((o1, o2) -> (int) (o2.dateSubmitted / 1000L - o1.dateSubmitted / 1000L));
+
                 GuildLeaderboardEntry matchedGuild = leaderboardOfGuilds.leaderboard.get(guildTag, guildName);
                 if (matchedGuild == null)
                     matchedGuild = new GuildLeaderboardEntry(guildTag, guildName, 0, "nobody", 0, 0);

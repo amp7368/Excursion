@@ -24,7 +24,7 @@ public class Task {
             this.category = category.toLowerCase().substring(0, categoryChars.length - 1);
         } else
             this.category = category.toLowerCase();
-        name = row.get(1).toString();
+        name = row.get(1).toString().trim();
         description = row.get(2).toString();
         coordinates = row.get(3) == null ? null : row.get(0).toString();
         final Object epObject = row.get(4);
