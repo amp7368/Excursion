@@ -198,7 +198,7 @@ public class GetSql {
 
     @NotNull
     static String getSqlGetGuilds(long start, long end) {
-        return "SELECT sum(player_score.score) AS guild_score, player_score.guild_tag, player_score.guild_name, player_score.player_name, player_score.player_uid, max(player_score.score)\n" +
+        return "SELECT sum(player_score.score) AS guild_score, player_score.guild_tag, player_score.guild_name, player_score.player_uid, player_score.player_name, max(player_score.score)\n" +
                 "FROM (\n" +
                 "         SELECT players.player_name, players.player_uid, sum(submissions.score) as score, guilds.guild_tag, guilds.guild_name\n" +
                 "         FROM players\n" +
