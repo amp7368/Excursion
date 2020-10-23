@@ -115,7 +115,7 @@ public class ProfileMessage implements ReactableMessage {
                     Task task = tasks.get(lower);
                     taskNames.add(String.format("%s %s (%d EP)",
                             AllReactables.emojiAlphabet.get(emojiAt++),
-                            task.taskName,
+                            task.name,
                             task.points
                     ));
                 }

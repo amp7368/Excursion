@@ -77,7 +77,7 @@ public class PostcardListMessage implements ReactableMessage {
         for (int i = page * ENTRIES_PER_PAGE, j = 0; i < upper; i++, j++) {
             Task task = tasks.get(i);
             text.append(String.format("%c: %-24s| %-4s| %s\n", (char) (65 + j),
-                    task.taskName,
+                    task.name,
                     task.points,
                     Pretty.upperCaseFirst(task.category)
             ));

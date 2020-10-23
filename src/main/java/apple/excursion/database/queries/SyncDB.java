@@ -8,7 +8,6 @@ import apple.excursion.discord.data.Task;
 import apple.excursion.discord.data.TaskSimple;
 import apple.excursion.discord.data.TaskSimpleCompleted;
 import apple.excursion.discord.data.answers.SubmissionData;
-import apple.excursion.discord.data.answers.SubmissionWithGuild;
 import apple.excursion.sheets.profiles.Profile;
 import apple.excursion.utils.ColoredName;
 import apple.excursion.utils.Pair;
@@ -28,7 +27,6 @@ public class SyncDB {
             Statement statement = VerifyDB.database.createStatement();
             String sql;
             for (Profile sheetPlayer : sheetData) {
-                if (!sheetPlayer.hasId(301200493307494400L)) continue;
                 PlayerHeader databasePlayer = null;
                 for (PlayerHeader header : databasePlayers) {
                     if (header.id == sheetPlayer.getId()) {
@@ -281,18 +279,18 @@ public class SyncDB {
                 // find the corresponding TaskSimpleCompleted
                 TaskSimpleCompleted taskSimpleCompleted = null;
                 for (TaskSimpleCompleted completed : taskScores) {
-                    if (completed.name.equalsIgnoreCase(task.taskName)) {
+                    if (completed.name.equalsIgnoreCase(task.name)) {
                         taskSimpleCompleted = completed;
                     }
                 }
                 if (taskSimpleCompleted == null) {
                     // the player hasn't done this task
-                    taskSimpleCompleted = new TaskSimpleCompleted(task.points, task.taskName, task.category, 0);
+                    taskSimpleCompleted = new TaskSimpleCompleted(task.points, task.name, task.category, 0);
                 }
 
                 // find the corresponding SubmissionData
                 List<SubmissionData> submissionsWithName = new ArrayList<>(submissions);
-                submissionsWithName.removeIf(submissionData -> !submissionData.getTaskName().equalsIgnoreCase(task.taskName));
+                submissionsWithName.removeIf(submissionData -> !submissionData.getTaskName().equalsIgnoreCase(task.name));
 
                 int scoreEarnedThroughDms = submissionsWithName.size() * task.points;
                 int scoreEarnedThroughSheet = taskSimpleCompleted.pointsEarned;
@@ -314,7 +312,7 @@ public class SyncDB {
                                     date,
                                     null,
                                     Collections.emptyList(),
-                                    new TaskSimple(task.points, task.taskName, task.category),
+                                    new TaskSimple(task.points, task.name, task.category),
                                     SubmissionData.TaskSubmissionType.SYNC,
                                     playerName,
                                     playerId,
@@ -338,7 +336,7 @@ public class SyncDB {
                         }
                     }
                 } else {
-                    System.err.printf("%s has %d sheet points and %d dms points for %s of %d ep.\n", playerName, scoreEarnedThroughSheet, scoreEarnedThroughDms, task.taskName,task.points);
+                    System.err.printf("%s has %d sheet points and %d dms points for %s of %d ep.\n", playerName, scoreEarnedThroughSheet, scoreEarnedThroughDms, task.name,task.points);
                 }
                 submissionsEnd.addAll(submissionsWithName);
             }

@@ -37,7 +37,7 @@ public class GetSql {
                         "VALUES (%d, '%s'); ",
                 monthName,
                 dayOfMonth,
-                todayTasks.stream().map(task -> convertTaskNameToSql(task.taskName)).collect(Collectors.joining(","))
+                todayTasks.stream().map(task -> convertTaskNameToSql(task.name)).collect(Collectors.joining(","))
         );
     }
 

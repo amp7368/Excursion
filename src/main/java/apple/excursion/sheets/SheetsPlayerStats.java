@@ -13,6 +13,7 @@ import static apple.excursion.sheets.SheetsUtils.addA1Notation;
 
 public class SheetsPlayerStats {
     private static final String MISSIONS_ROW_RANGE = "PlayerStats!F2:3";
+    private static final String MISSIONS_ROW_CATEGORY_RANGE = "PlayerStats!F1:3";
     private static final String ID_COL_RANGE = "PlayerStats!A:A";
     private static final String EVERYONE_RANGE = "PlayerStats";
     private static final String PLAYER_STATS_SHEET = "PlayerStats";
@@ -192,9 +193,11 @@ public class SheetsPlayerStats {
         } catch (IOException ignored) {
         }
     }
+
     public static List<List<Object>> getEveryone() throws IOException {
         return SHEETS_VALUES.get(SPREADSHEET_ID, EVERYONE_RANGE).execute().getValues();
     }
+
     public static void updateGuild(String guildName, String guildTag, long id, String playerName) throws IOException {
         int row = getRowFromDiscord(String.valueOf(id));
         if (row == -1) {
@@ -216,5 +219,29 @@ public class SheetsPlayerStats {
                     new BatchUpdateSpreadsheetRequest().setRequests(Collections.singletonList(sortRequest))).execute();
         } catch (IOException ignored) {
         }
+    }
+
+    public static List<TaskSimple> getTasks() throws IOException {
+        List<TaskSimple> tasks = new ArrayList<>();
+        ValueRange missionsValueRange;
+        missionsValueRange = SHEETS_VALUES.get(SPREADSHEET_ID, MISSIONS_ROW_CATEGORY_RANGE).execute();
+        Iterator<Object> missionCategoryValues = missionsValueRange.getValues().get(0).iterator();
+        Iterator<Object> missionNameValues = missionsValueRange.getValues().get(1).iterator();
+        Iterator<Object> missionScoreValues = missionsValueRange.getValues().get(2).iterator();
+        String currentCategory = "";
+        while (missionNameValues.hasNext() && missionScoreValues.hasNext()) {
+            String taskName = missionNameValues.next().toString();
+            if (taskName.equalsIgnoreCase(TASKS_DONE_HEADER)) break; // we're done
+            if (missionCategoryValues.hasNext()) {
+                String category = missionCategoryValues.next().toString();
+                if (category != null && !category.isBlank()) {
+                    currentCategory = category;
+                }
+            }
+            int score = GetFromObject.getInt(missionScoreValues.next());
+            if (GetFromObject.intFail(score)) tasks.add(new TaskSimple(-1, taskName, currentCategory));
+            tasks.add(new TaskSimple(score, taskName, currentCategory));
+        }
+        return tasks;
     }
 }

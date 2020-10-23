@@ -50,7 +50,7 @@ public class PlayerData {
 
     public boolean containsSubmission(Task task) {
         for (OldSubmission submission : submissions) {
-            if (submission.taskName.equalsIgnoreCase(task.taskName)) return true;
+            if (submission.taskName.equalsIgnoreCase(task.name)) return true;
         }
         return false;
     }

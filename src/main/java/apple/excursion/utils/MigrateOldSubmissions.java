@@ -27,7 +27,6 @@ public class MigrateOldSubmissions {
         Set<Profile> profiles = AllProfiles.getProfiles();
         for (Profile profile : profiles) {
             long id = profile.getId();
-            if (id != 301200493307494400L) continue;
             if (id == DiscordBot.APPLEPTR16) continue; // skip me because i have a lot of fake submissions
             System.out.println(profile.getName());
             User user = DiscordBot.client.getUserById(id);
@@ -47,9 +46,9 @@ public class MigrateOldSubmissions {
                             title = title.replaceAll("You have submitted: ", "").trim();
                             Task task = null;
                             for (Task taskInAll : allTasks) {
-                                Pattern patternForward = Pattern.compile(".*" + taskInAll.taskName + ".*", Pattern.CASE_INSENSITIVE);
+                                Pattern patternForward = Pattern.compile(".*" + taskInAll.name + ".*", Pattern.CASE_INSENSITIVE);
                                 Pattern patternBackward = Pattern.compile(".*" + title + ".*", Pattern.CASE_INSENSITIVE);
-                                if (patternBackward.matcher(taskInAll.taskName).matches() || patternForward.matcher(title).matches()) {
+                                if (patternBackward.matcher(taskInAll.name).matches() || patternForward.matcher(title).matches()) {
                                     task = taskInAll;
                                     break;
                                 }
@@ -72,7 +71,7 @@ public class MigrateOldSubmissions {
                                     message.getTimeCreated().toEpochSecond() * 1000,
                                     attachment,
                                     links,
-                                    new TaskSimple(task.points, task.taskName, task.category),
+                                    new TaskSimple(task.points, task.name, task.category),
                                     SubmissionData.TaskSubmissionType.OLD,
                                     playerName,
                                     playerId,

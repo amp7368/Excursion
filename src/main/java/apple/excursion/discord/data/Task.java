@@ -7,7 +7,7 @@ import java.util.List;
 
 public class Task {
     public final String category; // is lowercase
-    public final String taskName;
+    public final String name;
     public final String description;
     @Nullable
     public final String coordinates;
@@ -24,7 +24,7 @@ public class Task {
             this.category = category.toLowerCase().substring(0, categoryChars.length - 1);
         } else
             this.category = category.toLowerCase();
-        taskName = row.get(1).toString();
+        name = row.get(1).toString();
         description = row.get(2).toString();
         coordinates = row.get(3) == null ? null : row.get(0).toString();
         final Object epObject = row.get(4);
@@ -42,11 +42,11 @@ public class Task {
 
     @Override
     public int hashCode() {
-        return taskName.hashCode();
+        return name.hashCode();
     }
 
     @Override
     public boolean equals(Object other) {
-        return other instanceof Task && ((Task) other).taskName.equalsIgnoreCase(taskName);
+        return other instanceof Task && ((Task) other).name.equalsIgnoreCase(name);
     }
 }

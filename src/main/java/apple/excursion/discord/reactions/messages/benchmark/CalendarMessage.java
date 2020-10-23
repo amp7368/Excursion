@@ -107,7 +107,7 @@ public class CalendarMessage implements ReactableMessage {
 
     private int getTaskScore(String taskName) {
         for (Task task : tasks)
-            if (task.taskName.equalsIgnoreCase(taskName)) return task.points;
+            if (task.name.equalsIgnoreCase(taskName)) return task.points;
         return -1;
     }
 
