@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class CommandGuildHistory implements DoCommand {
 
@@ -66,7 +67,8 @@ public class CommandGuildHistory implements DoCommand {
             String guildName = String.join(" ", contentSplit);
             GuildHeader match = null;
             for (GuildHeader guild : guildHeaders) {
-                if (guild.tag.equals(guildTag) || guildName.equals(guild.name)) {
+                Pattern pattern = Pattern.compile(".*" + guild.name + ".*", Pattern.CASE_INSENSITIVE);
+                if (guild.tag.equals(guildTag) || pattern.matcher(guildName).matches()) {
                     match = guild;
                     break;
                 }
