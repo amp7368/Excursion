@@ -8,6 +8,7 @@ import apple.excursion.discord.data.Task;
 import apple.excursion.discord.data.TaskSimple;
 import apple.excursion.discord.data.TaskSimpleCompleted;
 import apple.excursion.discord.data.answers.SubmissionData;
+import apple.excursion.discord.reactions.messages.benchmark.CalendarMessage;
 import apple.excursion.sheets.profiles.Profile;
 import apple.excursion.utils.ColoredName;
 import apple.excursion.utils.Pair;
@@ -132,7 +133,7 @@ public class SyncDB {
                                         guildName,
                                         guildTag));
                             else
-                                logs.add(String.format("Subtracted submission %s~~%d of %d EP for <%d,%s> in %s [%s]",
+                                logs.add(String.format("Added submission %s~~%d of %d EP for <%d,%s> in %s [%s]",
                                         task.name,
                                         VerifyDB.currentSubmissionId,
                                         pointsLeftToEarn,
@@ -152,7 +153,7 @@ public class SyncDB {
                                 sheetPlayer.getId(),
                                 guildTag.isBlank() ? VerifyDB.DEFAULT_GUILD_TAG : guildTag);
                         statement.addBatch(sql);
-                        if (pointsToAddToDatabase < 0)
+                        if (pointsToAddToDatabase > 0)
                             logs.add(String.format("Added submission %s~~%d of %d EP for <%d,%s> in %s [%s]",
                                     SYNC_TASK_NAME,
                                     VerifyDB.currentSubmissionId,
@@ -305,6 +306,7 @@ public class SyncDB {
                     if (scoreEarnedThroughDms < scoreEarnedThroughSheet) {
                         // add more submissions
                         long date = findPopularDate(submissionsWithName);
+                        if (date > 1603502000000L) System.out.println("hello");
                         while (scoreEarnedThroughDms != scoreEarnedThroughSheet) {
                             submissionsWithName.add(new SubmissionData(
                                     true,
@@ -336,7 +338,8 @@ public class SyncDB {
                         }
                     }
                 } else {
-                    System.err.printf("%s has %d sheet points and %d dms points for %s of %d ep.\n", playerName, scoreEarnedThroughSheet, scoreEarnedThroughDms, task.name,task.points);
+                    submissionsWithName = Collections.emptyList();
+                    System.err.printf("%s has %d sheet points and %d dms points for %s of %d ep.\n", playerName, scoreEarnedThroughSheet, scoreEarnedThroughDms, task.name, task.points);
                 }
                 submissionsEnd.addAll(submissionsWithName);
             }
@@ -344,7 +347,7 @@ public class SyncDB {
         }
 
         private static long findPopularDate(List<SubmissionData> submissions) {
-            if (submissions.isEmpty()) return Calendar.getInstance().getTimeInMillis();
+            if (submissions.isEmpty()) return CalendarMessage.EPOCH_BEFORE_START_OF_SUBMISSION_HISTORY;
             List<Long> dates = submissions.stream().map(SubmissionData::getTimeEpoch).collect(Collectors.toList());
             Map<Long, Integer> dateToCount = new HashMap<>();
             for (Long date : dates) {

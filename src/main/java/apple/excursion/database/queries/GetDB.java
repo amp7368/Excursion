@@ -23,6 +23,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
 
+import static apple.excursion.discord.reactions.messages.benchmark.CalendarMessage.EPOCH_START_OF_EXCURSION;
+import static apple.excursion.discord.reactions.messages.benchmark.CalendarMessage.EPOCH_START_OF_SUBMISSION_HISTORY;
+
 public class GetDB {
     public static PlayerData getPlayerData(Pair<Long, String> id, int submissionSize) throws SQLException {
         synchronized (VerifyDB.syncDB) {
@@ -233,6 +236,7 @@ public class GetDB {
     public static HistoryPlayerLeaderboard getPlayerLeaderboard(int timeField, int timeInterval, Calendar timeLookingAt) throws SQLException {
         Pair<Long, Long> times = getTimes(timeField, timeInterval, timeLookingAt);
         long startTime = times.getKey();
+        if (startTime < EPOCH_START_OF_SUBMISSION_HISTORY) startTime = EPOCH_START_OF_EXCURSION;
         long endTime = times.getValue();
         synchronized (VerifyDB.syncDB) {
             String sql = GetSql.getSqlGetPlayerLeaderboard(startTime, endTime);
@@ -252,6 +256,7 @@ public class GetDB {
         long endTime;
         Pair<Long, Long> times = getTimes(timeField, timeInterval, timeLookingAt);
         startTime = times.getKey();
+        if (startTime < EPOCH_START_OF_SUBMISSION_HISTORY) startTime = EPOCH_START_OF_EXCURSION;
         endTime = times.getValue();
         synchronized (VerifyDB.syncDB) {
             String sql = GetSql.getSqlGetGuilds(startTime, endTime);
@@ -412,10 +417,10 @@ public class GetDB {
         String sql = GetSql.getSqlGetResponseReviewerMessages(responseId);
         Statement statement = VerifyDB.database.createStatement();
         ResultSet response = statement.executeQuery(sql);
-        List<Pair<Long,Long>> messages = new ArrayList<>();
-        if(!response.isClosed()){
-            while(response.next()){
-                messages.add(new Pair<>(response.getLong(1),response.getLong(2)));
+        List<Pair<Long, Long>> messages = new ArrayList<>();
+        if (!response.isClosed()) {
+            while (response.next()) {
+                messages.add(new Pair<>(response.getLong(1), response.getLong(2)));
             }
         }
         response.close();

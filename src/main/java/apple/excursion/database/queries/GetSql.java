@@ -1,8 +1,10 @@
 package apple.excursion.database.queries;
 
 import apple.excursion.database.VerifyDB;
+import apple.excursion.discord.DiscordBot;
 import apple.excursion.discord.data.Task;
 import apple.excursion.discord.data.answers.SubmissionData;
+import apple.excursion.discord.reactions.messages.benchmark.CalendarMessage;
 import apple.excursion.utils.Pair;
 import com.google.common.collect.HashBiMap;
 import org.jetbrains.annotations.NotNull;
@@ -95,7 +97,7 @@ public class GetSql {
                         + "VALUES "
                         + "(%d,%d,'%s',%s,%d,'%s',%d);",
                 VerifyDB.currentSubmissionId,
-                System.currentTimeMillis(),
+                CalendarMessage.EPOCH_BEFORE_START_OF_SUBMISSION_HISTORY,
                 convertTaskNameToSql(taskName),
                 null,
                 playerId,

@@ -22,7 +22,7 @@ public class Pretty {
 
     public static String date(Long epochMilliseconds) {
         SimpleDateFormat formatter = new SimpleDateFormat();
-        formatter.applyPattern("h:mm a 'EST' 'on' EEE, MMMMMMMMM d");
+        formatter.applyPattern("h:mm a 'EST' 'on' EEE, MMMMMMMMM d 'on' yyyy");
         return formatter.format(new Date(epochMilliseconds));
     }
 

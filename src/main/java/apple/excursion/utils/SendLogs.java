@@ -4,14 +4,11 @@ import apple.excursion.ExcursionMain;
 import apple.excursion.database.VerifyDB;
 import apple.excursion.discord.DiscordBot;
 import net.dv8tion.jda.api.entities.MessageChannel;
-import net.dv8tion.jda.api.entities.PrivateChannel;
-import net.dv8tion.jda.api.entities.TextChannel;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.nio.channels.Channel;
 import java.util.Arrays;
 import java.util.List;
 
