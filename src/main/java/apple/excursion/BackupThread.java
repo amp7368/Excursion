@@ -3,15 +3,19 @@ package apple.excursion;
 import apple.excursion.utils.SendLogs;
 
 public class BackupThread extends Thread {
-    private static final long WEEK = 7 * 24 * 60 * 60 * 1000;
+    private static final long DAY = 24 * 60 * 60 * 1000;
+
     @Override
     public void run() {
         while (true) {
-            SendLogs.sendDbBackup();
             try {
-                Thread.sleep(WEEK);
-            } catch (InterruptedException e) {
+                SendLogs.sendDbBackup();
+            } catch (Exception e) { // catch everything. This is important that it keeps running
                 e.printStackTrace();
+            }
+            try {
+                Thread.sleep(DAY);
+            } catch (InterruptedException ignored) { // catch everything. This is important that it keeps running
             }
         }
     }

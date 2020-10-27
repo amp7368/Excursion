@@ -15,6 +15,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class CommandGuildLeaderboard implements DoCommand {
     @Override
@@ -56,7 +57,18 @@ public class CommandGuildLeaderboard implements DoCommand {
                             break;
                         }
                     }
+                    if (matchedGuild == null) {
+                        // try guild name
+                        Pattern pattern = Pattern.compile(".*" + inputAsGuildName + ".*", Pattern.CASE_INSENSITIVE);
+                        for (GuildHeader header : guildList) {
+                            if (pattern.matcher(header.name).matches()) {
+                                matchedGuild = guildLeaderboard.add(header);
+                                break;
+                            }
+                        }
+                    }
                 }
+
                 // this guild doesn't exist so leave it as null
             }
         } catch (SQLException throwables) {

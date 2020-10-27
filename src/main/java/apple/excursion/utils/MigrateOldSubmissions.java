@@ -29,8 +29,8 @@ public class MigrateOldSubmissions {
             long id = profile.getId();
             if (id == DiscordBot.APPLEPTR16) continue; // skip me because i have a lot of fake submissions
             System.out.println("Player " + profile.getName() + " has been migrated");
-            User user = DiscordBot.client.getUserById(id);
-            if (user == null || user.isBot() || user.isFake()) continue;
+            User user = DiscordBot.client.retrieveUserById(id).complete();
+            if (user == null || user.isBot()) continue;
             PrivateChannel dms = user.openPrivateChannel().complete();
             if (dms == null) continue;
             MessageHistory history = dms.getHistoryFromBeginning(100).complete();

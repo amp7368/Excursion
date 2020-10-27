@@ -1,6 +1,9 @@
 package apple.excursion.database.queries;
 
 import apple.excursion.database.VerifyDB;
+import apple.excursion.database.objects.CrossChatId;
+import apple.excursion.database.objects.CrossChatMessage;
+import apple.excursion.database.objects.MessageId;
 import apple.excursion.database.objects.guild.GuildHeader;
 import apple.excursion.database.objects.OldSubmission;
 import apple.excursion.database.objects.player.PlayerData;
@@ -16,12 +19,16 @@ import apple.excursion.discord.data.answers.HistoryPlayerLeaderboard;
 import apple.excursion.discord.data.answers.SubmissionData;
 import apple.excursion.utils.GetColoredName;
 import apple.excursion.utils.Pair;
+import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 
 import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
+
+import static apple.excursion.discord.reactions.messages.benchmark.CalendarMessage.EPOCH_START_OF_EXCURSION;
+import static apple.excursion.discord.reactions.messages.benchmark.CalendarMessage.EPOCH_START_OF_SUBMISSION_HISTORY;
 
 public class GetDB {
     public static PlayerData getPlayerData(Pair<Long, String> id, int submissionSize) throws SQLException {
@@ -233,6 +240,7 @@ public class GetDB {
     public static HistoryPlayerLeaderboard getPlayerLeaderboard(int timeField, int timeInterval, Calendar timeLookingAt) throws SQLException {
         Pair<Long, Long> times = getTimes(timeField, timeInterval, timeLookingAt);
         long startTime = times.getKey();
+        if (startTime < EPOCH_START_OF_SUBMISSION_HISTORY) startTime = EPOCH_START_OF_EXCURSION;
         long endTime = times.getValue();
         synchronized (VerifyDB.syncDB) {
             String sql = GetSql.getSqlGetPlayerLeaderboard(startTime, endTime);
@@ -252,6 +260,7 @@ public class GetDB {
         long endTime;
         Pair<Long, Long> times = getTimes(timeField, timeInterval, timeLookingAt);
         startTime = times.getKey();
+        if (startTime < EPOCH_START_OF_SUBMISSION_HISTORY) startTime = EPOCH_START_OF_EXCURSION;
         endTime = times.getValue();
         synchronized (VerifyDB.syncDB) {
             String sql = GetSql.getSqlGetGuilds(startTime, endTime);
@@ -412,14 +421,61 @@ public class GetDB {
         String sql = GetSql.getSqlGetResponseReviewerMessages(responseId);
         Statement statement = VerifyDB.database.createStatement();
         ResultSet response = statement.executeQuery(sql);
-        List<Pair<Long,Long>> messages = new ArrayList<>();
-        if(!response.isClosed()){
-            while(response.next()){
-                messages.add(new Pair<>(response.getLong(1),response.getLong(2)));
+        List<Pair<Long, Long>> messages = new ArrayList<>();
+        if (!response.isClosed()) {
+            while (response.next()) {
+                messages.add(new Pair<>(response.getLong(1), response.getLong(2)));
             }
         }
         response.close();
         statement.close();
         return messages;
+    }
+
+    public static List<CrossChatId> getDiscordChannels() throws SQLException {
+        List<CrossChatId> channels = new ArrayList<>();
+        Statement statement = VerifyDB.database.createStatement();
+        ResultSet response = statement.executeQuery(GetSql.getSqlGetCrossChat());
+        if (!response.isClosed()) {
+            while (response.next()) {
+                long serverId = response.getLong(1);
+                long channelId = response.getLong(2);
+                channels.add(new CrossChatId(serverId, channelId));
+            }
+        }
+        return channels;
+    }
+
+    public static CrossChatMessage dealWithReactionAndGet(long serverId, long channelId, long messageId, MessageReactionAddEvent event) throws SQLException {
+        List<MessageId> messageIds = new ArrayList<>();
+        Statement statement = VerifyDB.database.createStatement();
+        ResultSet response = statement.executeQuery(GetSql.getSqlGetCrossChatMessages(serverId, channelId, messageId));
+        long myMessageId = -1;
+        if (!response.isClosed()) {
+            while (response.next()) {
+                myMessageId = response.getLong(1);
+                long sId = response.getLong(2);
+                long cId = response.getLong(3);
+                long mId = response.getLong(4);
+                messageIds.add(new MessageId(sId, cId, mId));
+            }
+            response.close();
+            if (myMessageId == -1) {
+                return null;
+            }
+            statement.execute(GetSql.getSqlUpdateCrossChatReactions(myMessageId, event));
+            statement.executeQuery(GetSql.getSqlGetCrossChatMessageContent(myMessageId));
+            if (response.isClosed())
+                return null;
+            String username = response.getString(2);
+            int color = response.getInt(3);
+            String avatarUrl = response.getString(4);
+            String description = response.getString(5);
+            String reactions = response.getString(6);
+            statement.close();
+            return new CrossChatMessage(messageIds, username, color, avatarUrl, description, reactions);
+        }
+        statement.close();
+        return null;
     }
 }

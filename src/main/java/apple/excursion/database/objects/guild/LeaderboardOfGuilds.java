@@ -1,6 +1,7 @@
 package apple.excursion.database.objects.guild;
 
 import java.util.*;
+import java.util.regex.Pattern;
 
 public class LeaderboardOfGuilds {
     private final List<GuildLeaderboardEntry> leaderboard;
@@ -69,8 +70,14 @@ public class LeaderboardOfGuilds {
                 return guildLeaderboardEntry;
             }
         }
+        for (GuildLeaderboardEntry guildLeaderboardEntry : leaderboard) {
+            if (guildLeaderboardEntry.guildTag.equalsIgnoreCase(tag)) {
+                return guildLeaderboardEntry;
+            }
+        }
+        Pattern pattern = Pattern.compile(".*" + name + ".*", Pattern.CASE_INSENSITIVE);
         for (GuildLeaderboardEntry guild : leaderboard) {
-            if (guild.guildName.equals(name)) {
+            if (pattern.matcher(guild.guildName).matches()) {
                 return guild;
             }
         }

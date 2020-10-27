@@ -81,8 +81,5 @@ public class ExcursionMain {
         } catch (LoginException e) {
             System.err.println("The bot has not logged in!");
         }
-        Thread.sleep(1000);
-//        MigrateOldSubmissions.migrate();
-        new BackupThread().start();
     }
 }

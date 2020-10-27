@@ -1,12 +1,15 @@
 package apple.excursion.discord;
 
+import apple.excursion.BackupThread;
 import apple.excursion.ExcursionMain;
 import apple.excursion.discord.commands.*;
 import apple.excursion.discord.commands.general.postcard.CommandSubmit;
+import apple.excursion.discord.cross_chat.CrossChat;
 import apple.excursion.discord.listener.AllChannelListeners;
 import apple.excursion.discord.reactions.*;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -60,7 +63,7 @@ public class DiscordBot extends ListenerAdapter {
     }
 
     public void enableDiscord() throws LoginException {
-        JDABuilder builder = new JDABuilder(discordToken);
+        JDABuilder builder = JDABuilder.createDefault(discordToken);
         builder.addEventListeners(this);
         client = builder.build();
 //        client.getPresence().setPresence(Activity.playing(PREFIX + "help"), true);
@@ -68,6 +71,13 @@ public class DiscordBot extends ListenerAdapter {
 
     @Override
     public void onReady(@Nonnull ReadyEvent event) {
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+//        MigrateOldSubmissions.migrate();
+        new BackupThread().start();
     }
 
     @Override
@@ -81,7 +91,7 @@ public class DiscordBot extends ListenerAdapter {
             return;
         }
         // the author is not a bot
-
+        CrossChat.dealWithMessage(event);
         String messageContent = event.getMessage().getContentStripped().toLowerCase();
         // deal with the different commands
         for (Commands command : Commands.values()) {
@@ -98,6 +108,15 @@ public class DiscordBot extends ListenerAdapter {
                 }
             }
         }
+        Member member = event.getMember();
+        if (member != null && member.hasPermission(Permission.MESSAGE_READ)) {
+            for (CommandsManageServer command : CommandsManageServer.values()) {
+                if (command.isCommand(messageContent)) {
+                    command.run(event);
+                    return;
+                }
+            }
+        }
     }
 
     @Override
@@ -107,6 +126,7 @@ public class DiscordBot extends ListenerAdapter {
             return;
         }
         AllReactables.dealWithReaction(event);
+        CrossChat.dealWithReaction(event);
         DatabaseResponseReactable.dealWithReaction(event);
     }
 }

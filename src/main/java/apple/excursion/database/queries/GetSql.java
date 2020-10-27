@@ -1,10 +1,14 @@
 package apple.excursion.database.queries;
 
 import apple.excursion.database.VerifyDB;
+import apple.excursion.discord.DiscordBot;
 import apple.excursion.discord.data.Task;
 import apple.excursion.discord.data.answers.SubmissionData;
+import apple.excursion.discord.reactions.messages.benchmark.CalendarMessage;
 import apple.excursion.utils.Pair;
 import com.google.common.collect.HashBiMap;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
@@ -21,13 +25,16 @@ public class GetSql {
 
     @NotNull
     static String getSqlExistsPlayer(Long id) {
-        return "SELECT COUNT(1)" +
+        return "SELECT COUNT(1) " +
                 "FROM players " +
                 "WHERE player_uid = "
                 + id
                 + " LIMIT 1;";
     }
 
+    public static String getSqlExistsCrossChat(long serverId) {
+        return String.format("SELECT COUNT(1) FROM cross_chat WHERE server_id = %d LIMIT 1;", serverId);
+    }
 
     // all the insert sql
 
@@ -95,7 +102,7 @@ public class GetSql {
                         + "VALUES "
                         + "(%d,%d,'%s',%s,%d,'%s',%d);",
                 VerifyDB.currentSubmissionId,
-                System.currentTimeMillis(),
+                CalendarMessage.EPOCH_BEFORE_START_OF_SUBMISSION_HISTORY,
                 convertTaskNameToSql(taskName),
                 null,
                 playerId,
@@ -198,7 +205,7 @@ public class GetSql {
 
     @NotNull
     static String getSqlGetGuilds(long start, long end) {
-        return "SELECT sum(player_score.score) AS guild_score, player_score.guild_tag, player_score.guild_name, player_score.player_name, player_score.player_uid, max(player_score.score)\n" +
+        return "SELECT sum(player_score.score) AS guild_score, player_score.guild_tag, player_score.guild_name, player_score.player_uid, player_score.player_name, max(player_score.score)\n" +
                 "FROM (\n" +
                 "         SELECT players.player_name, players.player_uid, sum(submissions.score) as score, guilds.guild_tag, guilds.guild_name\n" +
                 "         FROM players\n" +
@@ -464,5 +471,58 @@ public class GetSql {
         return String.format("UPDATE response\n" +
                 "SET is_accepted = %b, is_completed = %b\n" +
                 "WHERE response_id = %d;", isAccepted, isCompleted, responseId);
+    }
+
+    public static String getSqlGetCrossChat() {
+        return "SELECT * FROM cross_chat;";
+    }
+
+    public static String getSqlInsertCrossChat(long serverId, long channelId) {
+        return String.format("INSERT INTO cross_chat VALUES (%d,%d);", serverId, channelId);
+    }
+
+    public static String getSqlRemoveCrossChat(long serverId) {
+        return "DELETE FROM cross_chat WHERE server_id = " + serverId;
+    }
+
+    public static String getSqlUpdateCrossChat(long serverId, long channelId) {
+        return String.format("\n" +
+                "UPDATE cross_chat\n" +
+                "SET channel_id = %d\n" +
+                "WHERE server_id = %d;", serverId, channelId);
+    }
+
+    public static String getSqlGetCrossChatMessages(long serverId, long channelId, long messageId) {
+        return String.format("SELECT myMessageId,discordServerId, discordChannelId, discordMessageId\n" +
+                "FROM cross_chat_messages\n" +
+                "WHERE cross_chat_messages.myMessageId = (\n" +
+                "    SELECT myMessageId\n" +
+                "    FROM cross_chat_messages\n" +
+                "    WHERE cross_chat_messages.discordMessageId = %d\n" +
+                "      AND cross_chat_messages.discordChannelId = %d\n" +
+                "      AND cross_chat_messages.discordServerId = %d\n" +
+                ");", messageId, channelId, serverId);
+    }
+
+    public static String getSqlInsertCrossChatSent(long currentMyMessageId, String username, int color, String avatarUrl, String description) {
+        return String.format("INSERT INTO cross_chat_message_sent \n" +
+                "VALUES (%d,'%s',%d,'%s','%s','%s');", currentMyMessageId, username, color, avatarUrl, convertTaskNameToSql(description), "");
+    }
+
+    public static String getSqlInsertCrossChatMessages(long currentMyMessageId, long serverId, long channelId, long messageId) {
+        return String.format("INSERT INTO cross_chat_messages \n" +
+                "VALUES (%d,%d,%d,%d);", currentMyMessageId, serverId, channelId, messageId);
+    }
+
+    public static String getSqlGetCrossChatMessageContent(long myMessageId) {
+        return String.format("SELECT * FROM cross_chat_message_sent WHERE myMessageId = %d;", myMessageId);
+    }
+
+    public static String getSqlUpdateCrossChatReactions(long myMessageId, MessageReactionAddEvent event) {
+        Member member = event.getMember();
+        String username = member == null ? event.getUser() == null ? "???" : event.getUser().getName() : member.getEffectiveName();
+        return String.format("UPDATE cross_chat_message_sent\n" +
+                "SET reactions = cross_chat_message_sent.reactions || '%s'\n" +
+                "WHERE myMessageId = %d;", String.format(",%s.%s", username, event.getReactionEmote().isEmoji() ? event.getReactionEmote().getEmoji() : event.getReactionEmote().getEmote().getName()), myMessageId);
     }
 }

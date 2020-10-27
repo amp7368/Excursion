@@ -1,7 +1,10 @@
 package apple.excursion.database.queries;
 
 import apple.excursion.database.VerifyDB;
+import apple.excursion.database.objects.CrossChatId;
+import apple.excursion.database.objects.MessageId;
 import apple.excursion.discord.DiscordBot;
+import apple.excursion.discord.cross_chat.CrossChat;
 import apple.excursion.discord.data.answers.SubmissionData;
 import apple.excursion.sheets.SheetsPlayerStats;
 import apple.excursion.utils.Pair;
@@ -11,6 +14,7 @@ import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 
 import static apple.excursion.database.VerifyDB.*;
 
@@ -43,7 +47,7 @@ public class InsertDB {
                 try {
                     SheetsPlayerStats.submit(data.getTaskName(), id.getKey(), id.getValue(), soulJuice);
                 } catch (IOException e) {
-                    final User user = DiscordBot.client.getUserById(id.getKey());
+                    final User user = DiscordBot.client.retrieveUserById(id.getKey()).complete();
                     if (user == null || user.isBot()) continue;
                     user.openPrivateChannel().complete().sendMessage("There was an error making your profile. Tell appleptr16 or ojomFox: " + e.getMessage()).queue();
                 }
@@ -107,5 +111,42 @@ public class InsertDB {
         Statement statement = VerifyDB.database.createStatement();
         statement.execute(GetSql.getSqlInsertPlayers(id, guildName, guildTag));
         statement.close();
+    }
+
+    public static void insertCrossChat(long serverId, long channelId) throws SQLException {
+        synchronized (syncDB) {
+            Statement statement = database.createStatement();
+            String sql = GetSql.getSqlExistsCrossChat(serverId);
+            if (statement.executeQuery(sql).getInt(1) == 1) {
+                sql = GetSql.getSqlUpdateCrossChat(serverId, channelId);
+            } else {
+                sql = GetSql.getSqlInsertCrossChat(serverId, channelId);
+            }
+            statement.execute(sql);
+            statement.close();
+            CrossChat.add(new CrossChatId(serverId, channelId));
+        }
+    }
+
+    public static void removeCrossChat(long serverId) throws SQLException {
+        synchronized (syncDB) {
+            Statement statement = database.createStatement();
+            String sql = GetSql.getSqlRemoveCrossChat(serverId);
+            statement.execute(sql);
+            statement.close();
+        }
+    }
+
+    public static void insertCrossChatMessage(List<MessageId> messageIds, String username, int color, String avatarUrl, String description) throws SQLException {
+        synchronized (syncDB) {
+            Statement statement = database.createStatement();
+            statement.addBatch(GetSql.getSqlInsertCrossChatSent(VerifyDB.currentMyMessageId, username, color, avatarUrl, description));
+            for (MessageId messageId : messageIds) {
+                statement.addBatch(GetSql.getSqlInsertCrossChatMessages(VerifyDB.currentMyMessageId, messageId.serverId, messageId.channelId, messageId.messageId));
+            }
+            currentMyMessageId++;
+            statement.executeBatch();
+            statement.close();
+        }
     }
 }

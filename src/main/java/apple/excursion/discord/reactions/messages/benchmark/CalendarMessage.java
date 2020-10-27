@@ -17,9 +17,10 @@ import java.time.format.TextStyle;
 import java.util.*;
 
 public class CalendarMessage implements ReactableMessage {
+    public static final long EPOCH_BEFORE_START_OF_SUBMISSION_HISTORY = 1590969600000L;
     private static final int EPOCH_YEAR = 2020;
-    public static final long EPOCH_START_OF_SUBMISSION_HISTORY = 1604188799000L;// 2020
-    public static final long EPOCH_START_OF_EXCURSION = 1577854800000L;// 2020 Halloween
+    public static final long EPOCH_START_OF_SUBMISSION_HISTORY = 1593561600000L;// 2020 start of Yin 1.0
+    public static final long EPOCH_START_OF_EXCURSION = 1546300800000L;// 2019
     private final Message message;
     Calendar calendar = Calendar.getInstance();
     private long lastUpdated = System.currentTimeMillis();

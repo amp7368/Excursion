@@ -37,10 +37,11 @@ public class HelpMessage implements ReactableMessage {
                     "**y!submit [task name] [link]:** submit tasks when completing them for the first time. This command is also is used for repeating tasks by submitting daily tasks from the calendar to earn soul juice or raise your monthly EP count too to participate in Excursion raffles and win LE for you and your guild. ",
             "**y!guild [tag]:** join a guild or change your guild.\n\n" +
                     "**y!help:** the command showing you this list.\n\n" +
-                    "**y!bug [message with an optional image]** sends a bug report"
+                    "**y!bug [message with an optional image]** sends a bug report\n" +
+                    "**y!wt set"
     );
     private static final List<String> helpTitlePages = Arrays.asList("Discord Info:",
-            "Excursion Benchmarks commands:", "Postcard Task commands:", "Settings commands:"
+            "Excursion Benchmarks commands:", "Postcard Task commands:", "Community commands:"
     );
 
     public HelpMessage(MessageChannel channel) {
