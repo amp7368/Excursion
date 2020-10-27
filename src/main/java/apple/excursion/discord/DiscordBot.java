@@ -109,7 +109,7 @@ public class DiscordBot extends ListenerAdapter {
             }
         }
         Member member = event.getMember();
-        if (member != null && member.hasPermission(Permission.ADMINISTRATOR)) {
+        if (member != null && member.hasPermission(Permission.MESSAGE_READ)) {
             for (CommandsManageServer command : CommandsManageServer.values()) {
                 if (command.isCommand(messageContent)) {
                     command.run(event);

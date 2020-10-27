@@ -9,8 +9,11 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.exceptions.ContextException;
+import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -83,9 +86,23 @@ public class CrossChat {
                 embedBuilder.setAuthor(username, null, event.getAuthor().getAvatarUrl());
                 embedBuilder.setDescription(event.getMessage().getContentDisplay());
                 MessageEmbed builtMessage = embedBuilder.build();
+                List<CrossChatId> fails = new ArrayList<>(1);
                 for (Map.Entry<CrossChatId, MessageChannel> crossChatToSend : crossChats.entrySet()) {
                     if (!crossChatToSend.getKey().equals(crossChat))
-                        crossChatToSend.getValue().sendMessage(builtMessage).queue();
+                        try {
+                            crossChatToSend.getValue().sendMessage(builtMessage).complete();
+                            // i need to complete these msgs to make sure that the error is thrown here
+                        } catch (NullPointerException | ErrorResponseException e) {
+                            fails.add(crossChatToSend.getKey());
+                        }
+                }
+                for (CrossChatId fail : fails) {
+                    crossChats.remove(fail);
+                    try {
+                        InsertDB.removeCrossChat(fail.serverId);
+                    } catch (SQLException throwables) {
+                        throwables.printStackTrace(); // log this
+                    }
                 }
                 break;
             }
