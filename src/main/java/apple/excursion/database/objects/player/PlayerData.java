@@ -35,11 +35,12 @@ public class PlayerData {
                 submissionsThatMatch.add(submission);
             }
         }
-        return String.format(
-                "The last time(s) %s %shas done this task:\n%s",
-                this.name,
-                guildTag.equals(VerifyDB.DEFAULT_GUILD_TAG) ? "" : String.format("in [%s] ", guildTag),
-                submissionsThatMatch.stream().map(OldSubmission::makeSubmissionHistoryMessage).collect(Collectors.joining("\n")));
+        return submissionsThatMatch.isEmpty() ? "" :
+                String.format(
+                        "The last time(s) %s %shas done this task:\n%s",
+                        this.name,
+                        guildTag.equals(VerifyDB.DEFAULT_GUILD_TAG) ? "" : String.format("in [%s] ", guildTag),
+                        submissionsThatMatch.stream().map(OldSubmission::makeSubmissionHistoryMessage).collect(Collectors.joining("\n")));
     }
 
     public boolean containsSubmission(Task task) {

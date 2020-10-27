@@ -470,10 +470,11 @@ public class GetDB {
             String username = response.getString(2);
             int color = response.getInt(3);
             String avatarUrl = response.getString(4);
-            String description = response.getString(5);
-            String reactions = response.getString(6);
+            String imageUrl = response.getString(5);
+            String description = response.getString(6);
+            String reactions = response.getString(7);
             statement.close();
-            return new CrossChatMessage(messageIds, username, color, avatarUrl, description, reactions);
+            return new CrossChatMessage(messageIds, username, color, avatarUrl, imageUrl, description, reactions);
         }
         statement.close();
         return null;

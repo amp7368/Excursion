@@ -106,8 +106,9 @@ public class VerifyDB {
             "    username    TEXT,\n" +
             "    color       INTEGER,\n" +
             "    avatarUrl   TEXT,\n" +
+            "    imageUrl    TEXT,\n" +
             "    description TEXT,\n" +
-            "    reactions TEXT\n" +
+            "    reactions   TEXT\n" +
             ");";
     public static Connection database;
     public static Connection calendarDbConnection;

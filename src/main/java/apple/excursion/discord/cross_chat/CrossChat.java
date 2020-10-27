@@ -76,7 +76,6 @@ public class CrossChat {
             if (crossChat.channelId == channelId && crossChat.serverId == serverId) {
                 Member member = event.getMember();
                 if (member == null) break;
-                event.getMessage().delete().queue();
                 String username = member.getEffectiveName();
                 int color = member.getColorRaw();
                 String description = event.getMessage().getContentDisplay();
@@ -84,7 +83,12 @@ public class CrossChat {
                 embedBuilder.setColor(color);
                 String avatarUrl = event.getAuthor().getAvatarUrl();
                 embedBuilder.setAuthor(username, null, avatarUrl);
+                List<Message.Attachment> attachments = event.getMessage().getAttachments();
                 embedBuilder.setDescription(description);
+                String imageUrl = attachments.isEmpty() ? null : attachments.get(0).getUrl();
+                if (imageUrl != null) {
+                    embedBuilder.setImage(imageUrl);
+                }
                 MessageEmbed builtMessage = embedBuilder.build();
                 List<CrossChatId> fails = new ArrayList<>(1);
                 List<MessageId> messageIds = new ArrayList<>();
@@ -99,7 +103,7 @@ public class CrossChat {
                     }
                 }
                 try {
-                    InsertDB.insertCrossChatMessage(messageIds, username, color, avatarUrl, description);
+                    InsertDB.insertCrossChatMessage(messageIds, username, color, avatarUrl, imageUrl, description);
                 } catch (SQLException ignored) { // it's whatever if i don't have this message saved
                 }
                 for (CrossChatId fail : fails) {
@@ -110,6 +114,7 @@ public class CrossChat {
                         throwables.printStackTrace(); // log this
                     }
                 }
+                event.getMessage().delete().queue();
                 break;
             }
         }
@@ -133,6 +138,7 @@ public class CrossChat {
                 EmbedBuilder embedBuilder = new EmbedBuilder();
                 embedBuilder.setColor(messagesToAddReaction.color);
                 embedBuilder.setAuthor(messagesToAddReaction.username, null, messagesToAddReaction.avatarUrl);
+                if (messagesToAddReaction.imageUrl != null) embedBuilder.setImage(messagesToAddReaction.imageUrl);
                 embedBuilder.setDescription(makeReactionMessage(messagesToAddReaction.description, messagesToAddReaction.reactions));
                 MessageEmbed builtMessage = embedBuilder.build();
 

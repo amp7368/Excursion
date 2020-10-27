@@ -40,6 +40,7 @@ public class SubmissionData {
                           TaskSimple task, String submitter, int color, long submitterId, List<Pair<Long, String>> otherSubmitters,
                           List<PlayerData> playersData, TaskSubmissionType taskType) {
         this.attachmentsUrl = attachments.isEmpty() ? null : attachments.get(0).getUrl();
+        System.out.println(attachmentsUrl);
         this.links = links;
         this.task = task;
         this.color = color;
