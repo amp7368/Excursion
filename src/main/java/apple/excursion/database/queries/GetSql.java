@@ -23,13 +23,16 @@ public class GetSql {
 
     @NotNull
     static String getSqlExistsPlayer(Long id) {
-        return "SELECT COUNT(1)" +
+        return "SELECT COUNT(1) " +
                 "FROM players " +
                 "WHERE player_uid = "
                 + id
                 + " LIMIT 1;";
     }
 
+    public static String getSqlExistsCrossChat(long serverId) {
+        return String.format("SELECT COUNT(1) FROM cross_chat WHERE server_id = %d LIMIT 1;", serverId);
+    }
 
     // all the insert sql
 
@@ -470,5 +473,20 @@ public class GetSql {
 
     public static String getSqlGetCrossChat() {
         return "SELECT * FROM cross_chat;";
+    }
+
+    public static String getSqlInsertCrossChat(long serverId, long channelId) {
+        return String.format("INSERT INTO cross_chat VALUES (%d,%d);", serverId, channelId);
+    }
+
+    public static String getSqlRemoveCrossChat(long serverId) {
+        return "DELETE FROM cross_chat WHERE server_id = " + serverId;
+    }
+
+    public static String getSqlUpdateCrossChat(long serverId, long channelId) {
+        return String.format("\n" +
+                "UPDATE cross_chat\n" +
+                "SET channel_id = %d\n" +
+                "WHERE server_id = %d;", serverId, channelId);
     }
 }

@@ -4,10 +4,12 @@ import apple.excursion.BackupThread;
 import apple.excursion.ExcursionMain;
 import apple.excursion.discord.commands.*;
 import apple.excursion.discord.commands.general.postcard.CommandSubmit;
+import apple.excursion.discord.cross_chat.CrossChat;
 import apple.excursion.discord.listener.AllChannelListeners;
 import apple.excursion.discord.reactions.*;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -24,7 +26,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-public class DiscordBot extends ListenerAdapter{
+public class DiscordBot extends ListenerAdapter {
     public static final String PREFIX = "t!";
     public static final long EXCURSION_GUILD_ID = 555318916344184834L;
     public static final long APPLEPTR16 = 253646208084475904L;
@@ -89,7 +91,7 @@ public class DiscordBot extends ListenerAdapter{
             return;
         }
         // the author is not a bot
-
+        CrossChat.dealWithMessage(event);
         String messageContent = event.getMessage().getContentStripped().toLowerCase();
         // deal with the different commands
         for (Commands command : Commands.values()) {
@@ -100,6 +102,15 @@ public class DiscordBot extends ListenerAdapter{
         }
         if (CommandSubmit.isReviewer(event.getAuthor())) {
             for (CommandsAdmin command : CommandsAdmin.values()) {
+                if (command.isCommand(messageContent)) {
+                    command.run(event);
+                    return;
+                }
+            }
+        }
+        Member member = event.getMember();
+        if (member != null && member.hasPermission(Permission.ADMINISTRATOR)) {
+            for (CommandsManageServer command : CommandsManageServer.values()) {
                 if (command.isCommand(messageContent)) {
                     command.run(event);
                     return;

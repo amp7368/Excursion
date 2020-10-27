@@ -1,6 +1,7 @@
 package apple.excursion.database.queries;
 
 import apple.excursion.database.VerifyDB;
+import apple.excursion.database.objects.CrossChatId;
 import apple.excursion.database.objects.guild.GuildHeader;
 import apple.excursion.database.objects.OldSubmission;
 import apple.excursion.database.objects.player.PlayerData;
@@ -428,10 +429,17 @@ public class GetDB {
         return messages;
     }
 
-    public static List<Long> getDiscordChannels() throws SQLException {
-        List<Long> channels = new ArrayList<>();
+    public static List<CrossChatId> getDiscordChannels() throws SQLException {
+        List<CrossChatId> channels = new ArrayList<>();
         Statement statement = VerifyDB.database.createStatement();
         ResultSet response = statement.executeQuery(GetSql.getSqlGetCrossChat());
+        if (!response.isClosed()) {
+            while (response.next()) {
+                long serverId = response.getLong(1);
+                long channelId = response.getLong(2);
+                channels.add(new CrossChatId(serverId, channelId));
+            }
+        }
         return channels;
     }
 }

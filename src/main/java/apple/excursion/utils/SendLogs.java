@@ -67,7 +67,6 @@ public class SendLogs {
         if (IS_CHANNEL) {
             dms = DiscordBot.client.getTextChannelById(SENDER);
         } else {
-            System.out.println(DiscordBot.client.retrieveUserById(SENDER).complete().getName());
             dms = DiscordBot.client.retrieveUserById(SENDER).complete().openPrivateChannel().complete();
         }
         dms.sendMessage("Below is the DB as of " + Pretty.date(System.currentTimeMillis())).queue();

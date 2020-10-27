@@ -1,7 +1,9 @@
 package apple.excursion.database.queries;
 
 import apple.excursion.database.VerifyDB;
+import apple.excursion.database.objects.CrossChatId;
 import apple.excursion.discord.DiscordBot;
+import apple.excursion.discord.cross_chat.CrossChat;
 import apple.excursion.discord.data.answers.SubmissionData;
 import apple.excursion.sheets.SheetsPlayerStats;
 import apple.excursion.utils.Pair;
@@ -107,5 +109,29 @@ public class InsertDB {
         Statement statement = VerifyDB.database.createStatement();
         statement.execute(GetSql.getSqlInsertPlayers(id, guildName, guildTag));
         statement.close();
+    }
+
+    public static void insertCrossChat(long serverId, long channelId) throws SQLException {
+        synchronized (syncDB) {
+            Statement statement = database.createStatement();
+            String sql = GetSql.getSqlExistsCrossChat(serverId);
+            if (statement.executeQuery(sql).getInt(1) == 1) {
+                sql = GetSql.getSqlUpdateCrossChat(serverId, channelId);
+            } else {
+                sql = GetSql.getSqlInsertCrossChat(serverId, channelId);
+            }
+            statement.execute(sql);
+            statement.close();
+            CrossChat.add(new CrossChatId(serverId, channelId));
+        }
+    }
+
+    public static void removeCrossChat(long serverId) throws SQLException {
+        synchronized (syncDB) {
+            Statement statement = database.createStatement();
+            String sql = GetSql.getSqlRemoveCrossChat(serverId);
+            statement.execute(sql);
+            statement.close();
+        }
     }
 }
