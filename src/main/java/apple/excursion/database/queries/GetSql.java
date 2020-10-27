@@ -467,4 +467,8 @@ public class GetSql {
                 "SET is_accepted = %b, is_completed = %b\n" +
                 "WHERE response_id = %d;", isAccepted, isCompleted, responseId);
     }
+
+    public static String getSqlGetCrossChat() {
+        return "SELECT * FROM cross_chat;";
+    }
 }

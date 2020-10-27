@@ -43,7 +43,7 @@ public class InsertDB {
                 try {
                     SheetsPlayerStats.submit(data.getTaskName(), id.getKey(), id.getValue(), soulJuice);
                 } catch (IOException e) {
-                    final User user = DiscordBot.client.getUserById(id.getKey());
+                    final User user = DiscordBot.client.retrieveUserById(id.getKey()).complete();
                     if (user == null || user.isBot()) continue;
                     user.openPrivateChannel().complete().sendMessage("There was an error making your profile. Tell appleptr16 or ojomFox: " + e.getMessage()).queue();
                 }

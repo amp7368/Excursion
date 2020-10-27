@@ -102,8 +102,9 @@ public class SubmissionData {
             embed.setImage(attachmentsUrl);
         for (Pair<Long, String> userRaw : allSubmitters) {
             User user = DiscordBot.client.getUserById(userRaw.getKey());
+            if (user == null) user = DiscordBot.client.retrieveUserById(userRaw.getKey()).complete();
             if (user != null) {
-                if (user.isBot() || user.isFake()) return;
+                if (user.isBot()) return;
                 PrivateChannel channel = user.openPrivateChannel().complete();
                 List<String> otherSubmitters = new ArrayList<>();
                 for (Pair<Long, String> otherUserRaw : allSubmitters) {

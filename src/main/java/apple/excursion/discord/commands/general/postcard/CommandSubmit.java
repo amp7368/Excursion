@@ -184,7 +184,7 @@ public class CommandSubmit implements DoCommand {
         Object result = parser.parse(in);
         JSONArray reviewersArray = (JSONArray) result;
         for (Object entry : reviewersArray) {
-            reviewers.add(client.getUserById(entry.toString()));
+            reviewers.add(client.retrieveUserById(entry.toString()).complete());
         }
         try {
             in.close();

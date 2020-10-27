@@ -1,5 +1,6 @@
 package apple.excursion.discord;
 
+import apple.excursion.BackupThread;
 import apple.excursion.ExcursionMain;
 import apple.excursion.discord.commands.*;
 import apple.excursion.discord.commands.general.postcard.CommandSubmit;
@@ -23,7 +24,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-public class DiscordBot extends ListenerAdapter {
+public class DiscordBot extends ListenerAdapter{
     public static final String PREFIX = "t!";
     public static final long EXCURSION_GUILD_ID = 555318916344184834L;
     public static final long APPLEPTR16 = 253646208084475904L;
@@ -60,7 +61,7 @@ public class DiscordBot extends ListenerAdapter {
     }
 
     public void enableDiscord() throws LoginException {
-        JDABuilder builder = new JDABuilder(discordToken);
+        JDABuilder builder = JDABuilder.createDefault(discordToken);
         builder.addEventListeners(this);
         client = builder.build();
 //        client.getPresence().setPresence(Activity.playing(PREFIX + "help"), true);
@@ -68,6 +69,13 @@ public class DiscordBot extends ListenerAdapter {
 
     @Override
     public void onReady(@Nonnull ReadyEvent event) {
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+//        MigrateOldSubmissions.migrate();
+        new BackupThread().start();
     }
 
     @Override

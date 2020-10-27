@@ -427,4 +427,11 @@ public class GetDB {
         statement.close();
         return messages;
     }
+
+    public static List<Long> getDiscordChannels() throws SQLException {
+        List<Long> channels = new ArrayList<>();
+        Statement statement = VerifyDB.database.createStatement();
+        ResultSet response = statement.executeQuery(GetSql.getSqlGetCrossChat());
+        return channels;
+    }
 }

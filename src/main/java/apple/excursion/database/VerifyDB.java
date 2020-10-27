@@ -84,6 +84,11 @@ public class VerifyDB {
             "    PRIMARY KEY (message_id, channel_id),\n" +
             "    FOREIGN KEY (response_id) REFERENCES response\n" +
             ");";
+    private static final String BUILD_TABLE_SQL_CROSS_CHAT = "CREATE TABLE IF NOT EXISTS cross_chat\n" +
+            "(\n" +
+            "    server_id  BIGINT  NOT NULL UNIQUE PRIMARY KEY,\n" +
+            "    channel_id  BIGINT  NOT NULL" +
+            ");";
     public static Connection database;
     public static Connection calendarDbConnection;
 
@@ -152,6 +157,9 @@ public class VerifyDB {
         statement.execute(buildTableSql);
 
         buildTableSql = BUILD_TABLE_SQL_RESPONSE_LINK;
+        statement.execute(buildTableSql);
+
+        buildTableSql = BUILD_TABLE_SQL_CROSS_CHAT;
         statement.execute(buildTableSql);
 
         currentSubmissionId = statement.executeQuery("SELECT MAX(id) FROM submissions;").getInt(1) + 1;

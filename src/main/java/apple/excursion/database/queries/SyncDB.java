@@ -306,7 +306,6 @@ public class SyncDB {
                     if (scoreEarnedThroughDms < scoreEarnedThroughSheet) {
                         // add more submissions
                         long date = findPopularDate(submissionsWithName);
-                        if (date > 1603502000000L) System.out.println("hello");
                         while (scoreEarnedThroughDms != scoreEarnedThroughSheet) {
                             submissionsWithName.add(new SubmissionData(
                                     true,

@@ -3,7 +3,9 @@ package apple.excursion.utils;
 import apple.excursion.ExcursionMain;
 import apple.excursion.database.VerifyDB;
 import apple.excursion.discord.DiscordBot;
+import com.google.common.net.MediaType;
 import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.entities.User;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -45,7 +47,7 @@ public class SendLogs {
         if (IS_CHANNEL) {
             dms = DiscordBot.client.getTextChannelById(SENDER);
         } else {
-            dms = DiscordBot.client.getUserById(SENDER).openPrivateChannel().complete();
+            dms = DiscordBot.client.retrieveUserById(SENDER).complete().openPrivateChannel().complete();
         }
         StringBuilder builder = new StringBuilder();
         for (String log : logs) {
@@ -65,7 +67,8 @@ public class SendLogs {
         if (IS_CHANNEL) {
             dms = DiscordBot.client.getTextChannelById(SENDER);
         } else {
-            dms = DiscordBot.client.getUserById(SENDER).openPrivateChannel().complete();
+            System.out.println(DiscordBot.client.retrieveUserById(SENDER).complete().getName());
+            dms = DiscordBot.client.retrieveUserById(SENDER).complete().openPrivateChannel().complete();
         }
         dms.sendMessage("Below is the DB as of " + Pretty.date(System.currentTimeMillis())).queue();
         synchronized (VerifyDB.syncDB) {
