@@ -7,7 +7,6 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 public class CommandSetCrossChat implements DoCommand {
     @Override
     public void dealWithCommand(MessageReceivedEvent event) {
-        System.out.println("cool");
         long channelId = event.getChannel().getIdLong();
         long serverId = event.getGuild().getIdLong();
         CrossChat.add(serverId, channelId,event.getChannel());

@@ -2,6 +2,7 @@ package apple.excursion.database.queries;
 
 import apple.excursion.database.VerifyDB;
 import apple.excursion.database.objects.CrossChatId;
+import apple.excursion.database.objects.MessageId;
 import apple.excursion.discord.DiscordBot;
 import apple.excursion.discord.cross_chat.CrossChat;
 import apple.excursion.discord.data.answers.SubmissionData;
@@ -13,6 +14,7 @@ import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 
 import static apple.excursion.database.VerifyDB.*;
 
@@ -131,6 +133,19 @@ public class InsertDB {
             Statement statement = database.createStatement();
             String sql = GetSql.getSqlRemoveCrossChat(serverId);
             statement.execute(sql);
+            statement.close();
+        }
+    }
+
+    public static void insertCrossChatMessage(List<MessageId> messageIds, String username, int color, String avatarUrl, String description) throws SQLException {
+        synchronized (syncDB) {
+            Statement statement = database.createStatement();
+            statement.addBatch(GetSql.getSqlInsertCrossChatSent(VerifyDB.currentMyMessageId, username, color, avatarUrl, description));
+            for (MessageId messageId : messageIds) {
+                statement.addBatch(GetSql.getSqlInsertCrossChatMessages(VerifyDB.currentMyMessageId, messageId.serverId, messageId.channelId, messageId.messageId));
+            }
+            currentMyMessageId++;
+            statement.executeBatch();
             statement.close();
         }
     }

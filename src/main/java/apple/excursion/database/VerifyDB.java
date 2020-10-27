@@ -89,12 +89,32 @@ public class VerifyDB {
             "    server_id  BIGINT  NOT NULL UNIQUE PRIMARY KEY,\n" +
             "    channel_id  BIGINT  NOT NULL" +
             ");";
+    private static final String BUILD_TABLE_SQL_CROSS_CHAT_MESSAGES = "CREATE TABLE IF NOT EXISTS cross_chat_messages\n" +
+            "(\n" +
+            "    myMessageId      BIGINT NOT NULL,\n" +
+            "    discordServerId  BIGINT NOT NULL,\n" +
+            "    discordChannelId BIGINT NOT NULL,\n" +
+            "    discordMessageId BIGINT NOT NULL,\n" +
+            "    UNIQUE (myMessageId, discordServerId, discordChannelId, discordMessageId),\n" +
+            "    PRIMARY KEY (myMessageId, discordServerId, discordChannelId, discordMessageId),\n" +
+            "    FOREIGN KEY (myMessageId) REFERENCES cross_chat_messages (myMessageId)\n" +
+            ");";
+    private static final String BUILD_TABLE_SQL_CROSS_CHAT_MESSAGE_SENT = "CREATE TABLE IF NOT EXISTS cross_chat_message_sent\n" +
+            "(\n" +
+            "    myMessageId BIGINT NOT NULL PRIMARY KEY UNIQUE,\n" +
+            "    username    TEXT,\n" +
+            "    color       INTEGER,\n" +
+            "    avatarUrl   TEXT,\n" +
+            "    description TEXT,\n" +
+            "    reactions TEXT\n" +
+            ");";
     public static Connection database;
     public static Connection calendarDbConnection;
 
     public static final Object syncDB = new Object();
     public static int currentSubmissionId;
     public static int currentResponseId;
+    public static long currentMyMessageId;
 
     static {
         List<String> list = Arrays.asList(ExcursionMain.class.getProtectionDomain().getCodeSource().getLocation().getPath().split("/"));
@@ -118,11 +138,6 @@ public class VerifyDB {
                 new File(DB_DB),
                 new File(CALENDAR_DB)
         );
-    }
-
-    public static void closeAll() throws SQLException {
-        database.close();
-        calendarDbConnection.close();
     }
 
     /**
@@ -162,8 +177,17 @@ public class VerifyDB {
         buildTableSql = BUILD_TABLE_SQL_CROSS_CHAT;
         statement.execute(buildTableSql);
 
+        buildTableSql = BUILD_TABLE_SQL_CROSS_CHAT_MESSAGES;
+        statement.execute(buildTableSql);
+
+        buildTableSql = BUILD_TABLE_SQL_CROSS_CHAT_MESSAGE_SENT;
+        statement.execute(buildTableSql);
+
         currentSubmissionId = statement.executeQuery("SELECT MAX(id) FROM submissions;").getInt(1) + 1;
         currentSubmissionId = Math.max(statement.executeQuery("SELECT MAX(submission_id) FROM submissions_link;").getInt(1) + 1, currentSubmissionId);
+
+        currentMyMessageId = statement.executeQuery("SELECT MAX(myMessageId) FROM cross_chat_message_sent;").getInt(1) + 1;
+        currentMyMessageId = Math.max(statement.executeQuery("SELECT MAX(myMessageId) FROM cross_chat_messages;").getInt(1) + 1, currentSubmissionId);
 
         currentResponseId = statement.executeQuery("SELECT MAX(response_id) FROM response;").getInt(1) + 1;
         currentResponseId = Math.max(statement.executeQuery("SELECT MAX(response_id) FROM response_link;").getInt(1) + 1, currentResponseId);

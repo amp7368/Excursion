@@ -7,6 +7,8 @@ import apple.excursion.discord.data.answers.SubmissionData;
 import apple.excursion.discord.reactions.messages.benchmark.CalendarMessage;
 import apple.excursion.utils.Pair;
 import com.google.common.collect.HashBiMap;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
@@ -488,5 +490,39 @@ public class GetSql {
                 "UPDATE cross_chat\n" +
                 "SET channel_id = %d\n" +
                 "WHERE server_id = %d;", serverId, channelId);
+    }
+
+    public static String getSqlGetCrossChatMessages(long serverId, long channelId, long messageId) {
+        return String.format("SELECT myMessageId,discordServerId, discordChannelId, discordMessageId\n" +
+                "FROM cross_chat_messages\n" +
+                "WHERE cross_chat_messages.myMessageId = (\n" +
+                "    SELECT myMessageId\n" +
+                "    FROM cross_chat_messages\n" +
+                "    WHERE cross_chat_messages.discordMessageId = %d\n" +
+                "      AND cross_chat_messages.discordChannelId = %d\n" +
+                "      AND cross_chat_messages.discordServerId = %d\n" +
+                ");", messageId, channelId, serverId);
+    }
+
+    public static String getSqlInsertCrossChatSent(long currentMyMessageId, String username, int color, String avatarUrl, String description) {
+        return String.format("INSERT INTO cross_chat_message_sent \n" +
+                "VALUES (%d,'%s',%d,'%s','%s','%s');", currentMyMessageId, username, color, avatarUrl, convertTaskNameToSql(description), "");
+    }
+
+    public static String getSqlInsertCrossChatMessages(long currentMyMessageId, long serverId, long channelId, long messageId) {
+        return String.format("INSERT INTO cross_chat_messages \n" +
+                "VALUES (%d,%d,%d,%d);", currentMyMessageId, serverId, channelId, messageId);
+    }
+
+    public static String getSqlGetCrossChatMessageContent(long myMessageId) {
+        return String.format("SELECT * FROM cross_chat_message_sent WHERE myMessageId = %d;", myMessageId);
+    }
+
+    public static String getSqlUpdateCrossChatReactions(long myMessageId, MessageReactionAddEvent event) {
+        Member member = event.getMember();
+        String username = member == null ? event.getUser() == null ? "???" : event.getUser().getName() : member.getEffectiveName();
+        return String.format("UPDATE cross_chat_message_sent\n" +
+                "SET reactions = cross_chat_message_sent.reactions || '%s'\n" +
+                "WHERE myMessageId = %d;", String.format(",%s.%s", username, event.getReactionEmote().isEmoji() ? event.getReactionEmote().getEmoji() : event.getReactionEmote().getEmote().getName()), myMessageId);
     }
 }

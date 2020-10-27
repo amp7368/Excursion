@@ -126,6 +126,7 @@ public class DiscordBot extends ListenerAdapter {
             return;
         }
         AllReactables.dealWithReaction(event);
+        CrossChat.dealWithReaction(event);
         DatabaseResponseReactable.dealWithReaction(event);
     }
 }
