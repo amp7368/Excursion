@@ -2,6 +2,7 @@ package apple.excursion.database;
 
 import apple.excursion.ExcursionMain;
 import apple.excursion.database.queries.GetSql;
+import apple.excursion.discord.data.DailyBans;
 import apple.excursion.discord.data.Task;
 import apple.excursion.sheets.SheetsTasks;
 
@@ -245,10 +246,14 @@ public class VerifyDB {
                 Collection<Task> todayTasks = new ArrayList<>();
                 Collection<Integer> todayNumbers = new ArrayList<>();
                 for (int j = 0; j < TASKS_PER_DAY; j++) {
-                    //noinspection StatementWithEmptyBody
-                    while (todayNumbers.contains(randomNext = random.nextInt())) ;
-                    todayNumbers.add(randomNext);
-                    todayTasks.add(tasks.get(random.nextInt(size)));
+                    Task taskToAdd;
+                    do {
+                        //noinspection StatementWithEmptyBody
+                        while (todayNumbers.contains(randomNext = random.nextInt(size))) ;
+                        todayNumbers.add(randomNext);
+                        taskToAdd = tasks.get(randomNext);
+                    } while (DailyBans.isBan(taskToAdd.name));
+                    todayTasks.add(taskToAdd);
                 }
                 dailyTasks.add(todayTasks);
             }

@@ -20,6 +20,10 @@ public enum CommandsAdmin {
             "", new CommandSheetVerification()),
     FAKE_SUBMIT(Collections.singletonList("fake_submit"), "Submits something as if another player submitted it and it was accepted",
             "<submitterId> <points> <submitterName> <taskCategory> <taskName>", new CommandFakeSubmit()),
+    BAN_ADD(Collections.singletonList("add_ban"), "Adds a ban for the list of daily tasks to be chosen",
+            "<dailyTask>", new CommandBanAddDaily()),
+    BAN_REMOVE(Collections.singletonList("remove_ban"), "Removes a ban for the list of daily tasks to be chosen",
+            "dailyTask", new CommandBanRemoveDaily()),
     SQL(Collections.singletonList("sql"), "executes sql",
             "<sql>", new CommandExecuteSql());
 

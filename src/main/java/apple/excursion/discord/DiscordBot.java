@@ -5,8 +5,10 @@ import apple.excursion.ExcursionMain;
 import apple.excursion.discord.commands.*;
 import apple.excursion.discord.commands.general.postcard.CommandSubmit;
 import apple.excursion.discord.cross_chat.CrossChat;
+import apple.excursion.discord.data.DailyBans;
 import apple.excursion.discord.listener.AllChannelListeners;
 import apple.excursion.discord.reactions.*;
+import apple.excursion.utils.MigrateOldSubmissions;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.Permission;
@@ -23,6 +25,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -39,7 +42,6 @@ public class DiscordBot extends ListenerAdapter {
     public DiscordBot() {
         List<String> list = Arrays.asList(ExcursionMain.class.getProtectionDomain().getCodeSource().getLocation().getPath().split("/"));
         String BOT_TOKEN_FILE_PATH = String.join("/", list.subList(0, list.size() - 1)) + "/config/discordToken.data";
-
         File file = new File(BOT_TOKEN_FILE_PATH);
         if (!file.exists()) {
             try {
@@ -63,9 +65,15 @@ public class DiscordBot extends ListenerAdapter {
     }
 
     public void enableDiscord() throws LoginException {
+        DailyBans.isBan("");
         JDABuilder builder = JDABuilder.createDefault(discordToken);
         builder.addEventListeners(this);
         client = builder.build();
+//        try {
+//            MigrateOldSubmissions.migrate();
+//        } catch (IOException | SQLException e) {
+//            e.printStackTrace();
+//        }
 //        client.getPresence().setPresence(Activity.playing(PREFIX + "help"), true);
     }
 
@@ -109,7 +117,7 @@ public class DiscordBot extends ListenerAdapter {
             }
         }
         Member member = event.getMember();
-        if (member != null && member.hasPermission(Permission.MESSAGE_READ)) {
+        if (member != null && member.hasPermission(Permission.ADMINISTRATOR)) {
             for (CommandsManageServer command : CommandsManageServer.values()) {
                 if (command.isCommand(messageContent)) {
                     command.run(event);
