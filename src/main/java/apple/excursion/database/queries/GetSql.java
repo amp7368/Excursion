@@ -504,9 +504,9 @@ public class GetSql {
                 ");", messageId, channelId, serverId);
     }
 
-    public static String getSqlInsertCrossChatSent(long currentMyMessageId, String username, int color, String avatarUrl, String imageUrl, String description) {
+    public static String getSqlInsertCrossChatSent(long currentMyMessageId, long owner, String username, int color, String avatarUrl, String imageUrl, String description) {
         return String.format("INSERT INTO cross_chat_message_sent \n" +
-                "VALUES (%d,'%s',%d,'%s','%s','%s','%s');", currentMyMessageId, username, color, avatarUrl, imageUrl, convertTaskNameToSql(description), "");
+                "VALUES (%d,%d,'%s',%d,'%s','%s','%s','%s');", currentMyMessageId, owner, username, color, avatarUrl, imageUrl, convertTaskNameToSql(description), "");
     }
 
     public static String getSqlInsertCrossChatMessages(long currentMyMessageId, long serverId, long channelId, long messageId) {

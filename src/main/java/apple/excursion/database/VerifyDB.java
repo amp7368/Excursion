@@ -103,6 +103,7 @@ public class VerifyDB {
     private static final String BUILD_TABLE_SQL_CROSS_CHAT_MESSAGE_SENT = "CREATE TABLE IF NOT EXISTS cross_chat_message_sent\n" +
             "(\n" +
             "    myMessageId BIGINT NOT NULL PRIMARY KEY UNIQUE,\n" +
+            "    owner       BIGINT NOT NULL,\n" +
             "    username    TEXT,\n" +
             "    color       INTEGER,\n" +
             "    avatarUrl   TEXT,\n" +

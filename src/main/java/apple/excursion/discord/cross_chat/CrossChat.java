@@ -86,9 +86,7 @@ public class CrossChat {
                 List<Message.Attachment> attachments = event.getMessage().getAttachments();
                 embedBuilder.setDescription(description);
                 String imageUrl = attachments.isEmpty() ? null : attachments.get(0).getUrl();
-                if (imageUrl != null) {
-                    embedBuilder.setImage(imageUrl);
-                }
+                if (imageUrl != null) embedBuilder.setImage(imageUrl);
                 MessageEmbed builtMessage = embedBuilder.build();
                 List<CrossChatId> fails = new ArrayList<>(1);
                 List<MessageId> messageIds = new ArrayList<>();
@@ -103,7 +101,7 @@ public class CrossChat {
                     }
                 }
                 try {
-                    InsertDB.insertCrossChatMessage(messageIds, username, color, avatarUrl, imageUrl, description);
+                    InsertDB.insertCrossChatMessage(messageIds, event.getAuthor().getIdLong(), username, color, avatarUrl, imageUrl, description);
                 } catch (SQLException ignored) { // it's whatever if i don't have this message saved
                 }
                 for (CrossChatId fail : fails) {
@@ -137,17 +135,19 @@ public class CrossChat {
                 if (user == null) return;
                 EmbedBuilder embedBuilder = new EmbedBuilder();
                 embedBuilder.setColor(messagesToAddReaction.color);
-                embedBuilder.setAuthor(messagesToAddReaction.username, null, messagesToAddReaction.avatarUrl);
-                if (messagesToAddReaction.imageUrl != null) embedBuilder.setImage(messagesToAddReaction.imageUrl);
+                embedBuilder.setAuthor(messagesToAddReaction.username + " #" + messagesToAddReaction.myMessageId, null, messagesToAddReaction.avatarUrl);
                 embedBuilder.setDescription(makeReactionMessage(messagesToAddReaction.description, messagesToAddReaction.reactions));
-                MessageEmbed builtMessage = embedBuilder.build();
 
                 for (MessageId messageId : messagesToAddReaction.messageIds) {
                     TextChannel channel = DiscordBot.client.getTextChannelById(messageId.channelId);
                     if (channel == null) continue;
                     Message message = channel.retrieveMessageById(messageId.messageId).complete();
                     if (message == null) continue;
-                    message.editMessage(builtMessage).queue();
+                    List<MessageEmbed> embeds = message.getEmbeds();
+                    MessageEmbed.ImageInfo img = embeds.isEmpty() ? null : embeds.get(0).getImage();
+                    if (img != null)
+                        embedBuilder.setImage(img.getUrl());
+                    message.editMessage(embedBuilder.build()).queue();
                     List<MessageReaction> reactions = message.getReactions();
                     if (reactions.size() >= 15) continue;
                     boolean alreadyHas = false;

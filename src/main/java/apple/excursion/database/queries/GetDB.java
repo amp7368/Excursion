@@ -467,14 +467,15 @@ public class GetDB {
             statement.executeQuery(GetSql.getSqlGetCrossChatMessageContent(myMessageId));
             if (response.isClosed())
                 return null;
-            String username = response.getString(2);
-            int color = response.getInt(3);
-            String avatarUrl = response.getString(4);
-            String imageUrl = response.getString(5);
-            String description = response.getString(6);
-            String reactions = response.getString(7);
+            long owner = response.getLong(2);
+            String username = response.getString(3);
+            int color = response.getInt(4);
+            String avatarUrl = response.getString(5);
+            String imageUrl = response.getString(6);
+            String description = response.getString(7);
+            String reactions = response.getString(8);
             statement.close();
-            return new CrossChatMessage(messageIds, username, color, avatarUrl, imageUrl, description, reactions);
+            return new CrossChatMessage(messageIds, myMessageId, owner, username, color, avatarUrl, imageUrl, description, reactions);
         }
         statement.close();
         return null;
