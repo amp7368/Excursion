@@ -1,6 +1,5 @@
 package apple.excursion.discord.commands;
 
-import apple.excursion.discord.commands.admin.*;
 import apple.excursion.discord.commands.cross_chat.CommandRemoveCrossChat;
 import apple.excursion.discord.commands.cross_chat.CommandSetCrossChat;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;

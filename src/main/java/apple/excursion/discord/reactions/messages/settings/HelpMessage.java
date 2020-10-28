@@ -17,9 +17,12 @@ public class HelpMessage implements ReactableMessage {
     private final Message message;
     private long lastUpdated = System.currentTimeMillis();
     private int page = 0;
-    private static final List<String> helpPages = Arrays.asList("Want to create your own tasks, help with the management of submissions," +
+    private static final List<String> helpPages = Arrays.asList("Hello, Wynncraftian. I am Yin. I am a bot with a list with dozens of locations in-game that you can explore to do fun and unusual activities by yourself, your guild-mates or your friends. These tasks are created by other Wynncraft players as this a minigame created by Wynncraft players, for Wynncraft players. This minigame is called Excursion, while I, Yin, I am a yokai that powers the inanimate object that runs this bot, a Raspberry Pi. I hope we can get along… just in case, though, please read through the other pages to learn how to use me!\n" +
+                    "\n" +
+                    "Completing a task earns you Experience Points (EP). EP are points you earn to show everyone else competing that you are the #1 excursionist on my leaderboards. All guilds and players are able to compete in Excursion through my EP leaderboards, but also through some monthly raffles to earn LE. For Raffles, you’ll be able to submit tasks and daily tasks to gain EP during the month. There will be prizes for the player with the most EP during the raffle month. You'll be able to find the raffle events on threads via the forums or announced by your guild authorities.",
+            "Want to create your own tasks, help with the management of submissions," +
                     " have a different title other than guest and different colors for your profile, be the first to know of our raffles or " +
-                    "join a community of dedicated explores and adventurers from all kinds of guilds and levels? Join the Farplane discord! <"+DiscordBot.EXCURSION_GUILD_INVITE+">",
+                    "join a community of dedicated explores and adventurers from all kinds of guilds and levels? Join the Farplane discord! <" + DiscordBot.EXCURSION_GUILD_INVITE + ">",
             "**y!lb:** player leaderboard. it ranks players by their EP of all time, shows their guild, and also shows how much EP a player has earned during the month and the last month.\n\n" +
                     "**y!glb:** guild leaderboard. it ranks guilds by their EP of all time, shows their player who contributed the most EP, and also shows much much EP a guild has earned during the month and the last month. \n\n" +
                     "**y!history or y!ghistory** - gives a per month leaderboard for players or guilds or a specific guild. " + AllReactables.Reactable.LEFT.getFirstEmoji() + " and "
@@ -40,8 +43,7 @@ public class HelpMessage implements ReactableMessage {
                     "**y!bug [message with an optional image]** sends a bug report\n" +
                     "**y!wt set"
     );
-    private static final List<String> helpTitlePages = Arrays.asList("Discord Info:",
-            "Excursion Benchmarks commands:", "Postcard Task commands:", "Community commands:"
+    private static final List<String> helpTitlePages = Arrays.asList("","Discord Info:", "Excursion Benchmarks commands:", "Postcard Task commands:", "Community commands:"
     );
 
     public HelpMessage(MessageChannel channel) {
