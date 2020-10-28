@@ -17,6 +17,7 @@ import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.requests.GatewayIntent;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
@@ -30,7 +31,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class DiscordBot extends ListenerAdapter {
-    public static final String PREFIX = "y!";
+    public static final String PREFIX = "t!";
     public static final long EXCURSION_GUILD_ID = 555318916344184834L;
     public static final long APPLEPTR16 = 253646208084475904L;
     public static final int BOT_COLOR = 0x4e80f7;
@@ -66,7 +67,7 @@ public class DiscordBot extends ListenerAdapter {
 
     public void enableDiscord() throws LoginException {
         DailyBans.isBan("");
-        JDABuilder builder = JDABuilder.createDefault(discordToken);
+        JDABuilder builder = JDABuilder.create(discordToken, GatewayIntent.GUILD_MESSAGES,GatewayIntent.GUILD_MESSAGE_REACTIONS);
         builder.addEventListeners(this);
         client = builder.build();
 //        try {

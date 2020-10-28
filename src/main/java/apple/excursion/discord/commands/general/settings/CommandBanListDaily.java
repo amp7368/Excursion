@@ -11,7 +11,7 @@ public class CommandBanListDaily implements DoCommand {
     public void dealWithCommand(MessageReceivedEvent event) {
         List<String> bans = DailyBans.getBans();
         if (bans.isEmpty())
-            event.getChannel().sendMessage("There are currently no daily bans (tasks that are banned from becoming daily tasks)").queue();
+            event.getChannel().sendMessage("There are currently no blacklisted dailies (tasks that are banned from becoming daily tasks)").queue();
         else
             event.getChannel().sendMessage("The tasks that will not become daily tasks is as follows: \n" + String.join("\n", bans)).queue();
     }

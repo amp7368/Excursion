@@ -47,7 +47,7 @@ public class SendLogs {
         if (IS_CHANNEL) {
             dms = DiscordBot.client.getTextChannelById(SENDER);
         } else {
-            dms = DiscordBot.client.retrieveUserById(SENDER).complete().openPrivateChannel().complete();
+            dms = DiscordBot.client.retrieveUserById(SENDER).complete().openPrivateChannel().complete();//todo
         }
         StringBuilder builder = new StringBuilder();
         for (String log : logs) {
@@ -67,7 +67,7 @@ public class SendLogs {
         if (IS_CHANNEL) {
             dms = DiscordBot.client.getTextChannelById(SENDER);
         } else {
-            dms = DiscordBot.client.retrieveUserById(SENDER).complete().openPrivateChannel().complete();
+            dms = DiscordBot.client.retrieveUserById(SENDER).complete().openPrivateChannel().complete();//todo
         }
         dms.sendMessage("Below is the DB as of " + Pretty.date(System.currentTimeMillis())).queue();
         synchronized (VerifyDB.syncDB) {
@@ -76,5 +76,26 @@ public class SendLogs {
                 dms.sendFile(file).complete();
             }
         }
+    }
+
+    public static void error(String module, String message) {
+        MessageChannel dms;
+        if (IS_CHANNEL) {
+            dms = DiscordBot.client.getTextChannelById(SENDER);
+        } else {
+            dms = DiscordBot.client.retrieveUserById(SENDER).complete().openPrivateChannel().complete();//todo
+        }
+        dms.sendMessage(String.format("[%s] %s", module, message)).queue();
+
+    }
+
+    public static void discordError(String module, String message) {
+        MessageChannel dms;
+        if (IS_CHANNEL) {
+            dms = DiscordBot.client.getTextChannelById(SENDER);
+        } else {
+            dms = DiscordBot.client.retrieveUserById(SENDER).complete().openPrivateChannel().complete();//todo
+        }
+        dms.sendMessage(String.format("[%s] %s", module, message)).queue();
     }
 }

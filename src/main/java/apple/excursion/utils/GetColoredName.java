@@ -4,6 +4,7 @@ import apple.excursion.discord.DiscordBot;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 
 import java.util.*;
 
@@ -30,7 +31,12 @@ public class GetColoredName {
     public static ColoredName get(long id) {
         Guild guild = DiscordBot.client.getGuildById(DiscordBot.EXCURSION_GUILD_ID);
         if (guild == null) return new ColoredName();
-        Member member = guild.retrieveMemberById(id).complete();
+        Member member;
+        try {
+            member = guild.retrieveMemberById(id).complete();
+        } catch (ErrorResponseException e) {
+            member = null;
+        }
         if (member == null) {
             return new ColoredName();
         } else {
@@ -50,7 +56,7 @@ public class GetColoredName {
         Guild guild = DiscordBot.client.getGuildById(DiscordBot.EXCURSION_GUILD_ID);
         if (guild == null) return ids;
         nameToGet = nameToGet.toLowerCase();
-        List<Member> members = guild.getMembers();
+        List<Member> members = guild.loadMembers().get();
         for (Member member : members) {
             if (member.getEffectiveName().toLowerCase().contains(nameToGet))
                 ids.add(member.getIdLong());

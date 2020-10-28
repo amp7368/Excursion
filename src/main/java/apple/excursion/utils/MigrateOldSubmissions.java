@@ -31,10 +31,10 @@ public class MigrateOldSubmissions {
             System.out.println("Player " + profile.getName() + " is being migrated");
             User user = DiscordBot.client.retrieveUserById(id).complete();
             if (user == null || user.isBot()) continue;
-            PrivateChannel dms = user.openPrivateChannel().complete();
+            PrivateChannel dms = user.openPrivateChannel().complete(); // this is fine if it throws an error.
             if (dms == null) continue;
             MessageHistory history = dms.getHistoryFromBeginning(100).complete();
-            List<Message> messages = history.getRetrievedHistory();
+            List<Message> messages = history.getRetrievedHistory();// this is fine if it throws an error.
             while (!messages.isEmpty()) {
                 for (Message message : messages) {
                     List<MessageEmbed> embeds = message.getEmbeds();

@@ -84,7 +84,7 @@ public class CrossChat {
                 String username = String.format("%s [%s]",
                         coloredName.getName() == null ? member.getEffectiveName() : coloredName.getName(),
                         event.getGuild().getName());
-                
+
                 int color = coloredName.getColor();
                 String description = event.getMessage().getContentDisplay();
                 EmbedBuilder embedBuilder = new EmbedBuilder();
@@ -149,31 +149,34 @@ public class CrossChat {
                 for (MessageId messageId : messagesToAddReaction.messageIds) {
                     TextChannel channel = DiscordBot.client.getTextChannelById(messageId.channelId);
                     if (channel == null) continue;
-                    Message message = channel.retrieveMessageById(messageId.messageId).complete();
-                    if (message == null) continue;
-                    List<MessageEmbed> embeds = message.getEmbeds();
-                    MessageEmbed.ImageInfo img = embeds.isEmpty() ? null : embeds.get(0).getImage();
-                    if (img != null)
-                        embedBuilder.setImage(img.getUrl());
-                    message.editMessage(embedBuilder.build()).queue();
-                    List<MessageReaction> reactions = message.getReactions();
-                    if (reactions.size() >= 15) continue;
-                    boolean alreadyHas = false;
-                    for (MessageReaction reaction : reactions) {
-                        if (equalsReactions(event.getReactionEmote(), reaction.getReactionEmote())) {
-                            alreadyHas = true;
-                            break;
+                    channel.retrieveMessageById(messageId.messageId).queue(message -> {
+                        if (message == null) return;
+                        List<MessageEmbed> embeds = message.getEmbeds();
+                        MessageEmbed.ImageInfo img = embeds.isEmpty() ? null : embeds.get(0).getImage();
+                        if (img != null)
+                            embedBuilder.setImage(img.getUrl());
+                        message.editMessage(embedBuilder.build()).queue();
+                        List<MessageReaction> reactions = message.getReactions();
+                        if (reactions.size() >= 15) return;
+                        boolean alreadyHas = false;
+                        for (MessageReaction reaction : reactions) {
+                            if (equalsReactions(event.getReactionEmote(), reaction.getReactionEmote())) {
+                                alreadyHas = true;
+                                break;
+                            }
                         }
-                    }
-                    if (!alreadyHas) {
-                        if (event.getReactionEmote().isEmoji())
-                            message.addReaction(event.getReactionEmote().getEmoji()).queue();
-                        else
-                            message.addReaction(event.getReactionEmote().getEmote()).queue();
-                    }
+                        if (!alreadyHas) {
+                            if (event.getReactionEmote().isEmoji())
+                                message.addReaction(event.getReactionEmote().getEmoji()).queue();
+                            else
+                                message.addReaction(event.getReactionEmote().getEmote()).queue();
+                        }
+                    }, failure -> { // the message doesn't exist, so just ignore that
+                    });
                 }
             }
         }
+
     }
 
     private static boolean equalsReactions(MessageReaction.ReactionEmote e1, MessageReaction.ReactionEmote e2) {

@@ -8,7 +8,7 @@ import apple.excursion.discord.cross_chat.CrossChat;
 import apple.excursion.discord.data.answers.SubmissionData;
 import apple.excursion.sheets.SheetsPlayerStats;
 import apple.excursion.utils.Pair;
-import net.dv8tion.jda.api.entities.User;
+import apple.excursion.utils.SendLogs;
 
 import java.io.IOException;
 import java.sql.ResultSet;
@@ -20,6 +20,7 @@ import static apple.excursion.database.VerifyDB.*;
 
 public class InsertDB {
     private static final int SOUL_JUICE_FOR_DAILY = 1;
+    private static final String MODULE = "InsertDB";
 
     public static void insertSubmission(SubmissionData data) throws SQLException {
         VerifyDB.verify();
@@ -47,9 +48,14 @@ public class InsertDB {
                 try {
                     SheetsPlayerStats.submit(data.getTaskName(), id.getKey(), id.getValue(), soulJuice);
                 } catch (IOException e) {
-                    final User user = DiscordBot.client.retrieveUserById(id.getKey()).complete();
-                    if (user == null || user.isBot()) continue;
-                    user.openPrivateChannel().complete().sendMessage("There was an error making your profile. Tell appleptr16 or ojomFox: " + e.getMessage()).queue();
+                    SendLogs.error(MODULE, String.format("IOException updating the sheet for <%s,%d> in %s", id.getValue(), id.getKey(), data.getTaskName()));
+                    DiscordBot.client.retrieveUserById(id.getKey()).queue(user -> {
+                        if ((user != null) && !user.isBot())
+                            user.openPrivateChannel().queue(c ->
+                                    c.sendMessage("There was an error making your profile. Tell appleptr16 or ojomFox: " + e.getMessage()).queue());
+                    }, failure -> {
+                        SendLogs.discordError(MODULE, failure.getMessage());
+                    });
                 }
                 getSql = GetSql.getSqlGetPlayerGuild(id.getKey());
                 response = statement.executeQuery(getSql);

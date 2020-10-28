@@ -6,10 +6,10 @@ import apple.excursion.discord.DiscordBot;
 import apple.excursion.discord.data.TaskSimple;
 import apple.excursion.discord.reactions.AllReactables;
 import apple.excursion.utils.Pair;
+import apple.excursion.utils.SendLogs;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.PrivateChannel;
-import net.dv8tion.jda.api.entities.User;
 
 import javax.annotation.Nullable;
 import java.sql.SQLException;
@@ -85,15 +85,16 @@ public class SubmissionData {
         for (Pair<Long, Long> channelMessageAndId : reviewerMessages) {
             PrivateChannel channel = DiscordBot.client.getPrivateChannelById(channelMessageAndId.getKey());
             if (channel == null) continue;
-            Message other = channel.retrieveMessageById(channelMessageAndId.getValue()).complete();
-            if (other == null) continue;
-            if (isAccepted)
-                other.editMessage("**" + reviewerName + " accepted the submission**\n" + other.getContentStripped()).queue();
-            else
-                other.editMessage("**" + reviewerName + " denied the submission**\n" + other.getContentStripped()).queue();
+            channel.retrieveMessageById(channelMessageAndId.getValue()).queue(other -> {
+                if (other == null) return;
+                if (isAccepted)
+                    other.editMessage("**" + reviewerName + " accepted the submission**\n" + other.getContentStripped()).queue();
+                else
+                    other.editMessage("**" + reviewerName + " denied the submission**\n" + other.getContentStripped()).queue();
 
-            other.removeReaction(AllReactables.Reactable.ACCEPT.getFirstEmoji()).queue();
-            other.removeReaction(AllReactables.Reactable.REJECT.getFirstEmoji()).queue();
+                other.removeReaction(AllReactables.Reactable.ACCEPT.getFirstEmoji()).queue();
+                other.removeReaction(AllReactables.Reactable.REJECT.getFirstEmoji()).queue();
+            }, failure -> SendLogs.discordError("Submit", "Failed to notify a reviewer of the accepted/rejected submission"));
         }
 
         EmbedBuilder embed = new EmbedBuilder();
@@ -102,38 +103,38 @@ public class SubmissionData {
         if (attachmentsUrl != null)
             embed.setImage(attachmentsUrl);
         for (Pair<Long, String> userRaw : allSubmitters) {
-            User user = DiscordBot.client.getUserById(userRaw.getKey());
-            if (user == null) user = DiscordBot.client.retrieveUserById(userRaw.getKey()).complete();
-            if (user != null) {
-                if (user.isBot()) return;
-                PrivateChannel channel = user.openPrivateChannel().complete();
-                List<String> otherSubmitters = new ArrayList<>();
-                for (Pair<Long, String> otherUserRaw : allSubmitters) {
-                    if (!otherUserRaw.getKey().equals(userRaw.getKey())) {
-                        otherSubmitters.add(otherUserRaw.getValue());
+            DiscordBot.client.retrieveUserById(userRaw.getKey()).queue(user -> {
+                if (user != null) {
+                    if (user.isBot()) return;
+                    PrivateChannel channel = user.openPrivateChannel().complete();
+                    List<String> otherSubmitters = new ArrayList<>();
+                    for (Pair<Long, String> otherUserRaw : allSubmitters) {
+                        if (!otherUserRaw.getKey().equals(userRaw.getKey())) {
+                            otherSubmitters.add(otherUserRaw.getValue());
+                        }
                     }
-                }
-                StringBuilder text = new StringBuilder();
-                text.append(String.format("**The evidence has been %s**", this.isAccepted ? "accepted!" : "denied."));
-                text.append("\n");
-                if (otherSubmitters.isEmpty()) {
-                    text.append("There were no other submitters.");
-                } else {
-                    text.append("Players submitted: *");
-                    text.append(String.join(", ", otherSubmitters));
-                    text.append("*");
-                    text.append('.');
-                }
-                if (!links.isEmpty()) {
-                    text.append("\nLinks include:");
-                    for (String link : links) {
-                        text.append("\n");
-                        text.append(link);
+                    StringBuilder text = new StringBuilder();
+                    text.append(String.format("**The evidence has been %s**", this.isAccepted ? "accepted!" : "denied."));
+                    text.append("\n");
+                    if (otherSubmitters.isEmpty()) {
+                        text.append("There were no other submitters.");
+                    } else {
+                        text.append("Players submitted: *");
+                        text.append(String.join(", ", otherSubmitters));
+                        text.append("*");
+                        text.append('.');
                     }
+                    if (!links.isEmpty()) {
+                        text.append("\nLinks include:");
+                        for (String link : links) {
+                            text.append("\n");
+                            text.append(link);
+                        }
+                    }
+                    embed.setDescription(text);
+                    channel.sendMessage(embed.build()).queue();
                 }
-                embed.setDescription(text);
-                channel.sendMessage(embed.build()).queue();
-            }
+            }, failure -> SendLogs.discordError("Submit", String.format("There was an error notifying <%s,%d> of their reviewed submission", userRaw.getValue(), userRaw.getKey())));
         }
     }
 
@@ -198,7 +199,6 @@ public class SubmissionData {
         DAILY,
         NORMAL,
         SYNC,
-        OLD;
-
+        OLD
     }
 }
