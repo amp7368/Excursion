@@ -1,7 +1,10 @@
 package apple.excursion.database.queries;
 
 import apple.excursion.database.VerifyDB;
+import apple.excursion.discord.data.DailyBans;
+import apple.excursion.discord.data.Task;
 import apple.excursion.discord.data.answers.DailyTaskWithDate;
+import apple.excursion.sheets.SheetsTasks;
 import apple.excursion.utils.Pretty;
 
 import javax.annotation.Nullable;
@@ -200,6 +203,47 @@ public class GetCalendarDB {
         }
     }
 
+    public static void blacklist(String blacklist) throws SQLException {
+        synchronized (VerifyDB.syncDB) {
+            List<String> bans = DailyBans.getBans();
+            String monthName = VerifyDB.getMonthFromDate(System.currentTimeMillis());
+            List<Task> tasks = SheetsTasks.getTasks();
+            List<Task> tasksCopy = new ArrayList<>(tasks);
+            Collections.shuffle(tasks);
+            List<List<String>> tasksThisMonth = new ArrayList<>();
+            String sql = GetSql.getSqlGetCalendar(monthName);
+            Statement statement = VerifyDB.calendarDbConnection.createStatement();
+            ResultSet response = statement.executeQuery(sql);
+            if (!response.isClosed())
+                while (response.next())
+                    tasksThisMonth.add(Arrays.asList(GetSql.convertTaskNameFromSql(response.getString(2)).split(",")));
+            response.close();
+            for (int i = 0; i < tasksThisMonth.size(); i++) {
+                if (tasksThisMonth.get(i).contains(blacklist)) {
+                    List<String> newTasksToday = new ArrayList<>();
+                    int toAdd = 0;
+                    for (String task : tasksThisMonth.get(i)) {
+                        if (task.equals(blacklist)) toAdd++;
+                        else newTasksToday.add(task);
+                    }
+                    for (int j = 0; j < toAdd; j++) {
+                        Task task;
+                        do {
+                            task = tasks.remove(0);
+                            if (tasks.isEmpty()) {
+                                tasks = new ArrayList<>(tasksCopy);
+                            }
+                        } while (newTasksToday.contains(task.name) || bans.contains(task.name));
+                    }
+                    statement.addBatch(GetSql.getSqlUpdateCalendar(monthName, i + 1, newTasksToday));// this is 1 indexed
+                }
+            }
+            statement.executeBatch();
+            statement.close();
+            tasksInMonths.removeIf(monthWithTasks -> monthWithTasks.monthName.equals(monthName));
+        }
+    }
+
     private static class MonthWithTasks {
         private static final long OLD_CACHE = 1000 * 60 * 60 * 2; //2 hrs
         private final int monthInt;
@@ -220,11 +264,10 @@ public class GetCalendarDB {
             ResultSet response = statement.executeQuery(sql);
             int i = 0;
             // the first is always repeated twice for no reason
-            if (!response.isClosed()) response.next();
-            while (!response.isClosed()) {
-                tasks[i++] = Arrays.asList(GetSql.convertTaskNameFromSql(response.getString(2)).split(","));
-                response.next();
-            }
+            if (!response.isClosed())
+                while (response.next()) {
+                    tasks[i++] = Arrays.asList(GetSql.convertTaskNameFromSql(response.getString(2)).split(","));
+                }
             response.close();
             statement.close();
 

@@ -11,6 +11,7 @@ import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class GetSql {
@@ -525,7 +526,7 @@ public class GetSql {
                 "WHERE myMessageId = %d;", String.format(",%s.%s", username, event.getReactionEmote().isEmoji() ? event.getReactionEmote().getEmoji() : event.getReactionEmote().getEmote().getName()), myMessageId);
     }
 
-    public static String getSqlGetCrossChatMessages(long myMessageId,long owner) {
+    public static String getSqlGetCrossChatMessages(long myMessageId, long owner) {
         return String.format("SELECT *\n" +
                 "FROM (\n" +
                 "         SELECT *\n" +
@@ -534,6 +535,13 @@ public class GetSql {
                 "     ) as matches\n" +
                 "         INNER JOIN cross_chat_message_sent\n" +
                 "                    ON matches.myMessageId = cross_chat_message_sent.myMessageId\n" +
-                "WHERE cross_chat_message_sent.owner = %d", myMessageId,owner);
+                "WHERE cross_chat_message_sent.owner = %d", myMessageId, owner);
+    }
+
+    public static String getSqlUpdateCalendar(String monthName, int day, List<String> newTasksToday) {
+        newTasksToday = newTasksToday.stream().map(GetSql::convertTaskNameToSql).collect(Collectors.toList());
+        return String.format("UPDATE %s \n" +
+                "SET task_names = '%s'\n" +
+                "WHERE date = %d;", monthName, String.join(",", newTasksToday), day);
     }
 }
