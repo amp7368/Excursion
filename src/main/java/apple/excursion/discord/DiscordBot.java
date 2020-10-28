@@ -99,7 +99,7 @@ public class DiscordBot extends ListenerAdapter {
             return;
         }
         // the author is not a bot
-        CrossChat.dealWithMessage(event);
+
         String messageContent = event.getMessage().getContentStripped().toLowerCase();
         // deal with the different commands
         for (Commands command : Commands.values()) {
@@ -125,6 +125,9 @@ public class DiscordBot extends ListenerAdapter {
                 }
             }
         }
+
+        // this isn't a command
+        CrossChat.dealWithMessage(event);
     }
 
     @Override

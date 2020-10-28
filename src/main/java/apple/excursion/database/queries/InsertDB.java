@@ -137,14 +137,13 @@ public class InsertDB {
         }
     }
 
-    public static void insertCrossChatMessage(List<MessageId> messageIds, long owner, String username, int color, String avatarUrl, String imageUrl, String description) throws SQLException {
+    public static void insertCrossChatMessage(long myMessageId, List<MessageId> messageIds, long owner, String username, int color, String avatarUrl, String imageUrl, String description) throws SQLException {
         synchronized (syncDB) {
             Statement statement = database.createStatement();
-            statement.addBatch(GetSql.getSqlInsertCrossChatSent(VerifyDB.currentMyMessageId, owner, username, color, avatarUrl, imageUrl, description));
+            statement.addBatch(GetSql.getSqlInsertCrossChatSent(myMessageId, owner, username, color, avatarUrl, imageUrl, description));
             for (MessageId messageId : messageIds) {
-                statement.addBatch(GetSql.getSqlInsertCrossChatMessages(VerifyDB.currentMyMessageId, messageId.serverId, messageId.channelId, messageId.messageId));
+                statement.addBatch(GetSql.getSqlInsertCrossChatMessages(myMessageId, messageId.serverId, messageId.channelId, messageId.messageId));
             }
-            currentMyMessageId++;
             statement.executeBatch();
             statement.close();
         }

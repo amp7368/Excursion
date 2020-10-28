@@ -1,5 +1,6 @@
 package apple.excursion.discord.cross_chat;
 
+import apple.excursion.database.VerifyDB;
 import apple.excursion.database.objects.CrossChatId;
 import apple.excursion.database.objects.CrossChatMessage;
 import apple.excursion.database.objects.MessageId;
@@ -74,6 +75,7 @@ public class CrossChat {
         long channelId = event.getChannel().getIdLong();
         for (CrossChatId crossChat : crossChats.keySet()) {
             if (crossChat.channelId == channelId && crossChat.serverId == serverId) {
+                long myMessageId = VerifyDB.currentMyMessageId++;
                 Member member = event.getMember();
                 if (member == null) break;
                 String username = member.getEffectiveName();
@@ -82,7 +84,7 @@ public class CrossChat {
                 EmbedBuilder embedBuilder = new EmbedBuilder();
                 embedBuilder.setColor(color);
                 String avatarUrl = event.getAuthor().getAvatarUrl();
-                embedBuilder.setAuthor(username, null, avatarUrl);
+                embedBuilder.setAuthor(username + " #" + myMessageId, null, avatarUrl);
                 List<Message.Attachment> attachments = event.getMessage().getAttachments();
                 embedBuilder.setDescription(description);
                 String imageUrl = attachments.isEmpty() ? null : attachments.get(0).getUrl();
@@ -101,7 +103,7 @@ public class CrossChat {
                     }
                 }
                 try {
-                    InsertDB.insertCrossChatMessage(messageIds, event.getAuthor().getIdLong(), username, color, avatarUrl, imageUrl, description);
+                    InsertDB.insertCrossChatMessage(myMessageId, messageIds, event.getAuthor().getIdLong(), username, color, avatarUrl, imageUrl, description);
                 } catch (SQLException ignored) { // it's whatever if i don't have this message saved
                 }
                 for (CrossChatId fail : fails) {

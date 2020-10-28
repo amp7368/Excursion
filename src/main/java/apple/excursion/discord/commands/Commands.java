@@ -25,6 +25,7 @@ public enum Commands {
     GUILD(Collections.singletonList("guild"), "Change your guild", "[guild tag]", new CommandGuild()),
     TITLE(Collections.singletonList("title"), "Change your rank and title", "[title]", new CommandTitle()),
     BAN_LIST(Collections.singletonList("daily"), "Shows the list of daily bans", "", new CommandBanListDaily()),
+    CROSS_CHAT_DELETE(Collections.singletonList("delete"), "Deletes the message corresponding to the id if it's your own", "[id]", new CommandCrossChatDelete()),
     BUG_REPORT(Collections.singletonList("bug"), "Reports the following message (with an optional image) as a bug", "", new CommandBugReport()),
     HELP(Collections.singletonList("help"), "Gives this help message", "", new CommandHelp());
 

@@ -190,7 +190,7 @@ public class VerifyDB {
         currentSubmissionId = Math.max(statement.executeQuery("SELECT MAX(submission_id) FROM submissions_link;").getInt(1) + 1, currentSubmissionId);
 
         currentMyMessageId = statement.executeQuery("SELECT MAX(myMessageId) FROM cross_chat_message_sent;").getInt(1) + 1;
-        currentMyMessageId = Math.max(statement.executeQuery("SELECT MAX(myMessageId) FROM cross_chat_messages;").getInt(1) + 1, currentSubmissionId);
+        currentMyMessageId = Math.max(statement.executeQuery("SELECT MAX(myMessageId) FROM cross_chat_messages;").getInt(1) + 1, currentMyMessageId);
 
         currentResponseId = statement.executeQuery("SELECT MAX(response_id) FROM response;").getInt(1) + 1;
         currentResponseId = Math.max(statement.executeQuery("SELECT MAX(response_id) FROM response_link;").getInt(1) + 1, currentResponseId);

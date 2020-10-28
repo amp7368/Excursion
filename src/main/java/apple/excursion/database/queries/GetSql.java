@@ -1,7 +1,6 @@
 package apple.excursion.database.queries;
 
 import apple.excursion.database.VerifyDB;
-import apple.excursion.discord.DiscordBot;
 import apple.excursion.discord.data.Task;
 import apple.excursion.discord.data.answers.SubmissionData;
 import apple.excursion.discord.reactions.messages.benchmark.CalendarMessage;
@@ -524,5 +523,17 @@ public class GetSql {
         return String.format("UPDATE cross_chat_message_sent\n" +
                 "SET reactions = cross_chat_message_sent.reactions || '%s'\n" +
                 "WHERE myMessageId = %d;", String.format(",%s.%s", username, event.getReactionEmote().isEmoji() ? event.getReactionEmote().getEmoji() : event.getReactionEmote().getEmote().getName()), myMessageId);
+    }
+
+    public static String getSqlGetCrossChatMessages(long myMessageId,long owner) {
+        return String.format("SELECT *\n" +
+                "FROM (\n" +
+                "         SELECT *\n" +
+                "         FROM cross_chat_messages\n" +
+                "         WHERE myMessageId = %d\n" +
+                "     ) as matches\n" +
+                "         INNER JOIN cross_chat_message_sent\n" +
+                "                    ON matches.myMessageId = cross_chat_message_sent.myMessageId\n" +
+                "WHERE cross_chat_message_sent.owner = %d", myMessageId,owner);
     }
 }
