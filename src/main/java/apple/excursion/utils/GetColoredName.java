@@ -12,7 +12,7 @@ public class GetColoredName {
 
     static {
         roles.add(555340987086667776L); // Farplane Resident
-        roles.add(757738058656252034L); // Masonry Top
+        roles.add(757738058656252034L); // Masonry Two
         roles.add(744702853398003794L); // Purple
         roles.add(728080120761417828L); // Indigo
         roles.add(728080122258653316L); // Green
@@ -30,7 +30,7 @@ public class GetColoredName {
     public static ColoredName get(long id) {
         Guild guild = DiscordBot.client.getGuildById(DiscordBot.EXCURSION_GUILD_ID);
         if (guild == null) return new ColoredName();
-        Member member = guild.getMemberById(id);
+        Member member = guild.retrieveMemberById(id).complete();
         if (member == null) {
             return new ColoredName();
         } else {

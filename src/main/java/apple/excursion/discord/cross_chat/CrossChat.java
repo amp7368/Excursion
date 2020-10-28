@@ -7,6 +7,8 @@ import apple.excursion.database.objects.MessageId;
 import apple.excursion.database.queries.GetDB;
 import apple.excursion.database.queries.InsertDB;
 import apple.excursion.discord.DiscordBot;
+import apple.excursion.utils.ColoredName;
+import apple.excursion.utils.GetColoredName;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -78,8 +80,12 @@ public class CrossChat {
                 long myMessageId = VerifyDB.currentMyMessageId++;
                 Member member = event.getMember();
                 if (member == null) break;
-                String username = member.getEffectiveName();
-                int color = member.getColorRaw();
+                ColoredName coloredName = GetColoredName.get(event.getAuthor().getIdLong());
+                String username = String.format("%s [%s]",
+                        coloredName.getName() == null ? member.getEffectiveName() : coloredName.getName(),
+                        event.getGuild().getName());
+                
+                int color = coloredName.getColor();
                 String description = event.getMessage().getContentDisplay();
                 EmbedBuilder embedBuilder = new EmbedBuilder();
                 embedBuilder.setColor(color);
