@@ -43,7 +43,7 @@ public class HelpMessage implements ReactableMessage {
                     "**y!bug [message with an optional image]** sends a bug report\n" +
                     "**y!wt set"
     );
-    private static final List<String> helpTitlePages = Arrays.asList("","Discord Info:", "Excursion Benchmarks commands:", "Postcard Task commands:", "Community commands:"
+    private static final List<String> helpTitlePages = Arrays.asList("Introduction","Discord Info:", "Excursion Benchmarks commands:", "Postcard Task commands:", "Community commands:"
     );
 
     public HelpMessage(MessageChannel channel) {
