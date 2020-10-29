@@ -48,6 +48,9 @@ public enum Commands {
     public String getUsageMessage() {
         return String.format("Usage - %s%s %s", PREFIX, commandNames.get(0), usageMessage);
     }
+    public String getBareUsageMessage() {
+        return String.format("%s%s %s", PREFIX, commandNames.get(0), usageMessage);
+    }
 
     public boolean isCommand(String command) {
         for (String myCommand : commandNames)
