@@ -494,11 +494,11 @@ public class GetDB {
                 if (response.isClosed())
                     return null;
                 long owner = response.getLong(2);
-                String username = response.getString(3);
+                String username = GetSql.convertTaskNameFromSql(response.getString(3));
                 int color = response.getInt(4);
                 String avatarUrl = response.getString(5);
                 String imageUrl = response.getString(6);
-                String description = response.getString(7);
+                String description = GetSql.convertTaskNameFromSql(response.getString(7));
                 String reactions = response.getString(8);
                 statement.close();
                 return new CrossChatMessage(messageIds, myMessageId, owner, username, color, avatarUrl, imageUrl, description, reactions);

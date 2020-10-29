@@ -51,7 +51,7 @@ public class ShoutConfirmationMessage implements ReactableMessage {
                 for (Pair<Long, String> recipient : responseRecipients) {
                     DiscordBot.client.retrieveUserById(recipient.getKey()).queue(user -> {
                         if (user == null || user.isBot()) return;
-                        user.openPrivateChannel().complete().sendMessage(messageToSend).queue();
+                        user.openPrivateChannel().queue(channel -> channel.sendMessage(messageToSend).queue(), failure -> event.getChannel().sendMessage("I couldn't send that message to " + recipient.getValue()).queue());
                     }, failure -> event.getChannel().sendMessage("I couldn't send that message to " + recipient.getValue()).queue());
                 }
                 message.removeReaction(AllReactables.Reactable.ACCEPT.getFirstEmoji()).queue();

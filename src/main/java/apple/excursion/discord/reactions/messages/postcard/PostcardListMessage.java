@@ -7,6 +7,7 @@ import apple.excursion.discord.reactions.ReactableMessage;
 import apple.excursion.sheets.SheetsTasks;
 import apple.excursion.utils.PostcardDisplay;
 import apple.excursion.utils.Pretty;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.User;
@@ -56,9 +57,13 @@ public class PostcardListMessage implements ReactableMessage {
         this.message = channel.sendMessage(makeMessage()).complete();
         this.message.addReaction(AllReactables.Reactable.LEFT.getFirstEmoji()).queue();
         this.message.addReaction(AllReactables.Reactable.RIGHT.getFirstEmoji()).queue();
-        this.message.addReaction(DiscordBot.client.getEmoteById(AllReactables.Reactable.DARES.getFirstId())).queue();
-        this.message.addReaction(DiscordBot.client.getEmoteById(AllReactables.Reactable.EXCURSIONS.getFirstId())).queue();
-        this.message.addReaction(DiscordBot.client.getEmoteById(AllReactables.Reactable.MISSIONS.getFirstId())).queue();
+
+        Guild excursionGuild = DiscordBot.client.getGuildById(DiscordBot.EXCURSION_GUILD_ID);
+        if (excursionGuild != null) {
+            this.message.addReaction(excursionGuild.getEmoteById(AllReactables.Reactable.DARES.getFirstId())).queue();
+            this.message.addReaction(excursionGuild.getEmoteById(AllReactables.Reactable.EXCURSIONS.getFirstId())).queue();
+            this.message.addReaction(excursionGuild.getEmoteById(AllReactables.Reactable.MISSIONS.getFirstId())).queue();
+        }
         int i = 0;
         for (String letter : AllReactables.emojiAlphabet) {
             if (i++ == ENTRIES_PER_PAGE) break;

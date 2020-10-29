@@ -123,7 +123,8 @@ public class InsertDB {
         synchronized (syncDB) {
             Statement statement = database.createStatement();
             String sql = GetSql.getSqlExistsCrossChat(serverId);
-            if (statement.executeQuery(sql).getInt(1) == 1) {
+            int exists = statement.executeQuery(sql).getInt(1);
+            if (exists == 1) {
                 sql = GetSql.getSqlUpdateCrossChat(serverId, channelId);
             } else {
                 sql = GetSql.getSqlInsertCrossChat(serverId, channelId);

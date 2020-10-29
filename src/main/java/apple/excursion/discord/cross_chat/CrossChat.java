@@ -36,6 +36,12 @@ public class CrossChat {
 
     public static void add(CrossChatId crossChat) {
         synchronized (sync) {
+            for (CrossChatId cc : crossChats.keySet()) {
+                if (cc.serverId == crossChat.serverId) {
+                    crossChats.remove(cc);
+                    break;
+                }
+            }
             crossChats.put(crossChat, DiscordBot.client.getTextChannelById(crossChat.channelId));
         }
     }
@@ -111,6 +117,7 @@ public class CrossChat {
                 try {
                     InsertDB.insertCrossChatMessage(myMessageId, messageIds, event.getAuthor().getIdLong(), username, color, avatarUrl, imageUrl, description);
                 } catch (SQLException ignored) { // it's whatever if i don't have this message saved
+                    ignored.printStackTrace(); //todo remove
                 }
                 for (CrossChatId fail : fails) {
                     crossChats.remove(fail);

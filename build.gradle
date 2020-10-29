@@ -31,7 +31,7 @@ dependencies {
     compile 'com.google.oauth-client:google-oauth-client-jetty:1.30.4'
     compile 'com.google.apis:google-api-services-sheets:v4-rev581-1.25.0'
     compile group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1.1'
-    implementation 'net.dv8tion:JDA:4.2.0_210'
+    implementation 'net.dv8tion:JDA:4.2.0_212'
 }
 
 project.buildDir("C:\\Users\\Aaron\\Desktop\\bots\\excursionBot")

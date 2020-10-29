@@ -2,7 +2,6 @@ package apple.excursion;
 
 import apple.excursion.database.VerifyDB;
 import apple.excursion.discord.DiscordBot;
-import apple.excursion.utils.MigrateOldSubmissions;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;

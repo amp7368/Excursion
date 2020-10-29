@@ -66,26 +66,21 @@ public class DiscordBot extends ListenerAdapter {
     }
 
     public void enableDiscord() throws LoginException {
-        DailyBans.isBan("");
-        JDABuilder builder = JDABuilder.create(discordToken, GatewayIntent.GUILD_MESSAGES,GatewayIntent.GUILD_MESSAGE_REACTIONS);
+        DailyBans.isBan(""); // just make sure the static is done in that class
+        JDABuilder builder = JDABuilder.create(discordToken, GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_MESSAGE_REACTIONS, GatewayIntent.GUILD_EMOJIS, GatewayIntent.DIRECT_MESSAGES, GatewayIntent.DIRECT_MESSAGE_REACTIONS);
         builder.addEventListeners(this);
         client = builder.build();
-//        try {
-//            MigrateOldSubmissions.migrate();
-//        } catch (IOException | SQLException e) {
-//            e.printStackTrace();
-//        }
-//        client.getPresence().setPresence(Activity.playing(PREFIX + "help"), true);
+        client.getPresence().setPresence(Activity.playing(PREFIX + "help"), true);
     }
 
     @Override
     public void onReady(@Nonnull ReadyEvent event) {
         try {
-            Thread.sleep(5000);
+            Thread.sleep(4000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-//        MigrateOldSubmissions.migrate();
+//        new MigrateOldSubmissions().start();
         new BackupThread().start();
     }
 
@@ -118,7 +113,7 @@ public class DiscordBot extends ListenerAdapter {
             }
         }
         Member member = event.getMember();
-        if (member != null && member.hasPermission(Permission.ADMINISTRATOR)) {
+        if (member != null && (member.hasPermission(Permission.ADMINISTRATOR) || member.isOwner())) {
             for (CommandsManageServer command : CommandsManageServer.values()) {
                 if (command.isCommand(messageContent)) {
                     command.run(event);
@@ -138,7 +133,8 @@ public class DiscordBot extends ListenerAdapter {
             return;
         }
         AllReactables.dealWithReaction(event);
-        CrossChat.dealWithReaction(event);
+        if (event.isFromGuild())
+            CrossChat.dealWithReaction(event);
         DatabaseResponseReactable.dealWithReaction(event);
     }
 }

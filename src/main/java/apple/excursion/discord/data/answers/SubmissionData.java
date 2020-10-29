@@ -106,33 +106,34 @@ public class SubmissionData {
             DiscordBot.client.retrieveUserById(userRaw.getKey()).queue(user -> {
                 if (user != null) {
                     if (user.isBot()) return;
-                    PrivateChannel channel = user.openPrivateChannel().complete();
-                    List<String> otherSubmitters = new ArrayList<>();
-                    for (Pair<Long, String> otherUserRaw : allSubmitters) {
-                        if (!otherUserRaw.getKey().equals(userRaw.getKey())) {
-                            otherSubmitters.add(otherUserRaw.getValue());
+                    user.openPrivateChannel().queue(channel -> {
+                        List<String> otherSubmitters = new ArrayList<>();
+                        for (Pair<Long, String> otherUserRaw : allSubmitters) {
+                            if (!otherUserRaw.getKey().equals(userRaw.getKey())) {
+                                otherSubmitters.add(otherUserRaw.getValue());
+                            }
                         }
-                    }
-                    StringBuilder text = new StringBuilder();
-                    text.append(String.format("**The evidence has been %s**", this.isAccepted ? "accepted!" : "denied."));
-                    text.append("\n");
-                    if (otherSubmitters.isEmpty()) {
-                        text.append("There were no other submitters.");
-                    } else {
-                        text.append("Players submitted: *");
-                        text.append(String.join(", ", otherSubmitters));
-                        text.append("*");
-                        text.append('.');
-                    }
-                    if (!links.isEmpty()) {
-                        text.append("\nLinks include:");
-                        for (String link : links) {
-                            text.append("\n");
-                            text.append(link);
+                        StringBuilder text = new StringBuilder();
+                        text.append(String.format("**The evidence has been %s**", this.isAccepted ? "accepted!" : "denied."));
+                        text.append("\n");
+                        if (otherSubmitters.isEmpty()) {
+                            text.append("There were no other submitters.");
+                        } else {
+                            text.append("Players submitted: *");
+                            text.append(String.join(", ", otherSubmitters));
+                            text.append("*");
+                            text.append('.');
                         }
-                    }
-                    embed.setDescription(text);
-                    channel.sendMessage(embed.build()).queue();
+                        if (!links.isEmpty()) {
+                            text.append("\nLinks include:");
+                            for (String link : links) {
+                                text.append("\n");
+                                text.append(link);
+                            }
+                        }
+                        embed.setDescription(text);
+                        channel.sendMessage(embed.build()).queue();
+                    }, failure -> SendLogs.discordError("Submit", String.format("There was an error notifying <%s,%d> of their reviewed submission", userRaw.getValue(), userRaw.getKey())));
                 }
             }, failure -> SendLogs.discordError("Submit", String.format("There was an error notifying <%s,%d> of their reviewed submission", userRaw.getValue(), userRaw.getKey())));
         }
