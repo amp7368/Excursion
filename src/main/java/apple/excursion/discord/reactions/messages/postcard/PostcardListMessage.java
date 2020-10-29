@@ -48,10 +48,10 @@ public class PostcardListMessage implements ReactableMessage {
         dares.removeIf(task -> !task.category.equalsIgnoreCase(Category.DARE.name()));
         excursions.removeIf(task -> !task.category.equalsIgnoreCase(Category.EXCURSION.name()));
         missions.removeIf(task -> !task.category.equalsIgnoreCase(Category.MISSION.name()));
-        dares.sort((t1, t2) -> t2.points - t1.points);
-        excursions.sort((t1, t2) -> t2.points - t1.points);
-        missions.sort((t1, t2) -> t2.points - t1.points);
-        allTasks.sort((t1, t2) -> t2.points - t1.points);
+        dares.sort((t1, t2) -> String.CASE_INSENSITIVE_ORDER.compare(t1.name, t2.name));
+        excursions.sort((t1, t2) ->  String.CASE_INSENSITIVE_ORDER.compare(t1.name , t2.name));
+        missions.sort((t1, t2) ->  String.CASE_INSENSITIVE_ORDER.compare(t1.name , t2.name));
+        allTasks.sort((t1, t2) ->  String.CASE_INSENSITIVE_ORDER.compare(t1.name , t2.name));
 
 
         this.message = channel.sendMessage(makeMessage()).complete();

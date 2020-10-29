@@ -156,8 +156,8 @@ public class CommandProfile implements DoCommand {
         PlayerData player;
         try {
             player = GetDB.getPlayerData(new Pair<>(playerLeaderboardEntry.getId(),
-                            coloredName.getName() == null ? playerLeaderboardEntry.playerName : coloredName.getName()),
-                    -1); //get all of them
+                            coloredName.getName() == null ? playerLeaderboardEntry.playerName : coloredName.getName())
+            ); //get all of them
         } catch (SQLException throwables) {
             event.getChannel().sendMessage("There has been an SQL Exception getting the player data").queue();
             return;

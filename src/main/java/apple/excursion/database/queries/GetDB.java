@@ -12,7 +12,6 @@ import apple.excursion.database.objects.guild.LeaderboardOfGuilds;
 import apple.excursion.database.objects.player.PlayerHeader;
 import apple.excursion.database.objects.player.PlayerLeaderboard;
 import apple.excursion.database.objects.player.PlayerLeaderboardEntry;
-import apple.excursion.discord.commands.general.postcard.CommandSubmit;
 import apple.excursion.discord.data.TaskSimple;
 import apple.excursion.discord.data.answers.HistoryLeaderboardOfGuilds;
 import apple.excursion.discord.data.answers.HistoryPlayerLeaderboard;
@@ -31,7 +30,7 @@ import static apple.excursion.discord.reactions.messages.benchmark.CalendarMessa
 import static apple.excursion.discord.reactions.messages.benchmark.CalendarMessage.EPOCH_START_OF_SUBMISSION_HISTORY;
 
 public class GetDB {
-    public static PlayerData getPlayerData(Pair<Long, String> id, int submissionSize) throws SQLException {
+    public static PlayerData getPlayerData(Pair<Long, String> id) throws SQLException {
         synchronized (VerifyDB.syncDB) {
             String sql = GetSql.getSqlGetPlayerAll(id.getKey());
             Statement statement = VerifyDB.database.createStatement();
@@ -73,7 +72,7 @@ public class GetDB {
             int soulJuice = response.getInt(5);
             response.close();
             List<OldSubmission> submissions = new ArrayList<>();
-            sql = GetSql.getSqlGetPlayerSubmissionHistory(id.getKey(), submissionSize);
+            sql = GetSql.getSqlGetPlayerSubmissionHistory(id.getKey(), -1); //get all the submissions all the time
             response = statement.executeQuery(sql);
             while (response.next()) {
                 submissions.add(new OldSubmission(response));
@@ -405,7 +404,7 @@ public class GetDB {
                 // get the playersdata for submissionHistory
                 List<PlayerData> players = new ArrayList<>();
                 for (Pair<Long, String> idToName : idToNames) {
-                    players.add(GetDB.getPlayerData(idToName, CommandSubmit.SUBMISSION_HISTORY_SIZE));
+                    players.add(GetDB.getPlayerData(idToName));
                 }
                 response.close();
                 statement.close();

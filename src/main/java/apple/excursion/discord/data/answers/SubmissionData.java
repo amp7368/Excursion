@@ -80,7 +80,8 @@ public class SubmissionData {
     public void completeSubmit(boolean isAccepted, List<Pair<Long, Long>> reviewerMessages, String reviewerName) throws SQLException {
         if (isCompleted) return;
         isCompleted = true;
-        InsertDB.insertSubmission(this);
+        if (isAccepted)
+            InsertDB.insertSubmission(this);
         for (Pair<Long, Long> channelMessageAndId : reviewerMessages) {
             PrivateChannel channel = DiscordBot.client.getPrivateChannelById(channelMessageAndId.getKey());
             if (channel == null) continue;

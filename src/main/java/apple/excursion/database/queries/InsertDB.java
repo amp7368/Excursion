@@ -23,8 +23,8 @@ public class InsertDB {
     private static final String MODULE = "InsertDB";
 
     public static void insertSubmission(SubmissionData data) throws SQLException {
-        VerifyDB.verify();
         synchronized (VerifyDB.syncDB) {
+            VerifyDB.verify();
             if (data.getType() == SubmissionData.TaskSubmissionType.DAILY) {
                 VerifyDB.verifyCalendar();
             }

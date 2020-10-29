@@ -133,7 +133,8 @@ public class CommandSubmit implements DoCommand {
             List<PlayerData> playersData = new ArrayList<>();
             for (Pair<Long, String> player : idsToNames) {
                 try {
-                    playersData.add(GetDB.getPlayerData(player, SUBMISSION_HISTORY_SIZE));
+                    PlayerData playerData = GetDB.getPlayerData(player);
+                    playersData.add(playerData);
                 } catch (SQLException throwables) {
                     event.getChannel().sendMessage("There has been an SQLException getting the submitter's player data").queue();
                     event.getMessage().removeReaction(AllReactables.Reactable.WORKING.getFirstEmoji(), DiscordBot.client.getSelfUser()).queue();
