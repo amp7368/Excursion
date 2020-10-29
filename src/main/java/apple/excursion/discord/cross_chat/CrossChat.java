@@ -6,6 +6,7 @@ import apple.excursion.database.objects.CrossChatMessage;
 import apple.excursion.database.objects.MessageId;
 import apple.excursion.database.queries.GetDB;
 import apple.excursion.database.queries.InsertDB;
+import apple.excursion.database.queries.UpdateDB;
 import apple.excursion.discord.DiscordBot;
 import apple.excursion.utils.ColoredName;
 import apple.excursion.utils.GetColoredName;
@@ -21,6 +22,9 @@ import java.util.*;
 public class CrossChat {
     private static final Object sync = new Object();
     private static final Map<CrossChatId, MessageChannel> crossChats = new HashMap<>();
+    private static CrossChatMessage lastCrossChat = null;
+    private static long lastCrossChatTime = 0;
+    private static final long SPAM_TIME_DIFFERENCE = 30 * 1000;
 
     static {
         try {
@@ -79,14 +83,53 @@ public class CrossChat {
     }
 
     public static void dealWithMessage(MessageReceivedEvent event) {
+        long owner = event.getAuthor().getIdLong();
         long serverId = event.getGuild().getIdLong();
         long channelId = event.getChannel().getIdLong();
         for (CrossChatId crossChat : crossChats.keySet()) {
             if (crossChat.channelId == channelId && crossChat.serverId == serverId) {
+                if (lastCrossChat != null && owner == lastCrossChat.owner &&
+                        event.getMessage().getAttachments().isEmpty() &&
+                        makeReactionMessage(lastCrossChat.description, lastCrossChat.reactions).length() + event.getMessage().getContentDisplay().length() < 1900 &&
+                        System.currentTimeMillis() - lastCrossChatTime < SPAM_TIME_DIFFERENCE
+                ) {
+                    // then update the last message
+                    lastCrossChat.description += "\n" + event.getMessage().getContentDisplay();
+
+                    EmbedBuilder embedBuilder = new EmbedBuilder();
+                    embedBuilder.setColor(lastCrossChat.color);
+                    embedBuilder.setAuthor(lastCrossChat.username + " #" + lastCrossChat.myMessageId, null, lastCrossChat.avatarUrl);
+                    embedBuilder.setDescription(makeReactionMessage(lastCrossChat.description, lastCrossChat.reactions)); // with the new description
+
+                    event.getMessage().delete().queue();
+                    for (MessageId messageId : lastCrossChat.messageIds) {
+                        TextChannel channel = DiscordBot.client.getTextChannelById(messageId.channelId);
+                        if (channel == null) continue; // it's fine if the channel is null just skip editing this msg
+                        channel.retrieveMessageById(messageId.messageId).queue(
+                                message -> {
+                                    List<MessageEmbed> embeds = message.getEmbeds();
+                                    MessageEmbed.ImageInfo img = embeds.isEmpty() ? null : embeds.get(0).getImage();
+                                    if (img != null)
+                                        embedBuilder.setImage(img.getUrl());
+                                    message.editMessage(embedBuilder.build()).queue();
+                                }, failure -> {
+                                }//ignore a fail
+                        );
+                    }
+
+                    // make the update in the DB
+                    try {
+                        UpdateDB.updateCrossChatDescription(lastCrossChat);
+                    } catch (SQLException ignored) {
+                        // ignore a fail. it's not important if a single message gets messed up
+                    }
+                    return;
+                }
+
                 long myMessageId = VerifyDB.currentMyMessageId++;
                 Member member = event.getMember();
                 if (member == null) break;
-                ColoredName coloredName = GetColoredName.get(event.getAuthor().getIdLong());
+                ColoredName coloredName = GetColoredName.get(owner);
                 String username = String.format("%s [%s]",
                         coloredName.getName() == null ? member.getEffectiveName() : coloredName.getName(),
                         event.getGuild().getName());
@@ -115,9 +158,8 @@ public class CrossChat {
                     }
                 }
                 try {
-                    InsertDB.insertCrossChatMessage(myMessageId, messageIds, event.getAuthor().getIdLong(), username, color, avatarUrl, imageUrl, description);
+                    InsertDB.insertCrossChatMessage(myMessageId, messageIds, owner, username, color, avatarUrl, imageUrl, description);
                 } catch (SQLException ignored) { // it's whatever if i don't have this message saved
-                    ignored.printStackTrace(); //todo remove
                 }
                 for (CrossChatId fail : fails) {
                     crossChats.remove(fail);
@@ -128,6 +170,8 @@ public class CrossChat {
                     }
                 }
                 event.getMessage().delete().queue();
+                lastCrossChat = new CrossChatMessage(messageIds, myMessageId, owner, username, color, avatarUrl, imageUrl, description, "");
+                lastCrossChatTime = System.currentTimeMillis();
                 break;
             }
         }
@@ -139,13 +183,17 @@ public class CrossChat {
         for (CrossChatId crossChat : crossChats.keySet()) {
             if (crossChat.channelId == channelId && crossChat.serverId == serverId) {
                 // we found the matched crossChat
-                CrossChatMessage messagesToAddReaction = null;
+                CrossChatMessage messagesToAddReaction;
                 try {
                     messagesToAddReaction = GetDB.dealWithReactionAndGet(serverId, channelId, event.getMessageIdLong(), event);
                 } catch (SQLException throwables) {
                     throwables.printStackTrace();
+                    return;
                 }
                 if (messagesToAddReaction == null) return;
+                if (lastCrossChat.myMessageId == messagesToAddReaction.myMessageId) {
+                    lastCrossChat.reactions = messagesToAddReaction.reactions;
+                }
                 User user = event.getUser();
                 if (user == null) return;
                 EmbedBuilder embedBuilder = new EmbedBuilder();
@@ -220,5 +268,13 @@ public class CrossChat {
 
     private static String makeReactionSnippet(Map.Entry<String, Set<String>> next) {
         return String.format("%s reacted %s", String.join(", and ", next.getValue()), next.getKey());
+    }
+
+    public static void checkIsLastMessage(List<MessageId> messages) {
+        synchronized (sync) {
+            if (lastCrossChat.messageIds.stream().anyMatch(messages::contains)) {
+                lastCrossChat = null;
+            }
+        }
     }
 }

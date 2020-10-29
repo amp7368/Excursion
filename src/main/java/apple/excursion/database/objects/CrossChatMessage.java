@@ -7,12 +7,12 @@ public class CrossChatMessage {
 
     public final List<MessageId> messageIds;
     public final long myMessageId;
-    private final long owner;
+    public final long owner;
     public final String username;
     public final int color;
     public final String avatarUrl;
-    public final String description;
-    public final String reactions;
+    public String description;
+    public String reactions;
     @Nullable
     public final String imageUrl;
 

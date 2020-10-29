@@ -5,6 +5,7 @@ import apple.excursion.database.queries.GetDB;
 import apple.excursion.discord.DiscordBot;
 import apple.excursion.discord.commands.Commands;
 import apple.excursion.discord.commands.DoCommand;
+import apple.excursion.discord.cross_chat.CrossChat;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -38,6 +39,7 @@ public class CommandCrossChatDelete implements DoCommand {
             event.getChannel().sendMessage(String.format("You don't own any messages of id '%d'", messageIdToFind)).queue();
             return;
         }
+        CrossChat.checkIsLastMessage(messages);
         for (MessageId messageId : messages) {
             TextChannel channel = DiscordBot.client.getTextChannelById(messageId.channelId);
             if (channel == null) continue;

@@ -1,6 +1,7 @@
 package apple.excursion.database.queries;
 
 import apple.excursion.database.VerifyDB;
+import apple.excursion.database.objects.CrossChatMessage;
 import apple.excursion.sheets.SheetsPlayerStats;
 import apple.excursion.utils.Pair;
 
@@ -43,6 +44,15 @@ public class UpdateDB {
         synchronized (VerifyDB.syncDB) {
             Statement statement = VerifyDB.database.createStatement();
             String sql = GetSql.getSqlUpdateResponseStatus(isAccepted, isCompleted, responseId);
+            statement.execute(sql);
+            statement.close();
+        }
+    }
+
+    public static void updateCrossChatDescription(CrossChatMessage lastCrossChat) throws SQLException {
+        synchronized (VerifyDB.syncDB) {
+            Statement statement = VerifyDB.database.createStatement();
+            String sql = GetSql.getSqlUpdateCrossChatDescription(lastCrossChat.myMessageId, lastCrossChat.description);
             statement.execute(sql);
             statement.close();
         }

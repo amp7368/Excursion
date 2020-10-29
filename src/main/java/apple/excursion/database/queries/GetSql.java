@@ -544,4 +544,10 @@ public class GetSql {
                 "SET task_names = '%s'\n" +
                 "WHERE date = %d;", monthName, String.join(",", newTasksToday), day);
     }
+
+    public static String getSqlUpdateCrossChatDescription(long messageId,String description) {
+        return String.format("UPDATE cross_chat_message_sent\n" +
+                "SET description = '%s'\n" +
+                "WHERE myMessageId  =  %d;", convertTaskNameToSql(description), messageId);
+    }
 }
