@@ -51,8 +51,8 @@ public class MigrateOldSubmissions extends Thread {
                                 title = title.replaceAll("You have submitted: ", "").trim();
                                 Task task = null;
                                 for (Task taskInAll : allTasks) {
-                                    Pattern patternForward = Pattern.compile(".*" + taskInAll.name + ".*", Pattern.CASE_INSENSITIVE);
-                                    Pattern patternBackward = Pattern.compile(".*" + title + ".*", Pattern.CASE_INSENSITIVE);
+                                    Pattern patternForward = Pattern.compile(".*(" + taskInAll.name + ").*", Pattern.CASE_INSENSITIVE);
+                                    Pattern patternBackward = Pattern.compile(".*(" + title + ").*", Pattern.CASE_INSENSITIVE);
                                     if (patternBackward.matcher(taskInAll.name).matches() || patternForward.matcher(title).matches()) {
                                         task = taskInAll;
                                         break;

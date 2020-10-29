@@ -63,20 +63,27 @@ public class CommandGuildHistory implements DoCommand {
                 return;
             }
             final String guildTag = contentSplit.get(0);
-            contentSplit.remove(0);
             String guildName = String.join(" ", contentSplit);
+            System.out.println(guildName);
             GuildHeader match = null;
             for (GuildHeader guild : guildHeaders) {
-                Pattern pattern = Pattern.compile(".*" + guild.name + ".*", Pattern.CASE_INSENSITIVE);
-                if (guild.tag.equals(guildTag) || pattern.matcher(guildName).matches()) {
+                if (guild.tag.equals(guildTag)) {
                     match = guild;
                     break;
                 }
             }
             if (match == null) {
+                for (GuildHeader guild : guildHeaders) {
+                    Pattern pattern = Pattern.compile(".*(" + guild.name + ").*", Pattern.CASE_INSENSITIVE);
+                    if (pattern.matcher(guildName).matches()) {
+                        match = guild;
+                        break;
+                    }
+                }
+            }
+            if (match == null) {
                 event.getChannel().sendMessage(
-                        String.format("'%s' is not a valid guild tag\n" +
-                                        "If you're trying to create a guild, add the [guild_name] to the end of the command",
+                        String.format("'%s' is not a valid guild tag\n",
                                 guildTag)).queue();
                 return;
             }

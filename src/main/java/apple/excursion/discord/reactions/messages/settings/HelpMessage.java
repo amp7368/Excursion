@@ -45,12 +45,16 @@ public class HelpMessage implements ReactableMessage {
 
         embed = new EmbedBuilder();
         embed.setColor(DiscordBot.BOT_COLOR);
-        embed.setTitle("Excursion Benchmarks commands:");
+        embed.setTitle("Excursion Benchmarks commands");
         embed.addField("y!lb || y!leaderboard", "This player leaderboard ranks players by their EP of all time, shows their guild, and also shows how much EP a player has earned during the month and the last month", false);
         embed.addField("y!glb || y!gleaderboard", "This guild leaderboard ranks guilds by their EP of all time, shows their player who contributed the most EP, and also shows much much EP a guild has earned during the month and the last month", false);
-        embed.addField("y!glb [guild]", "search for guild profile. it displays the guild progress bar, a ranked list of every player in the guild, and a submission record", false);
+        embed.addField("y!glb [guild] || y!gleaderboard [guild]", "search for guild profile. it displays the guild progress bar, a ranked list of every player in the guild, and a submission record", false);
         embed.addField("y!profile [player]", "search for player profile. it displays your progress bar for EP, a progress bar for your guild, a personalised recommendation list of tasks by most EP and a submission record", false);
-        embed.addBlankField(false);
+        helpPages.add(embed.build());
+
+        embed = new EmbedBuilder();
+        embed.setColor(DiscordBot.BOT_COLOR);
+        embed.setTitle("History commands");
         embed.addField("y!history || y!ghistory [(optional) guild]", "gives a per month leaderboard for players or guilds or a specific guild. " + AllReactables.Reactable.LEFT.getFirstEmoji() + " and "
                 + AllReactables.Reactable.RIGHT.getFirstEmoji() + "  changes pages on this leaderboard " + AllReactables.Reactable.CLOCK_LEFT.getFirstEmoji() + "  and "
                 + AllReactables.Reactable.CLOCK_RIGHT.getFirstEmoji() + "  changes the month forward and backwards", false);
