@@ -24,7 +24,7 @@ public class SubmissionMessage {
         InsertDB.insertIncompleteSubmissionLink(message.getIdLong(), reviewer.getIdLong(), responseId);
     }
 
-    private static MessageEmbed makeMessage(SubmissionData data) {
+    public static MessageEmbed makeMessage(SubmissionData data) {
         StringBuilder text = new StringBuilder();
         text.append("**");
         text.append(data.getSubmitterName());

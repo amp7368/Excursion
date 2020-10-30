@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 import static apple.excursion.discord.commands.general.postcard.CommandSubmit.BOT_COLOR;
 
 public class SubmissionData {
+    private final int submissionId;
     private boolean isAccepted = false;
     private boolean isCompleted = false;
 
@@ -40,6 +41,7 @@ public class SubmissionData {
                           TaskSimple task, String submitter, int color, long submitterId, List<Pair<Long, String>> otherSubmitters,
                           List<PlayerData> playersData, TaskSubmissionType taskType) {
         this.attachmentsUrl = attachments.isEmpty() ? null : attachments.get(0).getUrl();
+        this.submissionId = -1;
         this.links = links;
         this.task = task;
         this.color = color;
@@ -51,11 +53,12 @@ public class SubmissionData {
         this.submissionHistoryMessage = makeSubmissionHistoryMessage(playersData);
     }
 
-    public SubmissionData(boolean isAccepted, boolean isCompleted, long epochTimeOfSubmission, @Nullable String attachmentsUrl,
+    public SubmissionData(boolean isAccepted, boolean isCompleted, int submissionId, long epochTimeOfSubmission, @Nullable String attachmentsUrl,
                           List<String> links, TaskSimple task, TaskSubmissionType taskSubmissionType,
                           String submitterName, long submitterId, List<Pair<Long, String>> idToNames, List<PlayerData> playersData, int color) {
         this.isAccepted = isAccepted;
         this.isCompleted = isCompleted;
+        this.submissionId = submissionId;
         this.epochTimeOfSubmission = epochTimeOfSubmission;
         this.attachmentsUrl = attachmentsUrl;
         this.links = links;
@@ -77,11 +80,12 @@ public class SubmissionData {
     }
 
 
-    public void completeSubmit(boolean isAccepted, List<Pair<Long, Long>> reviewerMessages, String reviewerName) throws SQLException {
-        if (isCompleted) return;
+    public int completeSubmit(boolean isAccepted, List<Pair<Long, Long>> reviewerMessages, String reviewerName) throws SQLException {
+        if (isCompleted) return 0;
         isCompleted = true;
+        int submissionId = -1;
         if (isAccepted)
-            InsertDB.insertSubmission(this);
+            submissionId = InsertDB.insertSubmission(this);
         for (Pair<Long, Long> channelMessageAndId : reviewerMessages) {
             PrivateChannel channel = DiscordBot.client.getPrivateChannelById(channelMessageAndId.getKey());
             if (channel == null) continue;
@@ -137,6 +141,7 @@ public class SubmissionData {
                 }
             }, failure -> SendLogs.discordError("Submit", String.format("There was an error notifying <%s,%d> of their reviewed submission", userRaw.getValue(), userRaw.getKey())));
         }
+        return submissionId;
     }
 
     public int getColor() {
@@ -194,6 +199,10 @@ public class SubmissionData {
 
     public boolean isCompleted() {
         return isCompleted;
+    }
+
+    public int getSubmissionId() {
+        return submissionId;
     }
 
     public enum TaskSubmissionType {

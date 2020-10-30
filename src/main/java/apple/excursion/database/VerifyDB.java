@@ -57,6 +57,7 @@ public class VerifyDB {
             "    response_id          INTEGER   NOT NULL UNIQUE PRIMARY KEY,\n" +
             "    is_accepted          BOOLEAN   NOT NULL CHECK (is_accepted IN (0, 1)),\n" +
             "    is_completed         BOOLEAN   NOT NULL CHECK (is_completed IN (0, 1)),\n" +
+            "    submission_id        INTEGER,\n" +
             "    time_of_submission   TIMESTAMP NOT NULL,\n" +
             "    attachment_url       TEXT,\n" +
             "    links                TEXT,\n" +

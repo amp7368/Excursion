@@ -310,6 +310,7 @@ public class SyncDB {
                             submissionsWithName.add(new SubmissionData(
                                     true,
                                     true,
+                                    -1,
                                     date,
                                     null,
                                     Collections.emptyList(),

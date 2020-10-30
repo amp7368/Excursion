@@ -421,8 +421,9 @@ public class GetSql {
     @NotNull
     public static String getSqlInsertResponse(int currentResponseId, SubmissionData submissionData) {
         return String.format("INSERT INTO response " +
-                        "VALUES (%d,0,0,%d,%s,%s,'%s','%s',%d,'%s','%s',%d);",
+                        "VALUES (%d,0,0,%s,%d,%s,%s,'%s','%s',%d,'%s','%s',%d);",
                 currentResponseId,
+                null,
                 submissionData.getTimeEpoch(),
                 submissionData.getAttachment() == null ? null : "'" + submissionData.getAttachment() + "'",
                 submissionData.getLinks() == null ? null : "'" + String.join("`", submissionData.getLinks()) + "'",
@@ -545,9 +546,27 @@ public class GetSql {
                 "WHERE date = %d;", monthName, String.join(",", newTasksToday), day);
     }
 
-    public static String getSqlUpdateCrossChatDescription(long messageId,String description) {
+    public static String getSqlUpdateCrossChatDescription(long messageId, String description) {
         return String.format("UPDATE cross_chat_message_sent\n" +
                 "SET description = '%s'\n" +
                 "WHERE myMessageId  =  %d;", convertTaskNameToSql(description), messageId);
+    }
+
+    public static String getSqlUpdateResponseSubmissionId(int responseId, int submissionId) {
+        return String.format("UPDATE response\n" +
+                "SET submission_id = %d\n" +
+                "WHERE response_id = %d;", submissionId, responseId);
+    }
+
+    public static String dropSubmission(int submissionId) {
+        return String.format("DELETE\n" +
+                "FROM submissions\n" +
+                "WHERE id = %d;", submissionId);
+    }
+
+    public static String dropSubmissionLink(int submissionId) {
+        return String.format("DELETE\n" +
+                "FROM submissions_link\n" +
+                "WHERE submission_id = %d\n", submissionId);
     }
 }

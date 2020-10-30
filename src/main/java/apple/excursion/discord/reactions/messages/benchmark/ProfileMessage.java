@@ -222,4 +222,12 @@ public class ProfileMessage implements ReactableMessage {
     public long getLastUpdated() {
         return lastUpdated;
     }
+
+    @Override
+    public void dealWithOld() {
+
+        message.clearReactions().queue(success -> {
+        }, failure -> {
+        }); //ignore if we don't have perms. it's really not a bad thing
+    }
 }

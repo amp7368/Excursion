@@ -76,4 +76,14 @@ public class ShoutConfirmationMessage implements ReactableMessage {
     public long getLastUpdated() {
         return lastUpdated;
     }
+
+    @Override
+    public void dealWithOld() {
+        message.removeReaction(AllReactables.Reactable.REJECT.getFirstEmoji()).queue(success -> {
+        }, failure -> {
+        }); //ignore fails
+        message.removeReaction(AllReactables.Reactable.ACCEPT.getFirstEmoji()).queue(success -> {
+        }, failure -> {
+        }); //ignore fails
+    }
 }

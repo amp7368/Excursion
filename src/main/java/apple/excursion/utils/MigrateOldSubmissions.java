@@ -73,6 +73,7 @@ public class MigrateOldSubmissions extends Thread {
                                 SubmissionData submissionData = new SubmissionData(
                                         true,
                                         true,
+                                        -1,
                                         message.getTimeCreated().toEpochSecond() * 1000,
                                         attachment,
                                         links,
@@ -94,7 +95,7 @@ public class MigrateOldSubmissions extends Thread {
                         e.printStackTrace();
                     }
                     System.out.println("retrieving next");
-                    messages= history.retrieveFuture(100).complete();
+                    messages = history.retrieveFuture(100).complete();
                 }
             }
 

@@ -219,6 +219,14 @@ public class PostcardListMessage implements ReactableMessage {
         return lastUpdated;
     }
 
+    @Override
+    public void dealWithOld() {
+
+        message.clearReactions().queue(success -> {
+        }, failure -> {
+        }); //ignore if we don't have perms. it's really not a bad thing
+    }
+
     public enum Category {
         DARE(0xff9797),
         EXCURSION(0xfaab5f),

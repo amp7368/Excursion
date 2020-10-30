@@ -22,7 +22,7 @@ public class InsertDB {
     private static final int SOUL_JUICE_FOR_DAILY = 1;
     private static final String MODULE = "InsertDB";
 
-    public static void insertSubmission(SubmissionData data) throws SQLException {
+    public static int insertSubmission(SubmissionData data) throws SQLException {
         synchronized (VerifyDB.syncDB) {
             VerifyDB.verify();
             if (data.getType() == SubmissionData.TaskSubmissionType.DAILY) {
@@ -72,7 +72,7 @@ public class InsertDB {
             }
             statement.executeBatch();
             statement.close();
-            currentSubmissionId++;
+            return currentSubmissionId++;
         }
     }
 
@@ -103,20 +103,21 @@ public class InsertDB {
     }
 
     public static void insertPlayer(Pair<Long, String> id, String guildTag, String guildName) throws SQLException {
-        // no sync because this should be called while synced already
-        try {
-            SheetsPlayerStats.addProfile(id.getKey(), id.getValue());
-        } catch (IOException ignored) { //this is fine because updates will add this player later somehow
-        }
-        if (guildName != null) {
+        synchronized (syncDB) {
             try {
-                SheetsPlayerStats.updateGuild(guildName, guildTag, id.getKey(), id.getValue());
+                SheetsPlayerStats.addProfile(id.getKey(), id.getValue());
             } catch (IOException ignored) { //this is fine because updates will add this player later somehow
             }
+            if (guildName != null) {
+                try {
+                    SheetsPlayerStats.updateGuild(guildName, guildTag, id.getKey(), id.getValue());
+                } catch (IOException ignored) { //this is fine because updates will add this player later somehow
+                }
+            }
+            Statement statement = VerifyDB.database.createStatement();
+            statement.execute(GetSql.getSqlInsertPlayers(id, guildName, guildTag));
+            statement.close();
         }
-        Statement statement = VerifyDB.database.createStatement();
-        statement.execute(GetSql.getSqlInsertPlayers(id, guildName, guildTag));
-        statement.close();
     }
 
     public static void insertCrossChat(long serverId, long channelId) throws SQLException {

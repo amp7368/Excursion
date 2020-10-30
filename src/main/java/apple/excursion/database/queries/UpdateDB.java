@@ -40,11 +40,15 @@ public class UpdateDB {
         }
     }
 
-    public static void updateResponseStatus(boolean isAccepted, boolean isCompleted, int responseId) throws SQLException {
+    public static void updateResponseStatus(boolean isAccepted, boolean isCompleted, int responseId, int submissionId) throws SQLException {
         synchronized (VerifyDB.syncDB) {
             Statement statement = VerifyDB.database.createStatement();
             String sql = GetSql.getSqlUpdateResponseStatus(isAccepted, isCompleted, responseId);
             statement.execute(sql);
+            if (submissionId != -1) {
+                sql = GetSql.getSqlUpdateResponseSubmissionId(responseId, submissionId);
+                statement.execute(sql);
+            }
             statement.close();
         }
     }
@@ -54,6 +58,15 @@ public class UpdateDB {
             Statement statement = VerifyDB.database.createStatement();
             String sql = GetSql.getSqlUpdateCrossChatDescription(lastCrossChat.myMessageId, lastCrossChat.description);
             statement.execute(sql);
+            statement.close();
+        }
+    }
+
+    public static void removeSubmission(int submissionId) throws SQLException {
+        synchronized (VerifyDB.syncDB){
+            Statement statement = VerifyDB.database.createStatement();
+            statement.execute(GetSql.dropSubmission(submissionId));
+            statement.execute(GetSql.dropSubmissionLink(submissionId));
             statement.close();
         }
     }

@@ -376,17 +376,19 @@ public class GetDB {
 
                 boolean isAccepted = response.getBoolean(2);
                 boolean isCompleted = response.getBoolean(3);
-                long epochTimeOfSubmission = response.getTimestamp(4).getTime();
-                String attachmentsUrl = response.getString(5);
-                List<String> links = Arrays.asList(response.getString(6).split("`"));
+                int submissionId = response.getInt(4);
+                if (submissionId == 0) submissionId = -1; // just make it a proper invalid id if the id is null
+                long epochTimeOfSubmission = response.getTimestamp(5).getTime();
+                String attachmentsUrl = response.getString(6);
+                List<String> links = Arrays.asList(response.getString(7).split("`"));
                 TaskSimple task = new TaskSimple(
-                        response.getInt(9),
-                        response.getString(8),
-                        response.getString(7)
+                        response.getInt(10),
+                        response.getString(9),
+                        response.getString(8)
                 );
-                SubmissionData.TaskSubmissionType taskSubmissionType = SubmissionData.TaskSubmissionType.valueOf(response.getString(10));
-                String submitterName = response.getString(11);
-                long submitterId = response.getLong(12);
+                SubmissionData.TaskSubmissionType taskSubmissionType = SubmissionData.TaskSubmissionType.valueOf(response.getString(11));
+                String submitterName = response.getString(12);
+                long submitterId = response.getLong(13);
                 response.close();
 
                 // get the idToNames
@@ -411,7 +413,7 @@ public class GetDB {
                 // get the color
                 return new Pair<>(
                         responseId,
-                        new SubmissionData(isAccepted, isCompleted, epochTimeOfSubmission, attachmentsUrl, links, task,
+                        new SubmissionData(isAccepted, isCompleted, submissionId, epochTimeOfSubmission, attachmentsUrl, links, task,
                                 taskSubmissionType, submitterName, submitterId, idToNames, players, GetColoredName.get(submitterId).getColor()));
             }
             return null;
