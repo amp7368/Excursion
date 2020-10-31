@@ -34,17 +34,6 @@ public class HelpMessage implements ReactableMessage {
 
         embed = new EmbedBuilder();
         embed.setColor(DiscordBot.BOT_COLOR);
-        embed.setTitle("Farplane Discord Info");
-        embed.setThumbnail("https://cdn.discordapp.com/icons/555318916344184834/a_afaae5629990a93465456d60339bb1d6.webp?size=128");
-        embed.setDescription("Want to create your own tasks, help with the management of submissions," +
-                " have a different title other than guest and different colors for your profile, be the first to know of our raffles or " +
-                "join a community of dedicated explorers and adventurers from all kinds of guilds and levels? ");
-        embed.setImage("https://cdn.discordapp.com/attachments/567540311870668800/767941477527453716/info1.gif");
-        embed.addField("Join the Farplane discord!", DiscordBot.EXCURSION_GUILD_INVITE, false);
-        helpPages.add(embed.build());
-
-        embed = new EmbedBuilder();
-        embed.setColor(DiscordBot.BOT_COLOR);
         embed.setTitle("Excursion Benchmarks commands");
         embed.addField("y!lb || y!leaderboard", "This player leaderboard ranks players by their EP of all time, shows their guild, and also shows how much EP a player has earned during the month and the last month", false);
         embed.addField("y!glb || y!gleaderboard", "This guild leaderboard ranks guilds by their EP of all time, shows their player who contributed the most EP, and also shows much much EP a guild has earned during the month and the last month", false);
@@ -86,6 +75,17 @@ public class HelpMessage implements ReactableMessage {
         embed.addField("y!delete [message_id #]", "deletes the message corresponding to that id on all servers **if** it's your own message", false);
         embed.addField("y!discord set", " (used by Administrators of discords) sets the channel to be linked with other discords so you can talk between them (If there is already a linked channel in the discord, this will override that)", false);
         embed.addField("y!discord remove", "(used by Administrators of discords) removes any linked channel in a discord server", false);
+        helpPages.add(embed.build());
+
+        embed = new EmbedBuilder();
+        embed.setColor(DiscordBot.BOT_COLOR);
+        embed.setTitle("Farplane Discord Info");
+        embed.setThumbnail("https://cdn.discordapp.com/icons/555318916344184834/a_afaae5629990a93465456d60339bb1d6.webp?size=128");
+        embed.setDescription("Want to create your own tasks, help with the management of submissions," +
+                " have a different title other than guest and different colors for your profile, be the first to know of our raffles or " +
+                "join a community of dedicated explorers and adventurers from all kinds of guilds and levels? ");
+        embed.setImage("https://cdn.discordapp.com/attachments/567540311870668800/767941477527453716/info1.gif");
+        embed.addField("Join the Farplane discord!", DiscordBot.EXCURSION_GUILD_INVITE, false);
         helpPages.add(embed.build());
     }
 

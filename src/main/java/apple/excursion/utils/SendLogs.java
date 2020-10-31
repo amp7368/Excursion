@@ -3,20 +3,24 @@ package apple.excursion.utils;
 import apple.excursion.ExcursionMain;
 import apple.excursion.database.VerifyDB;
 import apple.excursion.discord.DiscordBot;
-import com.google.common.net.MediaType;
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageChannel;
-import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.TextChannel;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public class SendLogs {
     private static boolean IS_CHANNEL;
     private static long SENDER;
+    public static final long CROSS_CHAT_IMAGE_ID = 771914144764395541L;
+    private static TextChannel CROSS_CHAT_IMAGE_LOGS = Objects.requireNonNull(DiscordBot.client.getTextChannelById(CROSS_CHAT_IMAGE_ID)); //throw an error if this isn't found
 
     static {
         List<String> list = Arrays.asList(ExcursionMain.class.getProtectionDomain().getCodeSource().getLocation().getPath().split("/"));

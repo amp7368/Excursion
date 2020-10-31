@@ -65,10 +65,8 @@ public class CommandSubmit implements DoCommand {
     public void dealWithCommand(MessageReceivedEvent event) {
         List<Member> tags = event.getMessage().getMentionedMembers();
         Map<Long, String> idsToNamesMap = new HashMap<>();
-        String nickName;
         for (Member member : tags) {
-            nickName = member.getEffectiveName();
-            idsToNamesMap.put(member.getIdLong(), nickName);
+            idsToNamesMap.put(member.getIdLong(), member.getEffectiveName());
         }
         Member author = event.getMember();
         if (author == null) {
@@ -84,13 +82,11 @@ public class CommandSubmit implements DoCommand {
         }
 
         Message eventMessage = event.getMessage();
-        String content = eventMessage.getContentStripped();
-        List<String> contentList = Arrays.asList(content.split(" "));
+        String content = eventMessage.getContentDisplay();
+        List<String> contentList = new ArrayList<>(Arrays.asList(content.split(" ")));
         contentList.removeIf(String::isBlank);
+        contentList.removeIf(s -> s.startsWith("@"));
         content = String.join(" ", contentList.subList(1, contentList.size()));
-        for (Pair<Long, String> mention : idsToNames) {
-            content = content.replace("@" + mention.getValue(), "");
-        }
 
         // change all the idToNames to the correct name based on The Farplane discord names
         for (Pair<Long, String> idToName : idsToNames) {

@@ -25,22 +25,22 @@ public class GetCalendarDB {
             if (dayOfWeek == Calendar.SUNDAY) {
                 // go backwards from sunday
                 weekend.add(tasks.get(6));
-                if (tasks.get(5).month.equals(weekend.get(0).month)) {
+                if (tasks.get(5) != null && tasks.get(5).month.equals(weekend.get(0).month)) {
                     weekend.add(tasks.get(5));
-                    if (tasks.get(4).month.equals(weekend.get(0).month))
+                    if (tasks.get(4) != null && tasks.get(4).month.equals(weekend.get(0).month))
                         weekend.add(tasks.get(4));
                 }
             } else if (dayOfWeek == Calendar.SATURDAY) {
                 weekend.add(tasks.get(5));
-                if (tasks.get(6).month.equals(weekend.get(0).month))
+                if (tasks.get(6) != null && tasks.get(6).month.equals(weekend.get(0).month))
                     weekend.add(tasks.get(6));
-                if (tasks.get(4).month.equals(weekend.get(0).month))
+                if (tasks.get(4) != null && tasks.get(4).month.equals(weekend.get(0).month))
                     weekend.add(tasks.get(4));
             } else if (dayOfWeek == Calendar.FRIDAY) {
                 weekend.add(tasks.get(4));
-                if (tasks.get(5).month.equals(weekend.get(0).month)) {
+                if (tasks.get(5) != null && tasks.get(5).month.equals(weekend.get(0).month)) {
                     weekend.add(tasks.get(5));
-                    if (tasks.get(6).month.equals(weekend.get(0).month))
+                    if (tasks.get(6) != null && tasks.get(6).month.equals(weekend.get(0).month))
                         weekend.add(tasks.get(6));
                 }
             }
