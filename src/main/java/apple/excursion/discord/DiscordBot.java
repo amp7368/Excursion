@@ -9,6 +9,7 @@ import apple.excursion.discord.data.DailyBans;
 import apple.excursion.discord.listener.AllChannelListeners;
 import apple.excursion.discord.reactions.*;
 import apple.excursion.utils.MigrateOldSubmissions;
+import apple.excursion.utils.SendLogs;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.Permission;
@@ -16,6 +17,7 @@ import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
+import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import org.jetbrains.annotations.NotNull;
@@ -28,6 +30,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class DiscordBot extends ListenerAdapter {
@@ -80,7 +83,7 @@ public class DiscordBot extends ListenerAdapter {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-//        new MigrateOldSubmissions().start();
+        //        new MigrateOldSubmissions().start();
         new BackupThread().start();
     }
 
@@ -97,33 +100,40 @@ public class DiscordBot extends ListenerAdapter {
         // the author is not a bot
 
         String messageContent = event.getMessage().getContentStripped().toLowerCase();
-        // deal with the different commands
-        for (Commands command : Commands.values()) {
-            if (command.isCommand(messageContent)) {
-                command.run(event);
-                return;
-            }
-        }
-        if (CommandSubmit.isReviewer(event.getAuthor())) {
-            for (CommandsAdmin command : CommandsAdmin.values()) {
-                if (command.isCommand(messageContent)) {
-                    command.run(event);
-                    return;
-                }
-            }
-        }
-        Member member = event.getMember();
-        if (member != null && (member.hasPermission(Permission.ADMINISTRATOR) || member.isOwner())) {
-            for (CommandsManageServer command : CommandsManageServer.values()) {
-                if (command.isCommand(messageContent)) {
-                    command.run(event);
-                    return;
-                }
-            }
-        }
 
-        // this isn't a command
-        CrossChat.dealWithMessage(event);
+        try {
+            // deal with the different commands
+            for (Commands command : Commands.values()) {
+                if (command.isCommand(messageContent)) {
+                    command.run(event);
+                    return;
+                }
+            }
+            if (CommandSubmit.isReviewer(event.getAuthor())) {
+                for (CommandsAdmin command : CommandsAdmin.values()) {
+                    if (command.isCommand(messageContent)) {
+                        command.run(event);
+                        return;
+                    }
+                }
+            }
+            Member member = event.getMember();
+            if (member != null && (member.hasPermission(Permission.ADMINISTRATOR) || member.isOwner())) {
+                for (CommandsManageServer command : CommandsManageServer.values()) {
+                    if (command.isCommand(messageContent)) {
+                        command.run(event);
+                        return;
+                    }
+                }
+            }
+
+            // this isn't a command
+            CrossChat.dealWithMessage(event);
+        } catch (InsufficientPermissionException e) {
+            SendLogs.sendLogs(Collections.singletonList(
+                    String.format(e.getGuild(client).getName() + " did not give me the perms: " + e.getPermission().getName())
+            ));
+        }
     }
 
     @Override
@@ -132,9 +142,15 @@ public class DiscordBot extends ListenerAdapter {
         if (user == null || user.isBot()) {
             return;
         }
-        AllReactables.dealWithReaction(event);
-        if (event.isFromGuild())
-            CrossChat.dealWithReaction(event);
-        DatabaseResponseReactable.dealWithReaction(event);
+        try {
+            AllReactables.dealWithReaction(event);
+            if (event.isFromGuild())
+                CrossChat.dealWithReaction(event);
+            DatabaseResponseReactable.dealWithReaction(event);
+        } catch (InsufficientPermissionException e) {
+            SendLogs.sendLogs(Collections.singletonList(
+                    String.format(e.getGuild(client).getName() + " did not give me the perms: " + e.getPermission().getName())
+            ));
+        }
     }
 }

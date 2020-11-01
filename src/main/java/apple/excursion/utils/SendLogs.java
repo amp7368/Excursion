@@ -19,8 +19,6 @@ import java.util.Objects;
 public class SendLogs {
     private static boolean IS_CHANNEL;
     private static long SENDER;
-    public static final long CROSS_CHAT_IMAGE_ID = 771914144764395541L;
-    private static TextChannel CROSS_CHAT_IMAGE_LOGS = Objects.requireNonNull(DiscordBot.client.getTextChannelById(CROSS_CHAT_IMAGE_ID)); //throw an error if this isn't found
 
     static {
         List<String> list = Arrays.asList(ExcursionMain.class.getProtectionDomain().getCodeSource().getLocation().getPath().split("/"));

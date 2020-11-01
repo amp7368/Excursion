@@ -63,6 +63,7 @@ public class GetCalendarDB {
         } catch (SQLException throwables) {
             return new ArrayList<>();
         }
+
         final YearMonth yearMonth = YearMonth.of(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH) + 1);
         List<DailyTaskWithDate> tasks = new ArrayList<>();
         int lengthOfMonth = yearMonth.lengthOfMonth();

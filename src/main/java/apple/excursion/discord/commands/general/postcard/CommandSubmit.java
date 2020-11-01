@@ -83,7 +83,7 @@ public class CommandSubmit implements DoCommand {
 
         Message eventMessage = event.getMessage();
         String content = eventMessage.getContentDisplay();
-        List<String> contentList = new ArrayList<>(Arrays.asList(content.split(" ")));
+        List<String> contentList = new ArrayList<>(Arrays.asList(content.split("\\s")));
         contentList.removeIf(String::isBlank);
         contentList.removeIf(s -> s.startsWith("@"));
         content = String.join(" ", contentList.subList(1, contentList.size()));

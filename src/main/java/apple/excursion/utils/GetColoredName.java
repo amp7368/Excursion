@@ -2,6 +2,7 @@ package apple.excursion.utils;
 
 import apple.excursion.discord.DiscordBot;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.GuildChannel;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.exceptions.ErrorResponseException;
@@ -10,6 +11,7 @@ import java.util.*;
 
 public class GetColoredName {
     private static final Collection<Long> roles = new HashSet<>();
+    public static final long EXCURSION_EVIDENCE_CHANNEL = 664337960203714592L;
 
     static {
         roles.add(555340987086667776L); // Farplane Resident
@@ -53,10 +55,10 @@ public class GetColoredName {
 
     public static List<Long> get(String nameToGet) {
         List<Long> ids = new ArrayList<>();
-        Guild guild = DiscordBot.client.getGuildById(DiscordBot.EXCURSION_GUILD_ID);
-        if (guild == null) return ids;
+        GuildChannel guildChannel = DiscordBot.client.getGuildChannelById(EXCURSION_EVIDENCE_CHANNEL);
+        if (guildChannel == null) return ids;
+        List<Member> members = guildChannel.getMembers();
         nameToGet = nameToGet.toLowerCase();
-        List<Member> members = guild.loadMembers().get();
         for (Member member : members) {
             if (member.getEffectiveName().toLowerCase().contains(nameToGet))
                 ids.add(member.getIdLong());

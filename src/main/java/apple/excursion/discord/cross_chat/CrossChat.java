@@ -146,41 +146,37 @@ public class CrossChat {
                     imageUrl = attachments.get(0).getProxyUrl();
                 }
                 if (imageUrl != null) embedBuilder.setImage(imageUrl);
-                sendCrossChat(event, owner, myMessageId, username, color, description, embedBuilder, avatarUrl, imageUrl);
+                MessageEmbed builtMessage = embedBuilder.build();
+                List<CrossChatId> fails = new ArrayList<>(1);
+                List<MessageId> messageIds = new ArrayList<>();
+                for (Map.Entry<CrossChatId, MessageChannel> crossChatToSend : crossChats.entrySet()) {
+                    try {
+                        long sId = crossChatToSend.getKey().serverId;
+                        long cId = crossChatToSend.getKey().channelId;
+                        long mId = crossChatToSend.getValue().sendMessage(builtMessage).complete().getIdLong();
+                        messageIds.add(new MessageId(sId, cId, mId));
+                    } catch (NullPointerException | ErrorResponseException e) {
+                        fails.add(crossChatToSend.getKey());
+                    }
+                }
+                try {
+                    InsertDB.insertCrossChatMessage(myMessageId, messageIds, owner, username, color, avatarUrl, imageUrl, description);
+                } catch (SQLException ignored) { // it's whatever if i don't have this message saved
+                }
+                for (CrossChatId fail : fails) {
+                    crossChats.remove(fail);
+                    try {
+                        InsertDB.removeCrossChat(fail.serverId);
+                    } catch (SQLException throwables) {
+                        throwables.printStackTrace(); // log this
+                    }
+                }
+                event.getMessage().delete().queue();
+                lastCrossChat = new CrossChatMessage(messageIds, myMessageId, owner, username, color, avatarUrl, imageUrl, description, "");
+                lastCrossChatTime = System.currentTimeMillis();
                 break;
             }
         }
-    }
-
-    private static void sendCrossChat(MessageReceivedEvent event, long owner, long myMessageId, String username, int color, String description, EmbedBuilder embedBuilder, String avatarUrl, String imageUrl) {
-        MessageEmbed builtMessage = embedBuilder.build();
-        List<CrossChatId> fails = new ArrayList<>(1);
-        List<MessageId> messageIds = new ArrayList<>();
-        for (Map.Entry<CrossChatId, MessageChannel> crossChatToSend : crossChats.entrySet()) {
-            try {
-                long sId = crossChatToSend.getKey().serverId;
-                long cId = crossChatToSend.getKey().channelId;
-                long mId = crossChatToSend.getValue().sendMessage(builtMessage).complete().getIdLong();
-                messageIds.add(new MessageId(sId, cId, mId));
-            } catch (NullPointerException | ErrorResponseException e) {
-                fails.add(crossChatToSend.getKey());
-            }
-        }
-        try {
-            InsertDB.insertCrossChatMessage(myMessageId, messageIds, owner, username, color, avatarUrl, imageUrl, description);
-        } catch (SQLException ignored) { // it's whatever if i don't have this message saved
-        }
-        for (CrossChatId fail : fails) {
-            crossChats.remove(fail);
-            try {
-                InsertDB.removeCrossChat(fail.serverId);
-            } catch (SQLException throwables) {
-                throwables.printStackTrace(); // log this
-            }
-        }
-        event.getMessage().delete().queue();
-        lastCrossChat = new CrossChatMessage(messageIds, myMessageId, owner, username, color, avatarUrl, imageUrl, description, "");
-        lastCrossChatTime = System.currentTimeMillis();
     }
 
     public static void dealWithReaction(MessageReactionAddEvent event) {
@@ -206,7 +202,10 @@ public class CrossChat {
                 embedBuilder.setColor(messagesToAddReaction.color);
                 embedBuilder.setAuthor(messagesToAddReaction.username + " #" + messagesToAddReaction.myMessageId, null, messagesToAddReaction.avatarUrl);
                 embedBuilder.setDescription(makeReactionMessage(messagesToAddReaction.description, messagesToAddReaction.reactions));
-                if (messagesToAddReaction.imageUrl != null) embedBuilder.setImage(messagesToAddReaction.imageUrl);
+                if (messagesToAddReaction.imageUrl != null && !messagesToAddReaction.imageUrl.equals("null")) {
+                    System.out.println(messagesToAddReaction.imageUrl);
+                    embedBuilder.setImage(messagesToAddReaction.imageUrl);
+                }
                 for (MessageId messageId : messagesToAddReaction.messageIds) {
                     TextChannel channel = DiscordBot.client.getTextChannelById(messageId.channelId);
                     if (channel == null) continue;
