@@ -1,8 +1,10 @@
 package apple.excursion.utils;
 
+import javax.annotation.Nullable;
+
 public class ColoredName {
     private static final int DEFAULT_COLOR = 0x93a7a7;
-    private final String name;
+    @Nullable private final String name;
     private final int color;
     private final boolean colorExists;
 
@@ -28,6 +30,7 @@ public class ColoredName {
         return colorExists ? color : DEFAULT_COLOR;
     }
 
+    @Nullable
     public String getName() {
         return name;
     }

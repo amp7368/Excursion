@@ -75,7 +75,7 @@ public class LeaderboardOfGuilds {
                 return guildLeaderboardEntry;
             }
         }
-        Pattern pattern = Pattern.compile(".*" + name + ".*", Pattern.CASE_INSENSITIVE);
+        Pattern pattern = Pattern.compile(".*(" + name + ").*", Pattern.CASE_INSENSITIVE);
         for (GuildLeaderboardEntry guild : leaderboard) {
             if (pattern.matcher(guild.guildName).matches()) {
                 return guild;

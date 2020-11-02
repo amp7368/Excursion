@@ -35,7 +35,7 @@ public class CommandSheetImport implements DoCommand {
             databaseGuilds = GetDB.getGuildNameList();
             playerData = new ArrayList<>();
             for (PlayerHeader header : databasePlayers)
-                playerData.add(GetDB.getPlayerData(new Pair<>(header.id, header.name), -1));
+                playerData.add(GetDB.getPlayerData(new Pair<>(header.id, header.name)));
         } catch (IOException e) {
             event.getChannel().sendMessage("There was an IOException importing everything from the sheet").queue();
             return;

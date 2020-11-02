@@ -7,6 +7,7 @@ import apple.excursion.discord.reactions.ReactableMessage;
 import apple.excursion.sheets.SheetsTasks;
 import apple.excursion.utils.PostcardDisplay;
 import apple.excursion.utils.Pretty;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.User;
@@ -47,18 +48,22 @@ public class PostcardListMessage implements ReactableMessage {
         dares.removeIf(task -> !task.category.equalsIgnoreCase(Category.DARE.name()));
         excursions.removeIf(task -> !task.category.equalsIgnoreCase(Category.EXCURSION.name()));
         missions.removeIf(task -> !task.category.equalsIgnoreCase(Category.MISSION.name()));
-        dares.sort((t1, t2) -> t2.points - t1.points);
-        excursions.sort((t1, t2) -> t2.points - t1.points);
-        missions.sort((t1, t2) -> t2.points - t1.points);
-        allTasks.sort((t1, t2) -> t2.points - t1.points);
+        dares.sort((t1, t2) -> String.CASE_INSENSITIVE_ORDER.compare(t1.name, t2.name));
+        excursions.sort((t1, t2) ->  String.CASE_INSENSITIVE_ORDER.compare(t1.name , t2.name));
+        missions.sort((t1, t2) ->  String.CASE_INSENSITIVE_ORDER.compare(t1.name , t2.name));
+        allTasks.sort((t1, t2) ->  String.CASE_INSENSITIVE_ORDER.compare(t1.name , t2.name));
 
 
         this.message = channel.sendMessage(makeMessage()).complete();
         this.message.addReaction(AllReactables.Reactable.LEFT.getFirstEmoji()).queue();
         this.message.addReaction(AllReactables.Reactable.RIGHT.getFirstEmoji()).queue();
-        this.message.addReaction(DiscordBot.client.getEmoteById(AllReactables.Reactable.DARES.getFirstId())).queue();
-        this.message.addReaction(DiscordBot.client.getEmoteById(AllReactables.Reactable.EXCURSIONS.getFirstId())).queue();
-        this.message.addReaction(DiscordBot.client.getEmoteById(AllReactables.Reactable.MISSIONS.getFirstId())).queue();
+
+        Guild excursionGuild = DiscordBot.client.getGuildById(DiscordBot.EXCURSION_GUILD_ID);
+        if (excursionGuild != null) {
+            this.message.addReaction(excursionGuild.getEmoteById(AllReactables.Reactable.DARES.getFirstId())).queue();
+            this.message.addReaction(excursionGuild.getEmoteById(AllReactables.Reactable.EXCURSIONS.getFirstId())).queue();
+            this.message.addReaction(excursionGuild.getEmoteById(AllReactables.Reactable.MISSIONS.getFirstId())).queue();
+        }
         int i = 0;
         for (String letter : AllReactables.emojiAlphabet) {
             if (i++ == ENTRIES_PER_PAGE) break;
@@ -212,6 +217,14 @@ public class PostcardListMessage implements ReactableMessage {
     @Override
     public long getLastUpdated() {
         return lastUpdated;
+    }
+
+    @Override
+    public void dealWithOld() {
+
+        message.clearReactions().queue(success -> {
+        }, failure -> {
+        }); //ignore if we don't have perms. it's really not a bad thing
     }
 
     public enum Category {

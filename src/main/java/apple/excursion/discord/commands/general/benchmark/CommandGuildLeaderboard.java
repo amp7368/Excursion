@@ -59,7 +59,7 @@ public class CommandGuildLeaderboard implements DoCommand {
                     }
                     if (matchedGuild == null) {
                         // try guild name
-                        Pattern pattern = Pattern.compile(".*" + inputAsGuildName + ".*", Pattern.CASE_INSENSITIVE);
+                        Pattern pattern = Pattern.compile(".*(" + inputAsGuildName + ").*", Pattern.CASE_INSENSITIVE);
                         for (GuildHeader header : guildList) {
                             if (pattern.matcher(header.name).matches()) {
                                 matchedGuild = guildLeaderboard.add(header);

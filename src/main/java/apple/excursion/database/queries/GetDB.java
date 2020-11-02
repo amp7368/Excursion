@@ -12,7 +12,6 @@ import apple.excursion.database.objects.guild.LeaderboardOfGuilds;
 import apple.excursion.database.objects.player.PlayerHeader;
 import apple.excursion.database.objects.player.PlayerLeaderboard;
 import apple.excursion.database.objects.player.PlayerLeaderboardEntry;
-import apple.excursion.discord.commands.general.postcard.CommandSubmit;
 import apple.excursion.discord.data.TaskSimple;
 import apple.excursion.discord.data.answers.HistoryLeaderboardOfGuilds;
 import apple.excursion.discord.data.answers.HistoryPlayerLeaderboard;
@@ -31,7 +30,7 @@ import static apple.excursion.discord.reactions.messages.benchmark.CalendarMessa
 import static apple.excursion.discord.reactions.messages.benchmark.CalendarMessage.EPOCH_START_OF_SUBMISSION_HISTORY;
 
 public class GetDB {
-    public static PlayerData getPlayerData(Pair<Long, String> id, int submissionSize) throws SQLException {
+    public static PlayerData getPlayerData(Pair<Long, String> id) throws SQLException {
         synchronized (VerifyDB.syncDB) {
             String sql = GetSql.getSqlGetPlayerAll(id.getKey());
             Statement statement = VerifyDB.database.createStatement();
@@ -73,7 +72,7 @@ public class GetDB {
             int soulJuice = response.getInt(5);
             response.close();
             List<OldSubmission> submissions = new ArrayList<>();
-            sql = GetSql.getSqlGetPlayerSubmissionHistory(id.getKey(), submissionSize);
+            sql = GetSql.getSqlGetPlayerSubmissionHistory(id.getKey(), -1); //get all the submissions all the time
             response = statement.executeQuery(sql);
             while (response.next()) {
                 submissions.add(new OldSubmission(response));
@@ -368,114 +367,145 @@ public class GetDB {
 
     @Nullable
     public static Pair<Integer, SubmissionData> getSubmissionData(long channelId, long messageId) throws SQLException {
-        Statement statement = VerifyDB.database.createStatement();
-        String sql = GetSql.getSqlGetResponseSubmissionData(channelId, messageId);
-        ResultSet response = statement.executeQuery(sql);
-        if (!response.isClosed()) {
-            int responseId = response.getInt(1);
+        synchronized (VerifyDB.syncDB) {
+            Statement statement = VerifyDB.database.createStatement();
+            String sql = GetSql.getSqlGetResponseSubmissionData(channelId, messageId);
+            ResultSet response = statement.executeQuery(sql);
+            if (!response.isClosed()) {
+                int responseId = response.getInt(1);
 
-            boolean isAccepted = response.getBoolean(2);
-            boolean isCompleted = response.getBoolean(3);
-            long epochTimeOfSubmission = response.getTimestamp(4).getTime();
-            String attachmentsUrl = response.getString(5);
-            List<String> links = Arrays.asList(response.getString(6).split("`"));
-            TaskSimple task = new TaskSimple(
-                    response.getInt(9),
-                    response.getString(8),
-                    response.getString(7)
-            );
-            SubmissionData.TaskSubmissionType taskSubmissionType = SubmissionData.TaskSubmissionType.valueOf(response.getString(10));
-            String submitterName = response.getString(11);
-            long submitterId = response.getLong(12);
-            response.close();
+                boolean isAccepted = response.getBoolean(2);
+                boolean isCompleted = response.getBoolean(3);
+                int submissionId = response.getInt(4);
+                if (submissionId == 0) submissionId = -1; // just make it a proper invalid id if the id is null
+                long epochTimeOfSubmission = response.getTimestamp(5).getTime();
+                String attachmentsUrl = response.getString(6);
+                List<String> links = Arrays.asList(response.getString(7).split("`"));
+                TaskSimple task = new TaskSimple(
+                        response.getInt(10),
+                        response.getString(9),
+                        response.getString(8)
+                );
+                SubmissionData.TaskSubmissionType taskSubmissionType = SubmissionData.TaskSubmissionType.valueOf(response.getString(11));
+                String submitterName = response.getString(12);
+                long submitterId = response.getLong(13);
+                response.close();
 
-            // get the idToNames
-            sql = GetSql.getSqlGetResponseSubmissionNames(responseId);
-            response = statement.executeQuery(sql);
-            List<Pair<Long, String>> idToNames = new ArrayList<>();
-            if (!response.isClosed())
-                while (response.next()) {
-                    idToNames.add(new Pair<>(
-                            response.getLong(1),
-                            response.getString(2)
-                    ));
+                // get the idToNames
+                sql = GetSql.getSqlGetResponseSubmissionNames(responseId);
+                response = statement.executeQuery(sql);
+                List<Pair<Long, String>> idToNames = new ArrayList<>();
+                if (!response.isClosed())
+                    while (response.next()) {
+                        idToNames.add(new Pair<>(
+                                response.getLong(1),
+                                response.getString(2)
+                        ));
+                    }
+
+                // get the playersdata for submissionHistory
+                List<PlayerData> players = new ArrayList<>();
+                for (Pair<Long, String> idToName : idToNames) {
+                    players.add(GetDB.getPlayerData(idToName));
                 }
-
-            // get the playersdata for submissionHistory
-            List<PlayerData> players = new ArrayList<>();
-            for (Pair<Long, String> idToName : idToNames) {
-                players.add(GetDB.getPlayerData(idToName, CommandSubmit.SUBMISSION_HISTORY_SIZE));
+                response.close();
+                statement.close();
+                // get the color
+                return new Pair<>(
+                        responseId,
+                        new SubmissionData(isAccepted, isCompleted, submissionId, epochTimeOfSubmission, attachmentsUrl, links, task,
+                                taskSubmissionType, submitterName, submitterId, idToNames, players, GetColoredName.get(submitterId).getColor()));
             }
-            response.close();
-            statement.close();
-            // get the color
-            return new Pair<>(
-                    responseId,
-                    new SubmissionData(isAccepted, isCompleted, epochTimeOfSubmission, attachmentsUrl, links, task,
-                            taskSubmissionType, submitterName, submitterId, idToNames, players, GetColoredName.get(submitterId).getColor()));
+            return null;
         }
-        return null;
     }
 
     public static List<Pair<Long, Long>> getResponseMessages(int responseId) throws SQLException {
-        String sql = GetSql.getSqlGetResponseReviewerMessages(responseId);
-        Statement statement = VerifyDB.database.createStatement();
-        ResultSet response = statement.executeQuery(sql);
-        List<Pair<Long, Long>> messages = new ArrayList<>();
-        if (!response.isClosed()) {
-            while (response.next()) {
-                messages.add(new Pair<>(response.getLong(1), response.getLong(2)));
+        synchronized (VerifyDB.syncDB) {
+            String sql = GetSql.getSqlGetResponseReviewerMessages(responseId);
+            Statement statement = VerifyDB.database.createStatement();
+            ResultSet response = statement.executeQuery(sql);
+            List<Pair<Long, Long>> messages = new ArrayList<>();
+            if (!response.isClosed()) {
+                while (response.next()) {
+                    messages.add(new Pair<>(response.getLong(1), response.getLong(2)));
+                }
             }
+            response.close();
+            statement.close();
+            return messages;
         }
-        response.close();
-        statement.close();
-        return messages;
     }
 
     public static List<CrossChatId> getDiscordChannels() throws SQLException {
-        List<CrossChatId> channels = new ArrayList<>();
-        Statement statement = VerifyDB.database.createStatement();
-        ResultSet response = statement.executeQuery(GetSql.getSqlGetCrossChat());
-        if (!response.isClosed()) {
-            while (response.next()) {
-                long serverId = response.getLong(1);
-                long channelId = response.getLong(2);
-                channels.add(new CrossChatId(serverId, channelId));
+        synchronized (VerifyDB.syncDB) {
+            List<CrossChatId> channels = new ArrayList<>();
+            Statement statement = VerifyDB.database.createStatement();
+            ResultSet response = statement.executeQuery(GetSql.getSqlGetCrossChat());
+            if (!response.isClosed()) {
+                while (response.next()) {
+                    long serverId = response.getLong(1);
+                    long channelId = response.getLong(2);
+                    channels.add(new CrossChatId(serverId, channelId));
+                }
             }
+            return channels;
         }
-        return channels;
+    }
+
+    public static List<MessageId> getCrossChatMessageIds(long messageId, long owner) throws SQLException {
+        synchronized (VerifyDB.syncDB) {
+            Statement statement = VerifyDB.database.createStatement();
+            ResultSet response = statement.executeQuery(GetSql.getSqlGetCrossChatMessages(messageId, owner));
+            List<MessageId> messageIds = new ArrayList<>();
+            if (!response.isClosed()) {
+                while (response.next()) {
+                    long sId = response.getLong(2);
+                    long cId = response.getLong(3);
+                    long mId = response.getLong(4);
+                    messageIds.add(new MessageId(sId, cId, mId));
+                }
+                response.close();
+            }
+            statement.close();
+            return messageIds;
+        }
     }
 
     public static CrossChatMessage dealWithReactionAndGet(long serverId, long channelId, long messageId, MessageReactionAddEvent event) throws SQLException {
-        List<MessageId> messageIds = new ArrayList<>();
-        Statement statement = VerifyDB.database.createStatement();
-        ResultSet response = statement.executeQuery(GetSql.getSqlGetCrossChatMessages(serverId, channelId, messageId));
-        long myMessageId = -1;
-        if (!response.isClosed()) {
-            while (response.next()) {
-                myMessageId = response.getLong(1);
-                long sId = response.getLong(2);
-                long cId = response.getLong(3);
-                long mId = response.getLong(4);
-                messageIds.add(new MessageId(sId, cId, mId));
+        synchronized (VerifyDB.syncDB) {
+            List<MessageId> messageIds = new ArrayList<>();
+            Statement statement = VerifyDB.database.createStatement();
+            ResultSet response = statement.executeQuery(GetSql.getSqlGetCrossChatMessages(serverId, channelId, messageId));
+            long myMessageId = -1;
+            if (!response.isClosed()) {
+                while (response.next()) {
+                    myMessageId = response.getLong(1);
+                    long sId = response.getLong(2);
+                    long cId = response.getLong(3);
+                    long mId = response.getLong(4);
+                    messageIds.add(new MessageId(sId, cId, mId));
+                }
+                response.close();
+                if (myMessageId == -1) {
+                    return null;
+                }
+                statement.execute(GetSql.getSqlUpdateCrossChatReactions(myMessageId, event));
+                statement.executeQuery(GetSql.getSqlGetCrossChatMessageContent(myMessageId));
+                if (response.isClosed())
+                    return null;
+                long owner = response.getLong(2);
+                String username = GetSql.convertTaskNameFromSql(response.getString(3));
+                int color = response.getInt(4);
+                String avatarUrl = response.getString(5);
+                String imageUrl = response.getString(6);
+                String description = GetSql.convertTaskNameFromSql(response.getString(7));
+                String reactions = response.getString(8);
+                statement.close();
+                return new CrossChatMessage(messageIds, myMessageId, owner, username, color, avatarUrl, imageUrl, description, reactions);
             }
-            response.close();
-            if (myMessageId == -1) {
-                return null;
-            }
-            statement.execute(GetSql.getSqlUpdateCrossChatReactions(myMessageId, event));
-            statement.executeQuery(GetSql.getSqlGetCrossChatMessageContent(myMessageId));
-            if (response.isClosed())
-                return null;
-            String username = response.getString(2);
-            int color = response.getInt(3);
-            String avatarUrl = response.getString(4);
-            String description = response.getString(5);
-            String reactions = response.getString(6);
             statement.close();
-            return new CrossChatMessage(messageIds, username, color, avatarUrl, description, reactions);
+            return null;
         }
-        statement.close();
-        return null;
     }
 }

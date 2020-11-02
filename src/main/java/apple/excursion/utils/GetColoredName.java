@@ -2,17 +2,20 @@ package apple.excursion.utils;
 
 import apple.excursion.discord.DiscordBot;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.GuildChannel;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 
 import java.util.*;
 
 public class GetColoredName {
     private static final Collection<Long> roles = new HashSet<>();
+    public static final long EXCURSION_EVIDENCE_CHANNEL = 664337960203714592L;
 
     static {
         roles.add(555340987086667776L); // Farplane Resident
-        roles.add(757738058656252034L); // Masonry Top
+        roles.add(757738058656252034L); // Masonry Two
         roles.add(744702853398003794L); // Purple
         roles.add(728080120761417828L); // Indigo
         roles.add(728080122258653316L); // Green
@@ -30,7 +33,12 @@ public class GetColoredName {
     public static ColoredName get(long id) {
         Guild guild = DiscordBot.client.getGuildById(DiscordBot.EXCURSION_GUILD_ID);
         if (guild == null) return new ColoredName();
-        Member member = guild.getMemberById(id);
+        Member member;
+        try {
+            member = guild.retrieveMemberById(id).complete();
+        } catch (ErrorResponseException e) {
+            member = null;
+        }
         if (member == null) {
             return new ColoredName();
         } else {
@@ -47,10 +55,10 @@ public class GetColoredName {
 
     public static List<Long> get(String nameToGet) {
         List<Long> ids = new ArrayList<>();
-        Guild guild = DiscordBot.client.getGuildById(DiscordBot.EXCURSION_GUILD_ID);
-        if (guild == null) return ids;
+        GuildChannel guildChannel = DiscordBot.client.getGuildChannelById(EXCURSION_EVIDENCE_CHANNEL);
+        if (guildChannel == null) return ids;
+        List<Member> members = guildChannel.getMembers();
         nameToGet = nameToGet.toLowerCase();
-        List<Member> members = guild.getMembers();
         for (Member member : members) {
             if (member.getEffectiveName().toLowerCase().contains(nameToGet))
                 ids.add(member.getIdLong());

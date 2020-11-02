@@ -35,7 +35,7 @@ public class GuildProfileMessage implements ReactableMessage {
         this.submissions = submissions;
         if (submissions != null) {
             this.submissions.removeIf(oldSubmission -> oldSubmission.score < 0);
-            this.submissions.removeIf(oldSubmission -> oldSubmission.submissionType== SubmissionData.TaskSubmissionType.SYNC);
+            this.submissions.removeIf(oldSubmission -> oldSubmission.submissionType == SubmissionData.TaskSubmissionType.SYNC);
             if (submissions.isEmpty()) submissions = null;
         }
         if (submissions != null) {
@@ -55,14 +55,13 @@ public class GuildProfileMessage implements ReactableMessage {
 
     private MessageEmbed makeMessage() {
         String title = String.format("%s [%s]", matchedGuild.getGuildName(), matchedGuild.getGuildTag());
-        return makeMessageStatic(matchedGuild, players, submissions, page, title, "",color);
+        return makeMessageStatic(matchedGuild, players, submissions, page, title, "", color);
 
     }
 
     public static MessageEmbed makeMessageStatic(
             GuildLeaderboardEntry matchedGuild, List<PlayerData> players, List<OldSubmission> submissions, int page,
-            String title, String headerTitle,int color) {
-
+            String title, String headerTitle, int color) {
 
 
         EmbedBuilder embed = new EmbedBuilder();
@@ -77,7 +76,7 @@ public class GuildProfileMessage implements ReactableMessage {
 
         StringBuilder body = new StringBuilder();
         body.append("```glsl\n");
-        body.append(String.format("%s [%s] Leaderboards Page (%d)\n", matchedGuild.getGuildName(), matchedGuild.getGuildTag(), page));
+        body.append(String.format("%s [%s] Leaderboards Page (%d)\n", matchedGuild.getGuildName(), matchedGuild.getGuildTag(), page + 1));
         body.append(getDash());
         body.append(String.format("|%3s| %-31s| %-8s|\n", "", "Name", "Total EP"));
         int upper = Math.min(((page + 1) * ENTRIES_PER_PAGE), players.size());
@@ -160,5 +159,13 @@ public class GuildProfileMessage implements ReactableMessage {
     @Override
     public long getLastUpdated() {
         return lastUpdated;
+    }
+
+    @Override
+    public void dealWithOld() {
+        message.clearReactions().queue(success -> {
+        }, failure -> {
+        }); //ignore if we don't have perms. it's really not a bad thing
+
     }
 }

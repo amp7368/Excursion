@@ -49,9 +49,10 @@ public class ShoutConfirmationMessage implements ReactableMessage {
             case ACCEPT:
                 // send the messages
                 for (Pair<Long, String> recipient : responseRecipients) {
-                    User user = DiscordBot.client.retrieveUserById(recipient.getKey()).complete();
-                    if (user == null || user.isBot()) continue;
-                    user.openPrivateChannel().complete().sendMessage(messageToSend).queue();
+                    DiscordBot.client.retrieveUserById(recipient.getKey()).queue(user -> {
+                        if (user == null || user.isBot()) return;
+                        user.openPrivateChannel().queue(channel -> channel.sendMessage(messageToSend).queue(), failure -> event.getChannel().sendMessage("I couldn't send that message to " + recipient.getValue()).queue());
+                    }, failure -> event.getChannel().sendMessage("I couldn't send that message to " + recipient.getValue()).queue());
                 }
                 message.removeReaction(AllReactables.Reactable.ACCEPT.getFirstEmoji()).queue();
                 message.removeReaction(AllReactables.Reactable.REJECT.getFirstEmoji()).queue();
@@ -74,5 +75,15 @@ public class ShoutConfirmationMessage implements ReactableMessage {
     @Override
     public long getLastUpdated() {
         return lastUpdated;
+    }
+
+    @Override
+    public void dealWithOld() {
+        message.removeReaction(AllReactables.Reactable.REJECT.getFirstEmoji()).queue(success -> {
+        }, failure -> {
+        }); //ignore fails
+        message.removeReaction(AllReactables.Reactable.ACCEPT.getFirstEmoji()).queue(success -> {
+        }, failure -> {
+        }); //ignore fails
     }
 }

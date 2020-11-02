@@ -3,6 +3,7 @@ package apple.excursion.discord.reactions.messages.benchmark;
 import apple.excursion.database.objects.OldSubmission;
 import apple.excursion.database.objects.player.PlayerData;
 import apple.excursion.database.objects.player.PlayerLeaderboardEntry;
+import apple.excursion.discord.DiscordBot;
 import apple.excursion.discord.commands.Commands;
 import apple.excursion.discord.data.Task;
 import apple.excursion.database.objects.guild.GuildLeaderboardEntry;
@@ -18,6 +19,7 @@ import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
+import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 
 import java.util.*;
 
@@ -79,12 +81,17 @@ public class ProfileMessage implements ReactableMessage {
 
     private MessageEmbed makeMessage() {
         EmbedBuilder embed = new EmbedBuilder();
+        try {
+            User user = DiscordBot.client.retrieveUserById(player.id).complete();
+            embed.setThumbnail(user.getAvatarUrl());
+        } catch (ErrorResponseException ignored) { //it's really not important to get the user's avatar
+        }
         embed.setTitle(coloredName.getName() == null ? player.name : coloredName.getName());
         StringBuilder description = new StringBuilder();
         description.append(String.format("Soul juice: %d\n\n", player.getSoulJuice()));
         // put guild info
         if (guild == null) {
-            description.append(String.format("Not in a guild. To join a guild use %s", Commands.GUILD.getUsageMessage()));
+            description.append(String.format("Not in a guild. To join a guild use %s", Commands.GUILD.getBareUsageMessage()));
         } else {
             description.append(String.format("Member of %s [%s]\n", playerLeaderboardEntry.guildName, playerLeaderboardEntry.guildTag));
             description.append(String.format("Guild rank: #%d\n", guild.rank));
@@ -104,7 +111,6 @@ public class ProfileMessage implements ReactableMessage {
         description.append('\n');
         int emojiAt = 0;
         for (Map.Entry<String, List<Task>> topTaskCategory : topTasks.entrySet()) {
-            description.append(String.format("**Uncompleted %s**\n", Pretty.upperCaseFirst(topTaskCategory.getKey())));
             List<String> taskNames = new ArrayList<>();
             List<Task> tasks = topTaskCategory.getValue();
             int upper = (page + 1) * TOP_TASKS_SIZE;
@@ -119,9 +125,7 @@ public class ProfileMessage implements ReactableMessage {
                     ));
                 }
             }
-            description.append(String.join("\n", taskNames));
-            description.append('\n');
-            description.append('\n');
+            embed.addField(String.format("**Uncompleted %ss**\n", Pretty.upperCaseFirst(topTaskCategory.getKey())), String.join("\n", taskNames), false);
         }
         description.append("**Submission record:** \n");
         if (player.submissions.isEmpty()) {
@@ -134,7 +138,7 @@ public class ProfileMessage implements ReactableMessage {
                 description.append('\n');
             }
         }
-        embed.setDescription(description);
+        embed.setDescription(description.toString());
         embed.setColor(coloredName.getColor());
         return embed.build();
     }
@@ -217,5 +221,13 @@ public class ProfileMessage implements ReactableMessage {
     @Override
     public long getLastUpdated() {
         return lastUpdated;
+    }
+
+    @Override
+    public void dealWithOld() {
+
+        message.clearReactions().queue(success -> {
+        }, failure -> {
+        }); //ignore if we don't have perms. it's really not a bad thing
     }
 }

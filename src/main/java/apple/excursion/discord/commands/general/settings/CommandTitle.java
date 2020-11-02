@@ -78,7 +78,7 @@ public class CommandTitle implements DoCommand {
         }
         PlayerData playerData;
         try {
-            playerData = GetDB.getPlayerData(new Pair<>(event.getAuthor().getIdLong(), name), -1);
+            playerData = GetDB.getPlayerData(new Pair<>(event.getAuthor().getIdLong(), name));
         } catch (SQLException throwables) {
             event.getChannel().sendMessage("There has been an SQLException getting your player data").queue();
             return;

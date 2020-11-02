@@ -4,6 +4,7 @@ import apple.excursion.database.queries.GetDB;
 import apple.excursion.database.queries.UpdateDB;
 import apple.excursion.discord.data.answers.SubmissionData;
 import apple.excursion.discord.listener.ResponseListener;
+import apple.excursion.discord.reactions.messages.postcard.CorrectingSubmissionMessage;
 import apple.excursion.utils.GetColoredName;
 import apple.excursion.utils.Pair;
 import net.dv8tion.jda.api.entities.ChannelType;
@@ -36,16 +37,20 @@ public class DatabaseResponseReactable {
                         return;
                     } else {
                         submissionData.setAccepted();
-                        submissionData.completeSubmit(true, reviewerMessages, reviewerName);
-                        UpdateDB.updateResponseStatus(true, true, responseId);
+                        int submissionId = submissionData.completeSubmit(true, reviewerMessages, reviewerName);
+                        UpdateDB.updateResponseStatus(true, true, responseId, submissionId);
                     }
                 } else if (emoji.equals(AllReactables.Reactable.REJECT.getFirstEmoji())) {
                     if (submissionData.isCompleted()) {
                         event.getChannel().sendMessage("This submission has already been " + (submissionData.isAccepted() ? "accepted." : "denied")).queue();
+                        if (submissionData.isAccepted()) {
+                            // if the reviewer tries to react to change a submission and the reaction would change something
+                            new CorrectingSubmissionMessage(responseId, submissionData, false, reviewerMessages, event.getChannel());
+                        }
                         return;
                     } else {
                         submissionData.completeSubmit(false, reviewerMessages, reviewerName);
-                        UpdateDB.updateResponseStatus(false, true, responseId);
+                        UpdateDB.updateResponseStatus(false, true, responseId, -1);
                     }
                 } else if (emoji.equals(AllReactables.Reactable.RESPOND.getFirstEmoji())) {
                     new ResponseListener(event.getChannel(), submissionData.getSubmittersNameAndIds());

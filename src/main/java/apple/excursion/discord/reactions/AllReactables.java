@@ -46,7 +46,14 @@ public class AllReactables {
 
     private static void trimOldMessages() {
         synchronized (mapSyncObject) {
-            reactableMessages.values().removeIf(msg -> System.currentTimeMillis() - msg.getLastUpdated() > STOP_WATCHING_DIFFERENCE);
+            Iterator<Map.Entry<Long, ReactableMessage>> iterator = reactableMessages.entrySet().iterator();
+            while (iterator.hasNext()) {
+                Map.Entry<Long, ReactableMessage> msg = iterator.next();
+                if (System.currentTimeMillis() - msg.getValue().getLastUpdated() > STOP_WATCHING_DIFFERENCE) {
+                    msg.getValue().dealWithOld();
+                    iterator.remove();
+                }
+            }
         }
     }
 

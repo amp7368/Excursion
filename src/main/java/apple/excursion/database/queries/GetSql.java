@@ -1,7 +1,6 @@
 package apple.excursion.database.queries;
 
 import apple.excursion.database.VerifyDB;
-import apple.excursion.discord.DiscordBot;
 import apple.excursion.discord.data.Task;
 import apple.excursion.discord.data.answers.SubmissionData;
 import apple.excursion.discord.reactions.messages.benchmark.CalendarMessage;
@@ -12,6 +11,7 @@ import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class GetSql {
@@ -421,8 +421,9 @@ public class GetSql {
     @NotNull
     public static String getSqlInsertResponse(int currentResponseId, SubmissionData submissionData) {
         return String.format("INSERT INTO response " +
-                        "VALUES (%d,0,0,%d,%s,%s,'%s','%s',%d,'%s','%s',%d);",
+                        "VALUES (%d,0,0,%s,%d,%s,%s,'%s','%s',%d,'%s','%s',%d);",
                 currentResponseId,
+                null,
                 submissionData.getTimeEpoch(),
                 submissionData.getAttachment() == null ? null : "'" + submissionData.getAttachment() + "'",
                 submissionData.getLinks() == null ? null : "'" + String.join("`", submissionData.getLinks()) + "'",
@@ -504,9 +505,9 @@ public class GetSql {
                 ");", messageId, channelId, serverId);
     }
 
-    public static String getSqlInsertCrossChatSent(long currentMyMessageId, String username, int color, String avatarUrl, String description) {
+    public static String getSqlInsertCrossChatSent(long currentMyMessageId, long owner, String username, int color, String avatarUrl, String imageUrl, String description) {
         return String.format("INSERT INTO cross_chat_message_sent \n" +
-                "VALUES (%d,'%s',%d,'%s','%s','%s');", currentMyMessageId, username, color, avatarUrl, convertTaskNameToSql(description), "");
+                "VALUES (%d,%d,'%s',%d,'%s',%s,'%s','%s');", currentMyMessageId, owner, convertTaskNameToSql(username), color, avatarUrl, imageUrl == null ? null : String.format("'%s'", imageUrl), convertTaskNameToSql(description), "");
     }
 
     public static String getSqlInsertCrossChatMessages(long currentMyMessageId, long serverId, long channelId, long messageId) {
@@ -524,5 +525,48 @@ public class GetSql {
         return String.format("UPDATE cross_chat_message_sent\n" +
                 "SET reactions = cross_chat_message_sent.reactions || '%s'\n" +
                 "WHERE myMessageId = %d;", String.format(",%s.%s", username, event.getReactionEmote().isEmoji() ? event.getReactionEmote().getEmoji() : event.getReactionEmote().getEmote().getName()), myMessageId);
+    }
+
+    public static String getSqlGetCrossChatMessages(long myMessageId, long owner) {
+        return String.format("SELECT *\n" +
+                "FROM (\n" +
+                "         SELECT *\n" +
+                "         FROM cross_chat_messages\n" +
+                "         WHERE myMessageId = %d\n" +
+                "     ) as matches\n" +
+                "         INNER JOIN cross_chat_message_sent\n" +
+                "                    ON matches.myMessageId = cross_chat_message_sent.myMessageId\n" +
+                "WHERE cross_chat_message_sent.owner = %d", myMessageId, owner);
+    }
+
+    public static String getSqlUpdateCalendar(String monthName, int day, List<String> newTasksToday) {
+        newTasksToday = newTasksToday.stream().map(GetSql::convertTaskNameToSql).collect(Collectors.toList());
+        return String.format("UPDATE %s \n" +
+                "SET task_names = '%s'\n" +
+                "WHERE date = %d;", monthName, String.join(",", newTasksToday), day);
+    }
+
+    public static String getSqlUpdateCrossChatDescription(long messageId, String description) {
+        return String.format("UPDATE cross_chat_message_sent\n" +
+                "SET description = '%s'\n" +
+                "WHERE myMessageId  =  %d;", convertTaskNameToSql(description), messageId);
+    }
+
+    public static String getSqlUpdateResponseSubmissionId(int responseId, int submissionId) {
+        return String.format("UPDATE response\n" +
+                "SET submission_id = %d\n" +
+                "WHERE response_id = %d;", submissionId, responseId);
+    }
+
+    public static String dropSubmission(int submissionId) {
+        return String.format("DELETE\n" +
+                "FROM submissions\n" +
+                "WHERE id = %d;", submissionId);
+    }
+
+    public static String dropSubmissionLink(int submissionId) {
+        return String.format("DELETE\n" +
+                "FROM submissions_link\n" +
+                "WHERE submission_id = %d\n", submissionId);
     }
 }

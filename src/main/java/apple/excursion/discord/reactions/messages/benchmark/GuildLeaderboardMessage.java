@@ -10,7 +10,6 @@ import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 
 
-
 public class GuildLeaderboardMessage implements ReactableMessage {
     public static final int ENTRIES_PER_PAGE = 10;
     private final Message message;
@@ -31,7 +30,7 @@ public class GuildLeaderboardMessage implements ReactableMessage {
 
     public String makeMessage() {
         String title = String.format("Excursion Guild Leaderboards Page (%d)", page + 1);
-        return makeMessageStatic(leaderboard,page,title);
+        return makeMessageStatic(leaderboard, page, title);
     }
 
     public static String makeMessageStatic(LeaderboardOfGuilds leaderboard, int page, String title) {
@@ -130,5 +129,12 @@ public class GuildLeaderboardMessage implements ReactableMessage {
     @Override
     public long getLastUpdated() {
         return lastUpdated;
+    }
+
+    @Override
+    public void dealWithOld() {
+        message.clearReactions().queue(success -> {
+        }, failure -> {
+        }); //ignore if we don't have perms. it's really not a bad thing
     }
 }

@@ -2,6 +2,7 @@ package apple.excursion.database;
 
 import apple.excursion.ExcursionMain;
 import apple.excursion.database.queries.GetSql;
+import apple.excursion.discord.data.DailyBans;
 import apple.excursion.discord.data.Task;
 import apple.excursion.sheets.SheetsTasks;
 
@@ -56,6 +57,7 @@ public class VerifyDB {
             "    response_id          INTEGER   NOT NULL UNIQUE PRIMARY KEY,\n" +
             "    is_accepted          BOOLEAN   NOT NULL CHECK (is_accepted IN (0, 1)),\n" +
             "    is_completed         BOOLEAN   NOT NULL CHECK (is_completed IN (0, 1)),\n" +
+            "    submission_id        INTEGER,\n" +
             "    time_of_submission   TIMESTAMP NOT NULL,\n" +
             "    attachment_url       TEXT,\n" +
             "    links                TEXT,\n" +
@@ -102,11 +104,13 @@ public class VerifyDB {
     private static final String BUILD_TABLE_SQL_CROSS_CHAT_MESSAGE_SENT = "CREATE TABLE IF NOT EXISTS cross_chat_message_sent\n" +
             "(\n" +
             "    myMessageId BIGINT NOT NULL PRIMARY KEY UNIQUE,\n" +
+            "    owner       BIGINT NOT NULL,\n" +
             "    username    TEXT,\n" +
             "    color       INTEGER,\n" +
             "    avatarUrl   TEXT,\n" +
+            "    imageUrl    TEXT,\n" +
             "    description TEXT,\n" +
-            "    reactions TEXT\n" +
+            "    reactions   TEXT\n" +
             ");";
     public static Connection database;
     public static Connection calendarDbConnection;
@@ -187,7 +191,7 @@ public class VerifyDB {
         currentSubmissionId = Math.max(statement.executeQuery("SELECT MAX(submission_id) FROM submissions_link;").getInt(1) + 1, currentSubmissionId);
 
         currentMyMessageId = statement.executeQuery("SELECT MAX(myMessageId) FROM cross_chat_message_sent;").getInt(1) + 1;
-        currentMyMessageId = Math.max(statement.executeQuery("SELECT MAX(myMessageId) FROM cross_chat_messages;").getInt(1) + 1, currentSubmissionId);
+        currentMyMessageId = Math.max(statement.executeQuery("SELECT MAX(myMessageId) FROM cross_chat_messages;").getInt(1) + 1, currentMyMessageId);
 
         currentResponseId = statement.executeQuery("SELECT MAX(response_id) FROM response;").getInt(1) + 1;
         currentResponseId = Math.max(statement.executeQuery("SELECT MAX(response_id) FROM response_link;").getInt(1) + 1, currentResponseId);
@@ -245,10 +249,14 @@ public class VerifyDB {
                 Collection<Task> todayTasks = new ArrayList<>();
                 Collection<Integer> todayNumbers = new ArrayList<>();
                 for (int j = 0; j < TASKS_PER_DAY; j++) {
-                    //noinspection StatementWithEmptyBody
-                    while (todayNumbers.contains(randomNext = random.nextInt())) ;
-                    todayNumbers.add(randomNext);
-                    todayTasks.add(tasks.get(random.nextInt(size)));
+                    Task taskToAdd;
+                    do {
+                        //noinspection StatementWithEmptyBody
+                        while (todayNumbers.contains(randomNext = random.nextInt(size))) ;
+                        todayNumbers.add(randomNext);
+                        taskToAdd = tasks.get(randomNext);
+                    } while (DailyBans.isBan(taskToAdd.name));
+                    todayTasks.add(taskToAdd);
                 }
                 dailyTasks.add(todayTasks);
             }

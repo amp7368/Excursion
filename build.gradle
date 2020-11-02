@@ -1,0 +1,37 @@
+plugins {
+    id "com.github.johnrengelman.shadow" version "5.2.0"
+    id "java"
+    id "application"
+}
+
+repositories {
+    mavenCentral()
+    jcenter()
+}
+
+mainClassName = 'apple.excursion.ExcursionMain'
+sourceCompatibility = 1.11
+targetCompatibility = 1.11
+version = '1.0'
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'apple.excursion.ExcursionMain'
+    }
+}
+
+dependencies {
+    // This dependency is used by the application.
+
+    // Use JUnit test framework
+    testImplementation 'junit:junit:4.13'
+
+    compile "org.xerial:sqlite-jdbc:3.32.3.2"
+    compile 'com.google.api-client:google-api-client:1.30.4'
+    compile 'com.google.oauth-client:google-oauth-client-jetty:1.30.4'
+    compile 'com.google.apis:google-api-services-sheets:v4-rev581-1.25.0'
+    compile group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1.1'
+    implementation 'net.dv8tion:JDA:4.2.0_212'
+}
+
+project.buildDir("C:\\Users\\Aaron\\Desktop\\bots\\excursionBot")

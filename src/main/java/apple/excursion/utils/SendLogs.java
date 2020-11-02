@@ -3,16 +3,18 @@ package apple.excursion.utils;
 import apple.excursion.ExcursionMain;
 import apple.excursion.database.VerifyDB;
 import apple.excursion.discord.DiscordBot;
-import com.google.common.net.MediaType;
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageChannel;
-import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.TextChannel;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public class SendLogs {
     private static boolean IS_CHANNEL;
@@ -47,7 +49,7 @@ public class SendLogs {
         if (IS_CHANNEL) {
             dms = DiscordBot.client.getTextChannelById(SENDER);
         } else {
-            dms = DiscordBot.client.retrieveUserById(SENDER).complete().openPrivateChannel().complete();
+            dms = DiscordBot.client.retrieveUserById(SENDER).complete().openPrivateChannel().complete();//todo
         }
         StringBuilder builder = new StringBuilder();
         for (String log : logs) {
@@ -67,7 +69,7 @@ public class SendLogs {
         if (IS_CHANNEL) {
             dms = DiscordBot.client.getTextChannelById(SENDER);
         } else {
-            dms = DiscordBot.client.retrieveUserById(SENDER).complete().openPrivateChannel().complete();
+            dms = DiscordBot.client.retrieveUserById(SENDER).complete().openPrivateChannel().complete();//todo
         }
         dms.sendMessage("Below is the DB as of " + Pretty.date(System.currentTimeMillis())).queue();
         synchronized (VerifyDB.syncDB) {
@@ -76,5 +78,26 @@ public class SendLogs {
                 dms.sendFile(file).complete();
             }
         }
+    }
+
+    public static void error(String module, String message) {
+        MessageChannel dms;
+        if (IS_CHANNEL) {
+            dms = DiscordBot.client.getTextChannelById(SENDER);
+        } else {
+            dms = DiscordBot.client.retrieveUserById(SENDER).complete().openPrivateChannel().complete();//todo
+        }
+        dms.sendMessage(String.format("[%s] %s", module, message)).queue();
+
+    }
+
+    public static void discordError(String module, String message) {
+        MessageChannel dms;
+        if (IS_CHANNEL) {
+            dms = DiscordBot.client.getTextChannelById(SENDER);
+        } else {
+            dms = DiscordBot.client.retrieveUserById(SENDER).complete().openPrivateChannel().complete();//todo
+        }
+        dms.sendMessage(String.format("[%s] %s", module, message)).queue();
     }
 }

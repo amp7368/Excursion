@@ -8,7 +8,7 @@ import apple.excursion.discord.cross_chat.CrossChat;
 import apple.excursion.discord.data.answers.SubmissionData;
 import apple.excursion.sheets.SheetsPlayerStats;
 import apple.excursion.utils.Pair;
-import net.dv8tion.jda.api.entities.User;
+import apple.excursion.utils.SendLogs;
 
 import java.io.IOException;
 import java.sql.ResultSet;
@@ -20,10 +20,11 @@ import static apple.excursion.database.VerifyDB.*;
 
 public class InsertDB {
     private static final int SOUL_JUICE_FOR_DAILY = 1;
+    private static final String MODULE = "InsertDB";
 
-    public static void insertSubmission(SubmissionData data) throws SQLException {
-        VerifyDB.verify();
+    public static int insertSubmission(SubmissionData data) throws SQLException {
         synchronized (VerifyDB.syncDB) {
+            VerifyDB.verify();
             if (data.getType() == SubmissionData.TaskSubmissionType.DAILY) {
                 VerifyDB.verifyCalendar();
             }
@@ -47,9 +48,14 @@ public class InsertDB {
                 try {
                     SheetsPlayerStats.submit(data.getTaskName(), id.getKey(), id.getValue(), soulJuice);
                 } catch (IOException e) {
-                    final User user = DiscordBot.client.retrieveUserById(id.getKey()).complete();
-                    if (user == null || user.isBot()) continue;
-                    user.openPrivateChannel().complete().sendMessage("There was an error making your profile. Tell appleptr16 or ojomFox: " + e.getMessage()).queue();
+                    SendLogs.error(MODULE, String.format("IOException updating the sheet for <%s,%d> in %s", id.getValue(), id.getKey(), data.getTaskName()));
+                    DiscordBot.client.retrieveUserById(id.getKey()).queue(user -> {
+                        if ((user != null) && !user.isBot())
+                            user.openPrivateChannel().queue(c ->
+                                    c.sendMessage("There was an error making your profile. Tell appleptr16 or ojomFox: " + e.getMessage()).queue());
+                    }, failure -> {
+                        SendLogs.discordError(MODULE, failure.getMessage());
+                    });
                 }
                 getSql = GetSql.getSqlGetPlayerGuild(id.getKey());
                 response = statement.executeQuery(getSql);
@@ -61,12 +67,14 @@ public class InsertDB {
                     guildTag = response.getString(2);
                 }
                 response.close();
+                String updateSql = GetSql.getSqlUpdatePlayerSoulJuice(id.getKey(),soulJuice);
+                statement.execute(updateSql);
                 insertSql = GetSql.getSqlInsertSubmissionLink(currentSubmissionId, id.getKey(), guildTag);
                 statement.execute(insertSql);
             }
             statement.executeBatch();
             statement.close();
-            currentSubmissionId++;
+            return currentSubmissionId++;
         }
     }
 
@@ -97,27 +105,29 @@ public class InsertDB {
     }
 
     public static void insertPlayer(Pair<Long, String> id, String guildTag, String guildName) throws SQLException {
-        // no sync because this should be called while synced already
-        try {
-            SheetsPlayerStats.addProfile(id.getKey(), id.getValue());
-        } catch (IOException ignored) { //this is fine because updates will add this player later somehow
-        }
-        if (guildName != null) {
+        synchronized (syncDB) {
             try {
-                SheetsPlayerStats.updateGuild(guildName, guildTag, id.getKey(), id.getValue());
+                SheetsPlayerStats.addProfile(id.getKey(), id.getValue());
             } catch (IOException ignored) { //this is fine because updates will add this player later somehow
             }
+            if (guildName != null) {
+                try {
+                    SheetsPlayerStats.updateGuild(guildName, guildTag, id.getKey(), id.getValue());
+                } catch (IOException ignored) { //this is fine because updates will add this player later somehow
+                }
+            }
+            Statement statement = VerifyDB.database.createStatement();
+            statement.execute(GetSql.getSqlInsertPlayers(id, guildName, guildTag));
+            statement.close();
         }
-        Statement statement = VerifyDB.database.createStatement();
-        statement.execute(GetSql.getSqlInsertPlayers(id, guildName, guildTag));
-        statement.close();
     }
 
     public static void insertCrossChat(long serverId, long channelId) throws SQLException {
         synchronized (syncDB) {
             Statement statement = database.createStatement();
             String sql = GetSql.getSqlExistsCrossChat(serverId);
-            if (statement.executeQuery(sql).getInt(1) == 1) {
+            int exists = statement.executeQuery(sql).getInt(1);
+            if (exists == 1) {
                 sql = GetSql.getSqlUpdateCrossChat(serverId, channelId);
             } else {
                 sql = GetSql.getSqlInsertCrossChat(serverId, channelId);
@@ -137,14 +147,13 @@ public class InsertDB {
         }
     }
 
-    public static void insertCrossChatMessage(List<MessageId> messageIds, String username, int color, String avatarUrl, String description) throws SQLException {
+    public static void insertCrossChatMessage(long myMessageId, List<MessageId> messageIds, long owner, String username, int color, String avatarUrl, String imageUrl, String description) throws SQLException {
         synchronized (syncDB) {
             Statement statement = database.createStatement();
-            statement.addBatch(GetSql.getSqlInsertCrossChatSent(VerifyDB.currentMyMessageId, username, color, avatarUrl, description));
+            statement.addBatch(GetSql.getSqlInsertCrossChatSent(myMessageId, owner, username, color, avatarUrl, imageUrl, description));
             for (MessageId messageId : messageIds) {
-                statement.addBatch(GetSql.getSqlInsertCrossChatMessages(VerifyDB.currentMyMessageId, messageId.serverId, messageId.channelId, messageId.messageId));
+                statement.addBatch(GetSql.getSqlInsertCrossChatMessages(myMessageId, messageId.serverId, messageId.channelId, messageId.messageId));
             }
-            currentMyMessageId++;
             statement.executeBatch();
             statement.close();
         }

@@ -65,10 +65,8 @@ public class CommandSubmit implements DoCommand {
     public void dealWithCommand(MessageReceivedEvent event) {
         List<Member> tags = event.getMessage().getMentionedMembers();
         Map<Long, String> idsToNamesMap = new HashMap<>();
-        String nickName;
         for (Member member : tags) {
-            nickName = member.getEffectiveName();
-            idsToNamesMap.put(member.getIdLong(), nickName);
+            idsToNamesMap.put(member.getIdLong(), member.getEffectiveName());
         }
         Member author = event.getMember();
         if (author == null) {
@@ -84,13 +82,11 @@ public class CommandSubmit implements DoCommand {
         }
 
         Message eventMessage = event.getMessage();
-        String content = eventMessage.getContentStripped();
-        List<String> contentList = Arrays.asList(content.split(" "));
+        String content = eventMessage.getContentDisplay();
+        List<String> contentList = new ArrayList<>(Arrays.asList(content.split("\\s")));
         contentList.removeIf(String::isBlank);
+        contentList.removeIf(s -> s.startsWith("@"));
         content = String.join(" ", contentList.subList(1, contentList.size()));
-        for (Pair<Long, String> mention : idsToNames) {
-            content = content.replace("@" + mention.getValue(), "");
-        }
 
         // change all the idToNames to the correct name based on The Farplane discord names
         for (Pair<Long, String> idToName : idsToNames) {
@@ -133,7 +129,8 @@ public class CommandSubmit implements DoCommand {
             List<PlayerData> playersData = new ArrayList<>();
             for (Pair<Long, String> player : idsToNames) {
                 try {
-                    playersData.add(GetDB.getPlayerData(player, SUBMISSION_HISTORY_SIZE));
+                    PlayerData playerData = GetDB.getPlayerData(player);
+                    playersData.add(playerData);
                 } catch (SQLException throwables) {
                     event.getChannel().sendMessage("There has been an SQLException getting the submitter's player data").queue();
                     event.getMessage().removeReaction(AllReactables.Reactable.WORKING.getFirstEmoji(), DiscordBot.client.getSelfUser()).queue();
@@ -184,6 +181,7 @@ public class CommandSubmit implements DoCommand {
         Object result = parser.parse(in);
         JSONArray reviewersArray = (JSONArray) result;
         for (Object entry : reviewersArray) {
+            //this should just throw an error if it fails.
             reviewers.add(client.retrieveUserById(entry.toString()).complete());
         }
         try {

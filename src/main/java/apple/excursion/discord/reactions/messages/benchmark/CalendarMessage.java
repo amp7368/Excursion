@@ -49,9 +49,11 @@ public class CalendarMessage implements ReactableMessage {
         text.append("```glsl\n");
         text.append(String.format("Week %d\n", weeksSinceEpoch));
         text.append(getDash());
+        int dayOfWeek = originalDayOfWeek - 1;
+        if (dayOfWeek == 0) dayOfWeek = 7; // sunday is sunday
         text.append(String.format("| %-20s    %-23s| %-4s|\n",
                 String.format("%s %d %s",
-                        DayOfWeek.of(originalDayOfWeek - 1).getDisplayName(TextStyle.FULL, Locale.ENGLISH),
+                        DayOfWeek.of(dayOfWeek).getDisplayName(TextStyle.FULL, Locale.ENGLISH),
                         originalDayOfMonth,
                         Month.of(originalMonth + 1).getDisplayName(TextStyle.FULL, Locale.ENGLISH)),
                 "", ""
@@ -238,5 +240,12 @@ public class CalendarMessage implements ReactableMessage {
     @Override
     public long getLastUpdated() {
         return lastUpdated;
+    }
+
+    @Override
+    public void dealWithOld() {
+        message.clearReactions().queue(success -> {
+        }, failure -> {
+        }); //ignore if we don't have perms. it's really not a bad thing
     }
 }
