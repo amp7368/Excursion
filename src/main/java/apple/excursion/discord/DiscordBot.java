@@ -73,7 +73,7 @@ public class DiscordBot extends ListenerAdapter {
         JDABuilder builder = JDABuilder.create(discordToken, GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_MESSAGE_REACTIONS, GatewayIntent.GUILD_EMOJIS, GatewayIntent.DIRECT_MESSAGES, GatewayIntent.DIRECT_MESSAGE_REACTIONS);
         builder.addEventListeners(this);
         client = builder.build();
-        client.getPresence().setPresence(Activity.playing(PREFIX + "help"), true);
+        client.getPresence().setPresence(Activity.playing("y!help"), true);
     }
 
     @Override
