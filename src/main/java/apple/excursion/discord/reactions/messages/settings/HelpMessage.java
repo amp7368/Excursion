@@ -30,6 +30,7 @@ public class HelpMessage implements ReactableMessage {
         embed.setDescription("Hello, Wynncraftian. I am Yin. I am a bot with a list with dozens of locations in-game that you can explore to do fun and unusual activities by yourself, your guild-mates or your friends. These tasks are created by other Wynncraft players as this a minigame created by Wynncraft players, for Wynncraft players. This minigame is called Excursion, while I, Yin, I am a yokai that powers the inanimate object that runs this bot, a Raspberry Pi. I hope we can get along... just in case, though, please read through the other pages to learn how to use me!\n" +
                 "\n" +
                 "Completing a task earns you Experience Points (EP). EP are points you earn to show everyone else competing that you are the #1 excursionist on my leaderboards. All guilds and players are able to compete in Excursion through my EP leaderboards, but also through some monthly raffles to earn LE. For Raffles, you'll be able to submit tasks and daily tasks to gain EP during the month. There will be prizes for the player with the most EP during the raffle month. You'll be able to find the raffle events on threads via the forums or announced by your guild authorities.");
+        embed.setImage("https://cdn.discordapp.com/attachments/567540311870668800/772761343165333524/thread2.png");
         helpPages.add(embed.build());
 
         embed = new EmbedBuilder();
@@ -57,6 +58,7 @@ public class HelpMessage implements ReactableMessage {
         embed.setTitle("Postcard Task commands");
         embed.addField("y!postcard", "List of missions, excursions, dares and total tasks organised in Alphabetical order", false);
         embed.addField("y!postcard [task]", "Search for an specific task and receive its information.", false);
+        embed.addField("Note", "Each bullet point (-) is a task. You can make a task submission per bullet point.", false);
         embed.addField("y!calendar", "Weekly calendar of daily tasks. It displays 3 tasks per week day and 10 tasks for the weekend. I generate a new set of daily tasks at the start of every month", false);
         embed.addField("y!submit [task name] [link] [@mentions]", "Submit tasks when completing them for the first time. This command is also is used for repeating tasks by submitting daily tasks from the calendar to earn soul juice or raise your monthly EP count too to participate in Excursion raffles and win LE for you and your guild. An image can be attached instead of a set of urls. Mentioning players with a tag will include them in your submission.", false);
         helpPages.add(embed.build());

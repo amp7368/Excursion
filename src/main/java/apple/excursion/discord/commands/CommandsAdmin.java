@@ -25,7 +25,8 @@ public enum CommandsAdmin {
     BAN_REMOVE(Collections.singletonList("blacklist_remove"), "Removes a ban for the list of daily tasks to be chosen",
             "dailyTask", new CommandBanRemoveDaily()),
     SQL(Collections.singletonList("sql"), "executes sql",
-            "<sql>", new CommandExecuteSql());
+            "<sql>", new CommandExecuteSql()),
+    GUILD_LIST (Collections.singletonList("gdiscord list"),"lists all the discords Yin is in" , "" , new CommandGuildList());
 
     private final List<String> commandNames;
     private final String helpMessage;

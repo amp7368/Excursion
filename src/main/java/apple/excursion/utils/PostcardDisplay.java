@@ -9,7 +9,10 @@ public class PostcardDisplay {
     public static MessageEmbed getMessage(Task task) {
         EmbedBuilder embed = new EmbedBuilder();
         embed.setTitle(task.name + " - (" + task.points + " EP)");
-        embed.setDescription("**" + Pretty.upperCaseFirst(task.category) + "**\n" + task.description);
+        embed.setAuthor(Pretty.upperCaseFirst(task.category));
+        embed.setDescription(task.description);
+        if (task.createdBy != null)
+            embed.setFooter("Keep in mind each bullet point (-) is a task. You can make a task submission per bullet point.\n\nThis task was created by " + task.createdBy);
         embed.setColor(PostcardListMessage.Category.valueOf(task.category.toUpperCase()).color);
         return embed.build();
     }
