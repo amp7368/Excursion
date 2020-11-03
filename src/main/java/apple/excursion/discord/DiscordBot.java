@@ -8,6 +8,7 @@ import apple.excursion.discord.cross_chat.CrossChat;
 import apple.excursion.discord.data.DailyBans;
 import apple.excursion.discord.listener.AllChannelListeners;
 import apple.excursion.discord.reactions.*;
+import apple.excursion.sheets.SheetsTasks;
 import apple.excursion.utils.MigrateOldSubmissions;
 import apple.excursion.utils.SendLogs;
 import net.dv8tion.jda.api.JDA;
@@ -78,6 +79,7 @@ public class DiscordBot extends ListenerAdapter {
 
     @Override
     public void onReady(@Nonnull ReadyEvent event) {
+        new SheetsTasks().start();
         try {
             Thread.sleep(4000);
         } catch (InterruptedException e) {
