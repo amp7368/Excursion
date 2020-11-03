@@ -100,7 +100,6 @@ public class DiscordBot extends ListenerAdapter {
         // the author is not a bot
 
         String messageContent = event.getMessage().getContentStripped().toLowerCase();
-
         try {
             // deal with the different commands
             for (Commands command : Commands.values()) {

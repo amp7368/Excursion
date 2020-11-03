@@ -19,6 +19,7 @@ public enum Commands {
     COMMAND_GUILD_HISTORY(Collections.singletonList("ghistory"), "Gives a history with intervals of the specified time", "[(optional) -m [months]] [(optional) -w [weeks]] [(optional) -d [days]]", new CommandGuildHistory()),
     COMMAND_HISTORY(Collections.singletonList("history"), "Gives a history with intervals of the specified time", "[(optional) -m [months]] [(optional) -w [weeks]] [(optional) -d [days]]", new CommandHistory()),
     PROFILE(Collections.singletonList("profile"), "Gives the profile of the person who entered the command or the profile of the player_name", "[player_name]", new CommandProfile()),
+    COMPLETED(Collections.singletonList("completed"), "Gives a list of completed tasks", "[(optional) task name]", new CommandCompleted()),
     POSTCARD(Collections.singletonList("postcard"), "Gives a list of postcards or searches for taskName", "[(optional) postcard name)]", new CommandPostcard()),
     CALENDAR(Collections.singletonList("calendar"), "Gives a list of daily tasks", "", new CommandCalendar()),
     SUBMIT(Collections.singletonList("submit"), "Submits the attached evidence to be reviewed", "[url or attach image]", new CommandSubmit()),
@@ -48,6 +49,7 @@ public enum Commands {
     public String getUsageMessage() {
         return String.format("Usage - %s%s %s", PREFIX, commandNames.get(0), usageMessage);
     }
+
     public String getBareUsageMessage() {
         return String.format("%s%s %s", PREFIX, commandNames.get(0), usageMessage);
     }

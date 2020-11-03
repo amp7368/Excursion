@@ -1,4 +1,4 @@
-package apple.excursion.discord.commands.admin;
+package apple.excursion.discord.commands.admin.blacklist;
 
 import apple.excursion.discord.commands.CommandsAdmin;
 import apple.excursion.discord.commands.DoCommand;

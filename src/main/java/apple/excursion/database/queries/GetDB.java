@@ -85,6 +85,15 @@ public class GetDB {
         }
     }
 
+    public static void getPlayerDataTesting(long id) throws SQLException {
+        synchronized (VerifyDB.syncDB) {
+            Statement statment = VerifyDB.database.createStatement();
+            statment.executeQuery(GetSql.getSqlGetPlayerSubmissionHistory(id, -1));
+            statment.executeQuery(GetSql.getSqlGetPlayerAll(id));
+            statment.close();
+        }
+
+    }
 
     public static LeaderboardOfGuilds getGuildLeaderboard() throws SQLException {
         synchronized (VerifyDB.syncDB) {

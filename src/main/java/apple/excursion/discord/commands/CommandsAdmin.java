@@ -1,6 +1,13 @@
 package apple.excursion.discord.commands;
 
 import apple.excursion.discord.commands.admin.*;
+import apple.excursion.discord.commands.admin.apple.CommandExecuteSql;
+import apple.excursion.discord.commands.admin.apple.CommandSheetImport;
+import apple.excursion.discord.commands.admin.apple.CommandSpeedTest;
+import apple.excursion.discord.commands.admin.blacklist.CommandBanAddDaily;
+import apple.excursion.discord.commands.admin.blacklist.CommandBanRemoveDaily;
+import apple.excursion.discord.commands.admin.reviewer.CommandAddReviewer;
+import apple.excursion.discord.commands.admin.reviewer.CommandRemoveReviewer;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 import java.util.Collections;
@@ -26,7 +33,8 @@ public enum CommandsAdmin {
             "dailyTask", new CommandBanRemoveDaily()),
     SQL(Collections.singletonList("sql"), "executes sql",
             "<sql>", new CommandExecuteSql()),
-    GUILD_LIST (Collections.singletonList("gdiscord list"),"lists all the discords Yin is in" , "" , new CommandGuildList());
+    GUILD_LIST (Collections.singletonList("gdiscord list"),"lists all the discords Yin is in" , "" , new CommandGuildList()),
+    SPEED_TEST (Collections.singletonList("speedtest"),"does a speed test" , "" , new CommandSpeedTest());
 
     private final List<String> commandNames;
     private final String helpMessage;

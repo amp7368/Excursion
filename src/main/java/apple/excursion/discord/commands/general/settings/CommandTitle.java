@@ -134,7 +134,7 @@ public class CommandTitle implements DoCommand {
             if (member == null) return;
             Guild guild = member.getGuild();
             if (guild.getIdLong() != DiscordBot.EXCURSION_GUILD_ID) {
-                event.getChannel().sendMessage(String.format("You need to be in the The Farplane discord server <%s> to have a custom title or color", DiscordBot.EXCURSION_GUILD_INVITE)).queue();
+                event.getChannel().sendMessage(String.format("You need to be in (and execute the command in) the The Farplane discord server <%s> to have a custom title or color", DiscordBot.EXCURSION_GUILD_INVITE)).queue();
                 return;
             }
 

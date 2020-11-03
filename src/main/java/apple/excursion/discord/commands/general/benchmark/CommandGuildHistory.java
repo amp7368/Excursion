@@ -64,7 +64,6 @@ public class CommandGuildHistory implements DoCommand {
             }
             final String guildTag = contentSplit.get(0);
             String guildName = String.join(" ", contentSplit);
-            System.out.println(guildName);
             GuildHeader match = null;
             for (GuildHeader guild : guildHeaders) {
                 if (guild.tag.equals(guildTag)) {

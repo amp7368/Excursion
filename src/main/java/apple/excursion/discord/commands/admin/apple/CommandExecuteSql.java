@@ -1,4 +1,4 @@
-package apple.excursion.discord.commands.admin;
+package apple.excursion.discord.commands.admin.apple;
 
 import apple.excursion.database.queries.GetDB;
 import apple.excursion.discord.DiscordBot;

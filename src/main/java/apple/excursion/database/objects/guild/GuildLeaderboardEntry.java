@@ -16,17 +16,16 @@ public class GuildLeaderboardEntry {
         this.guildName = guildName;
         this.guildTag = guildTag;
         this.score = guildScore;
-        String coloredName = GetColoredName.get(playerId).getName();
-        this.topPlayer = coloredName == null ? playerName : coloredName;
+        this.topPlayer = playerName;
         this.topPlayerPoints = playerScore;
     }
 
     public GuildLeaderboardEntry(String name, String tag) {
-        this.guildName= name;
+        this.guildName = name;
         this.guildTag = tag;
         this.score = 0;
         this.topPlayer = "nobody";
-        this.topPlayerPoints=0;
+        this.topPlayerPoints = 0;
     }
 
     public boolean isDefault() {
