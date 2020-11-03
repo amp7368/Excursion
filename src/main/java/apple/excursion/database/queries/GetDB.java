@@ -392,7 +392,7 @@ public class GetDB {
                 List<String> links = Arrays.asList(response.getString(7).split("`"));
                 TaskSimple task = new TaskSimple(
                         response.getInt(10),
-                        response.getString(9),
+                        GetSql.convertTaskNameFromSql(response.getString(9)),
                         response.getString(8)
                 );
                 SubmissionData.TaskSubmissionType taskSubmissionType = SubmissionData.TaskSubmissionType.valueOf(response.getString(11));

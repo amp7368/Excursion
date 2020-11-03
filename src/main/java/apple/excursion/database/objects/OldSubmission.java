@@ -27,7 +27,7 @@ public class OldSubmission {
         otherSubmitters.remove(submitter);
 
         dateSubmitted = response.getTimestamp(3).toInstant().toEpochMilli();
-        taskName = GetSql.convertTaskNameFromSql( response.getString(4));
+        taskName = GetSql.convertTaskNameFromSql(response.getString(4));
         String linksRaw = response.getString(5);
         if (linksRaw == null) links = new String[0];
         else links = linksRaw.split(",");
@@ -36,7 +36,9 @@ public class OldSubmission {
     }
 
     public String makeSubmissionHistoryMessage() {
-        if (otherSubmitters == null || otherSubmitters.size() == 0) {
+        List<String> otherSubmittersTemp = new ArrayList<>(otherSubmitters);
+        otherSubmittersTemp.remove(submitter);
+        if (otherSubmitters == null || otherSubmittersTemp.size() == 0) {
             return String.format("**%s** submitted %s__%s__ %s *%s*",
                     submitter,
                     submissionType == SubmissionData.TaskSubmissionType.DAILY ? "**daily task** " : "",
@@ -48,7 +50,7 @@ public class OldSubmission {
                 submitter,
                 submissionType == SubmissionData.TaskSubmissionType.DAILY ? "**daily task** " : "",
                 taskName,
-                String.join(", and ", otherSubmitters),
+                String.join(", and ", otherSubmittersTemp),
                 submissionType == SubmissionData.TaskSubmissionType.SYNC ? "before" : "at",
                 Pretty.date(dateSubmitted));
     }

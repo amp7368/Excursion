@@ -14,6 +14,7 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 import java.sql.SQLException;
 import java.util.*;
+import java.util.regex.Pattern;
 
 public class CommandCompleted implements DoCommand {
     @Override
@@ -33,16 +34,28 @@ public class CommandCompleted implements DoCommand {
         Map<String, List<OldSubmission>> taskNameToSubmissions = new HashMap<>();
         List<Task> tasksList = SheetsTasks.getTasks();
         if (content.length < 2) {
-            // fill out the taskNameToSubmissions with tasks that only match our name
-
-            // fill out the map with submissions
             List<String> contentList = new ArrayList<>(Arrays.asList(content));
             contentList.remove(0);
             String taskName = String.join(" ", contentList);
+            Pattern pattern = Pattern.compile(".*" + taskName + ".*", Pattern.CASE_INSENSITIVE);
+            // fill out the taskNameToSubmissions with tasks that only match our name
+            for (Task task : tasksList) {
+                if (pattern.matcher(task.name).matches()) {
+                    taskNameToSubmissions.put(task.name, new ArrayList<>());
+                }
+            }
         } else {
             // make the info for anything that contains that quest
-//            submissions = player.submissions;
+            for (Task task : tasksList) {
+                taskNameToSubmissions.put(task.name, new ArrayList<>());
+            }
         }
+        // fill out the map with submissions
+        for(OldSubmission submission:player.submissions){
+            Pattern pattern = Pattern.compile(".*" + submission.taskName + ".*", Pattern.CASE_INSENSITIVE);
+            for(String taskName: taskNameToSubmissions.keySet()){
 
+            }
+        }
     }
 }

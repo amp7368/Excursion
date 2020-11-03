@@ -94,14 +94,12 @@ public class GuildProfileMessage implements ReactableMessage {
         if (submissions.isEmpty()) {
             footer.append("**There is no submission history**\n");
         } else {
-            footer.append("**Submission History:** \n");
             upper = Math.min(((page + 1) * SUBMISSIONS_PER_PAGE), submissions.size());
             for (int lower = page * SUBMISSIONS_PER_PAGE; lower < upper; lower++) {
-                footer.append(submissions.get(lower).makeSubmissionHistoryMessage());
-                footer.append('\n');
+                embed.addField("", submissions.get(lower).makeSubmissionHistoryMessage(), false);
             }
         }
-        embed.setDescription(header.toString() + "\n\n" + body.toString() + "\n\n" + footer.toString());
+        embed.setDescription(header.toString() + "\n\n" + body.toString() + ((footer.length() == 0) ? "" : "\n\n" + footer.toString()));
         return embed.build();
     }
 

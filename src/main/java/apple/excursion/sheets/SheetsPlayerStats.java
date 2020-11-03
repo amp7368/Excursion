@@ -7,6 +7,7 @@ import com.google.api.services.sheets.v4.model.*;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.regex.Pattern;
 
 import static apple.excursion.sheets.SheetsConstants.*;
 import static apple.excursion.sheets.SheetsUtils.addA1Notation;
@@ -61,7 +62,9 @@ public class SheetsPlayerStats {
                     break;
                 }
                 int questValue = GetFromObject.getInt(questValuesIterator.next());
-                if (questName.equals(questNameToAdd)) {
+                Pattern patternForwards = Pattern.compile(".*" + questNameToAdd + ".*", Pattern.CASE_INSENSITIVE);
+                Pattern patternBackwards = Pattern.compile(".*" + questName + ".*", Pattern.CASE_INSENSITIVE);
+                if (patternForwards.matcher(questName).matches() || patternBackwards.matcher(questNameToAdd).matches()) {
                     if (GetFromObject.intFail(questValue)) {
                         throw new NumberFormatException("Bad number in mission value");
                     }
@@ -78,7 +81,7 @@ public class SheetsPlayerStats {
             else if (pointsThereRaw.get(0) == null) pointsThere = 0;
             else pointsThere = GetFromObject.getInt(pointsThereRaw.get(0).get(0));
             if (GetFromObject.intFail(pointsThere))
-                throw new NumberFormatException("Bad number in player's mission value");
+                throw new NumberFormatException("Bad number in player's mission value at " + range);
 
             SHEETS_VALUES.update(SPREADSHEET_ID, range,
                     new ValueRange().setRange(range)
@@ -91,7 +94,7 @@ public class SheetsPlayerStats {
                 else if (pointsThereRaw.get(0) == null) pointsThere = 0;
                 else pointsThere = GetFromObject.getInt(pointsThereRaw.get(0).get(0));
                 if (GetFromObject.intFail(pointsThere))
-                    throw new NumberFormatException("Bad number in player's soulJuice value");
+                    throw new NumberFormatException("Bad number in player's soulJuice value at " + range);
                 SHEETS_VALUES.update(SPREADSHEET_ID, range,
                         new ValueRange().setRange(range)
                                 .setValues(Collections.singletonList(Collections.singletonList(String.valueOf(pointsThere + soulJuiceToAdd))))
