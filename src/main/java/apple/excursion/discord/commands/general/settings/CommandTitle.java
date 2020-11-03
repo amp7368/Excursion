@@ -56,13 +56,13 @@ public class CommandTitle implements DoCommand {
             new ColorRole("Excursion Orange", 10, 727023199161679912L),
             new ColorRole("Mission Mustard", 10, 728080112532324363L),
             new ColorRole("Dare Red", 10, 727021694761566311L),
-            new ColorRole("Rare Magenta", 20, 727021694761566311L),
-            new ColorRole("Unique Yellow", 20, 727021694761566311L),
-            new ColorRole("Set Green", 20, 727021694761566311L),
-            new ColorRole("Legendary Blue", 30, 727021694761566311L),
-            new ColorRole("Crafting Green", 30, 727021694761566311L),
-            new ColorRole("Bucketlist Indigo", 30, 727021694761566311L),
-            new ColorRole("Mythic Purple", 40, 727021694761566311L)
+            new ColorRole("Rare Magenta", 20, 728080119012393031L),
+            new ColorRole("Unique Yellow", 20, 744702524640198727L),
+            new ColorRole("Set Green", 20, 744702664201470022L),
+            new ColorRole("Legendary Blue", 30, 744469914508853258L),
+            new ColorRole("Crafting Green", 30, 728080122258653316L),
+            new ColorRole("Bucketlist Indigo", 30, 728080120761417828L),
+            new ColorRole("Mythic Purple", 40, 744702853398003794L)
     );
 
 
@@ -74,7 +74,7 @@ public class CommandTitle implements DoCommand {
         if ((name = coloredName.getName()) == null) {
             Member member = event.getMember();
             if (member == null) return;
-            name = ColoredName.getGuestName( member.getEffectiveName());
+            name = ColoredName.getGuestName(member.getEffectiveName());
         }
         PlayerData playerData;
         try {
@@ -171,6 +171,15 @@ public class CommandTitle implements DoCommand {
                         return;
                     }
                     try {
+                        List<Role> userRoles = member.getRoles();
+                        for (ColorRole color : colors) {
+                            for (Role r : userRoles) {
+                                if (color.role == r.getIdLong()) {
+                                    guild.removeRoleFromMember(member, r).queue();
+                                    break;
+                                }
+                            }
+                        }
                         guild.addRoleToMember(member, role).queue();
                     } catch (PermissionException e) {
                         event.getChannel().sendMessage("I don't have permission to change your role D:").queue();
