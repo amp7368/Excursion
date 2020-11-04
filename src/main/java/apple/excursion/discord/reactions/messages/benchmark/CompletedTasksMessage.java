@@ -3,6 +3,7 @@ package apple.excursion.discord.reactions.messages.benchmark;
 import apple.excursion.database.objects.OldSubmission;
 import apple.excursion.database.objects.player.PlayerData;
 import apple.excursion.discord.data.Task;
+import apple.excursion.discord.data.answers.SubmissionData;
 import apple.excursion.discord.reactions.AllReactables;
 import apple.excursion.discord.reactions.ReactableMessage;
 import apple.excursion.utils.Pair;
@@ -31,10 +32,17 @@ public class CompletedTasksMessage implements ReactableMessage {
         this.taskNameToSubmissions.sort((t1, t2) -> {
             List<OldSubmission> l2 = t2.getValue();
             List<OldSubmission> l1 = t1.getValue();
+            int normals2 = 0, normals1 = 0;
+            for (OldSubmission l : l2)
+                if (l.submissionType != SubmissionData.TaskSubmissionType.DAILY)
+                    normals2++;
+            for (OldSubmission l : l1)
+                if (l.submissionType != SubmissionData.TaskSubmissionType.DAILY)
+                    normals1++;
             Task task2 = t2.getKey();
             Task task1 = t1.getKey();
-            boolean fallShort2 = task2.isFallsShort(l2.size());
-            boolean fallShort1 = task1.isFallsShort(l1.size());
+            boolean fallShort2 = task2.isFallsShort(normals2);
+            boolean fallShort1 = task1.isFallsShort(normals1);
             if (fallShort1 && !fallShort2)
                 return 1;
             if (fallShort2 && !fallShort1)
@@ -154,7 +162,7 @@ public class CompletedTasksMessage implements ReactableMessage {
         if (currentOldSubmissions == null) return;
         if (oldSubmissionPage == currentOldSubmissions.size() - 1) return;
         oldSubmissionPage++;
-        MessageEmbed embed = currentOldSubmissions.get(oldSubmissionPage).getDisplay(String.format("%d/%d", oldSubmissionPage + 1, currentOldSubmissions.size()));
+        MessageEmbed embed = currentOldSubmissions.get(oldSubmissionPage).getDisplay();
         MessageBuilder newMessage = new MessageBuilder();
         newMessage.setContent(makeMessage());
         newMessage.setEmbed(embed);
@@ -165,7 +173,7 @@ public class CompletedTasksMessage implements ReactableMessage {
         if (currentOldSubmissions == null) return;
         if (oldSubmissionPage == 0) return;
         oldSubmissionPage--;
-        MessageEmbed embed = currentOldSubmissions.get(oldSubmissionPage).getDisplay(String.format("%d/%d", oldSubmissionPage + 1, currentOldSubmissions.size()));
+        MessageEmbed embed = currentOldSubmissions.get(oldSubmissionPage).getDisplay();
         MessageBuilder newMessage = new MessageBuilder();
         newMessage.setContent(makeMessage());
         newMessage.setEmbed(embed);
@@ -188,7 +196,7 @@ public class CompletedTasksMessage implements ReactableMessage {
         currentOldSubmissions = taskNameToSubmissions.get(c).getValue();
         if (currentOldSubmissions.isEmpty()) return;
         oldSubmissionPage = 0;
-        MessageEmbed embed = currentOldSubmissions.get(oldSubmissionPage).getDisplay(String.format("%d/%d", oldSubmissionPage + 1, currentOldSubmissions.size()));
+        MessageEmbed embed = currentOldSubmissions.get(oldSubmissionPage).getDisplay();
         MessageBuilder newMessage = new MessageBuilder();
         newMessage.setContent(makeMessage());
         newMessage.setEmbed(embed);

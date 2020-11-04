@@ -35,7 +35,7 @@ public class CommandCompleted implements DoCommand {
         }
         Map<Task, List<OldSubmission>> taskNameToSubmissions = new HashMap<>();
         List<Task> tasksList = SheetsTasks.getTasks();
-        if (content.length < 2) {
+        if (content.length > 1) {
             List<String> contentList = new ArrayList<>(Arrays.asList(content));
             contentList.remove(0);
             String taskName = String.join(" ", contentList);
@@ -45,6 +45,10 @@ public class CommandCompleted implements DoCommand {
                 if (pattern.matcher(task.name).matches()) {
                     taskNameToSubmissions.put(task, new ArrayList<>());
                 }
+            }
+            if (taskNameToSubmissions.isEmpty()) {
+                event.getChannel().sendMessage(String.format("There are no tasks with name '%s'", taskName)).queue();
+                return;
             }
         } else {
             // make the info for anything that contains that quest
