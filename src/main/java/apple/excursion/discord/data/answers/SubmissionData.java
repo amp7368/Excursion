@@ -40,7 +40,7 @@ public class SubmissionData {
     public SubmissionData(List<Message.Attachment> attachments, List<String> links,
                           TaskSimple task, String submitter, int color, long submitterId, List<Pair<Long, String>> otherSubmitters,
                           List<PlayerData> playersData, TaskSubmissionType taskType) {
-        this.attachmentsUrl = attachments.isEmpty() ? null : attachments.get(0).getUrl();
+        this.attachmentsUrl = attachments.isEmpty() ? null : attachments.get(0).getProxyUrl();
         this.submissionId = -1;
         this.links = links;
         this.task = task;
@@ -203,6 +203,11 @@ public class SubmissionData {
 
     public int getSubmissionId() {
         return submissionId;
+    }
+
+    @Nullable
+    public String getImageUrl() {
+        return attachmentsUrl;
     }
 
     public enum TaskSubmissionType {

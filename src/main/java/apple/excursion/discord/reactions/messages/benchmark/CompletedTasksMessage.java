@@ -6,13 +6,15 @@ import apple.excursion.discord.data.Task;
 import apple.excursion.discord.reactions.AllReactables;
 import apple.excursion.discord.reactions.ReactableMessage;
 import apple.excursion.utils.Pair;
+import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class CompletedTasksMessage implements ReactableMessage {
     private static final int ENTRIES_PER_PAGE = 10;
@@ -20,7 +22,8 @@ public class CompletedTasksMessage implements ReactableMessage {
     private final List<Pair<Task, List<OldSubmission>>> taskNameToSubmissions;
     private final PlayerData player;
     private int page = 0;
-
+    private List<OldSubmission> currentOldSubmissions;
+    private int oldSubmissionPage = 0;
     private long lastUpdated = System.currentTimeMillis();
 
     public CompletedTasksMessage(PlayerData player, List<Pair<Task, List<OldSubmission>>> taskNameToSubmissions, MessageChannel channel) {
@@ -29,6 +32,12 @@ public class CompletedTasksMessage implements ReactableMessage {
         message = channel.sendMessage(makeMessage()).complete();
         message.addReaction(AllReactables.Reactable.LEFT.getFirstEmoji()).queue();
         message.addReaction(AllReactables.Reactable.RIGHT.getFirstEmoji()).queue();
+        message.addReaction(AllReactables.Reactable.TOP.getFirstEmoji()).queue();
+        message.addReaction(AllReactables.Reactable.CLOCK_LEFT.getFirstEmoji()).queue();
+        message.addReaction(AllReactables.Reactable.CLOCK_RIGHT.getFirstEmoji()).queue();
+        for (int i = 0; i < ENTRIES_PER_PAGE; i++) {
+            message.addReaction(AllReactables.emojiAlphabet.get(i)).queue();
+        }
         AllReactables.add(this);
     }
 
@@ -96,9 +105,34 @@ public class CompletedTasksMessage implements ReactableMessage {
                 top();
                 event.getReaction().removeReaction(user).queue();
                 break;
+            case ALPHABET:
+                alphabet(event.getReactionEmote().getEmoji());
+                event.getReaction().removeReaction(user).queue();
+                break;
         }
         lastUpdated = System.currentTimeMillis();
 
+    }
+
+    private void alphabet(String emojiClicked) {
+        int c = 0;
+        for (String emoji : AllReactables.emojiAlphabet) {
+            if (emoji.equals(emojiClicked)) {
+                c += page * ENTRIES_PER_PAGE;
+            } else {
+                c++;
+            }
+        }
+        if (c > taskNameToSubmissions.size()) {
+            return;
+        }
+        currentOldSubmissions = taskNameToSubmissions.get(c).getValue();
+        oldSubmissionPage = 0;
+        MessageEmbed embed = currentOldSubmissions.get(oldSubmissionPage).getDisplay();
+        MessageBuilder newMessage = new MessageBuilder();
+        newMessage.setContent(makeMessage());
+        newMessage.setEmbed(embed);
+        message.editMessage(newMessage.build()).queue();
     }
 
     private void top() {

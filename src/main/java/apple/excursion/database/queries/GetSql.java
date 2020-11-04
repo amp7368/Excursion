@@ -85,14 +85,15 @@ public class GetSql {
 
         return String.format("INSERT INTO submissions "
                         + "VALUES "
-                        + "(%d,%d,'%s',%s,%d,'%s',%d);",
+                        + "(%d,%d,'%s',%s,%d,'%s',%d, %s);",
                 VerifyDB.currentSubmissionId,
                 data.getTimeEpoch(),
                 convertTaskNameToSql(data.getTaskName()),
                 links,
                 data.getSubmitterId(),
                 data.getType().name(),
-                data.getTaskScore()
+                data.getTaskScore(),
+                data.getImageUrl() == null ? null : String.format("'%s'", data.getImageUrl())
         );
     }
 
@@ -100,14 +101,15 @@ public class GetSql {
     static String getSqlInsertSubmission(long playerId, int score, String taskName) {
         return String.format("INSERT INTO submissions "
                         + "VALUES "
-                        + "(%d,%d,'%s',%s,%d,'%s',%d);",
+                        + "(%d,%d,'%s',%s,%d,'%s',%d,%s);",
                 VerifyDB.currentSubmissionId,
                 CalendarMessage.EPOCH_BEFORE_START_OF_SUBMISSION_HISTORY,
                 convertTaskNameToSql(taskName),
                 null,
                 playerId,
                 SyncDB.SYNC_TASK_TYPE,
-                score
+                score,
+                null
         );
     }
 
@@ -152,7 +154,8 @@ public class GetSql {
                 "       data.task_name,\n" +
                 "       data.links,\n" +
                 "       data.submission_type,\n" +
-                "       data.score\n" +
+                "       data.score,\n" +
+                "       data.image\n" +
                 "FROM (\n" +
                 "         SELECT s.*, players.player_name as submitter_name\n" +
                 "         FROM (\n" +
@@ -182,7 +185,8 @@ public class GetSql {
                 "       data.task_name,\n" +
                 "       data.links,\n" +
                 "       data.submission_type,\n" +
-                "       data.score\n" +
+                "       data.score,\n" +
+                "       data.image\n" +
                 "FROM (\n" +
                 "         SELECT s.*, players.player_name as submitter_name\n" +
                 "         FROM (\n" +
@@ -275,7 +279,8 @@ public class GetSql {
                 "       data.task_name,\n" +
                 "       data.links,\n" +
                 "       data.submission_type,\n" +
-                "       data.score\n" +
+                "       data.score,\n" +
+                "       data.image\n" +
                 "FROM (\n" +
                 "         SELECT s.*, players.player_name as submitter_name\n" +
                 "         FROM (\n" +

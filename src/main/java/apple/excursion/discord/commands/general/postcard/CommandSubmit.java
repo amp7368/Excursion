@@ -157,6 +157,7 @@ public class CommandSubmit implements DoCommand {
                         SubmissionMessage.initialize(submissionData, reviewer.openPrivateChannel().complete(), responseId);
                     }
                 } catch (SQLException throwables) {
+                    throwables.printStackTrace();
                     event.getChannel().sendMessage("There has been an SQLException adding submission").queue();
                     return;
                 }

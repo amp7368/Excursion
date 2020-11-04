@@ -67,7 +67,7 @@ public class InsertDB {
                     guildTag = response.getString(2);
                 }
                 response.close();
-                String updateSql = GetSql.getSqlUpdatePlayerSoulJuice(id.getKey(),soulJuice);
+                String updateSql = GetSql.getSqlUpdatePlayerSoulJuice(id.getKey(), soulJuice);
                 statement.execute(updateSql);
                 insertSql = GetSql.getSqlInsertSubmissionLink(currentSubmissionId, id.getKey(), guildTag);
                 statement.execute(insertSql);
