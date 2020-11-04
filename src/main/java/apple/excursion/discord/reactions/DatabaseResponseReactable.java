@@ -58,6 +58,9 @@ public class DatabaseResponseReactable {
             } catch (SQLException throwables) {
                 event.getChannel().sendMessage("There was an SQLException doing stuff").queue();
                 throwables.printStackTrace();
+            } catch (IllegalArgumentException throwables) {
+                event.getChannel().sendMessage("There is no task name with that name. tell appleptr16").queue();
+                throwables.printStackTrace();
             }
         }
     }

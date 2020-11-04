@@ -71,6 +71,23 @@ public class SubmissionData {
         this.submissionHistoryMessage = makeSubmissionHistoryMessage(playersData);
     }
 
+    public SubmissionData(SubmissionData other, boolean isNormal) {
+        this.isAccepted = other.isAccepted;
+        this.isCompleted = other.isCompleted;
+        this.submissionId = other.submissionId;
+        this.epochTimeOfSubmission = other.epochTimeOfSubmission;
+        this.attachmentsUrl = other.attachmentsUrl;
+        this.links = other.links;
+        this.task = other.task;
+        if (isNormal) this.taskSubmissionType = TaskSubmissionType.NORMAL;
+        else this.taskSubmissionType = other.taskSubmissionType;
+        this.submitter = other.submitter;
+        this.submitterId = other.submitterId;
+        this.color = other.color;
+        this.allSubmitters = other.allSubmitters;
+        this.submissionHistoryMessage = other.submissionHistoryMessage;
+    }
+
 
     private String makeSubmissionHistoryMessage(List<PlayerData> playersData) {
         List<PlayerData> playerDataTemp = new ArrayList<>(playersData);
@@ -80,7 +97,7 @@ public class SubmissionData {
     }
 
 
-    public int completeSubmit(boolean isAccepted, List<Pair<Long, Long>> reviewerMessages, String reviewerName) throws SQLException {
+    public int completeSubmit(boolean isAccepted, List<Pair<Long, Long>> reviewerMessages, String reviewerName) throws SQLException, IllegalArgumentException {
         if (isCompleted) return 0;
         isCompleted = true;
         int submissionId = -1;

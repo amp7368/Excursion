@@ -227,7 +227,7 @@ public class SyncDB {
                     if (guildTags.add(playerSubmissions.guildTag)) {
                         statement.addBatch(GetSql.getSqlInsertGuild(playerSubmissions.guildName, playerSubmissions.guildTag));
                     }
-                    statement.addBatch(GetSql.getSqlInsertSubmission(submission));
+                    statement.addBatch(GetSql.getSqlInsertSubmission(submission, VerifyDB.currentSubmissionId));
 
                     String guildTag = playerSubmissions.guildTag.isBlank() ? VerifyDB.DEFAULT_GUILD_TAG : playerSubmissions.guildTag;
 

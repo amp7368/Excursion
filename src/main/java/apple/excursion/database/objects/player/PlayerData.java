@@ -50,6 +50,16 @@ public class PlayerData {
                         submissionsThatMatch.stream().map(OldSubmission::makeSubmissionHistoryMessage).collect(Collectors.joining("\n")));
     }
 
+    public List<OldSubmission> getNormalSubmissionsWithName(String taskName) {
+        List<OldSubmission> submissionsWithName = new ArrayList<>();
+        for (OldSubmission submission : submissions) {
+            if (submission.taskName.equalsIgnoreCase(taskName) &&
+                    submission.submissionType != SubmissionData.TaskSubmissionType.DAILY)
+                submissionsWithName.add(submission);
+        }
+        return submissionsWithName;
+    }
+
     public boolean containsSubmission(Task task) {
         for (OldSubmission submission : submissions) {
             if (submission.taskName.equalsIgnoreCase(task.name)) return true;

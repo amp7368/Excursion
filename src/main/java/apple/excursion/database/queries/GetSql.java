@@ -75,7 +75,7 @@ public class GetSql {
     }
 
     @NotNull
-    static String getSqlInsertSubmission(SubmissionData data) {
+    static String getSqlInsertSubmission(SubmissionData data, int currentSubmissionId) {
         final Collection<String> linksList = data.getLinks();
         String links;
         if (linksList.isEmpty())
@@ -86,7 +86,7 @@ public class GetSql {
         return String.format("INSERT INTO submissions "
                         + "VALUES "
                         + "(%d,%d,'%s',%s,%d,'%s',%d, %s);",
-                VerifyDB.currentSubmissionId,
+                currentSubmissionId,
                 data.getTimeEpoch(),
                 convertTaskNameToSql(data.getTaskName()),
                 links,

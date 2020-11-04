@@ -3,10 +3,13 @@ package apple.excursion.database.queries;
 import apple.excursion.database.VerifyDB;
 import apple.excursion.database.objects.CrossChatId;
 import apple.excursion.database.objects.MessageId;
+import apple.excursion.database.objects.player.PlayerData;
 import apple.excursion.discord.DiscordBot;
 import apple.excursion.discord.cross_chat.CrossChat;
+import apple.excursion.discord.data.Task;
 import apple.excursion.discord.data.answers.SubmissionData;
 import apple.excursion.sheets.SheetsPlayerStats;
+import apple.excursion.sheets.SheetsTasks;
 import apple.excursion.utils.Pair;
 import apple.excursion.utils.SendLogs;
 
@@ -19,34 +22,74 @@ import java.util.List;
 import static apple.excursion.database.VerifyDB.*;
 
 public class InsertDB {
-    private static final int SOUL_JUICE_FOR_DAILY = 1;
+    public static final int SOUL_JUICE_FOR_DAILY = 1;
     private static final String MODULE = "InsertDB";
 
-    public static int insertSubmission(SubmissionData data) throws SQLException {
+    public static int insertSubmission(SubmissionData data) throws SQLException, IllegalArgumentException {
         synchronized (VerifyDB.syncDB) {
             VerifyDB.verify();
-            if (data.getType() == SubmissionData.TaskSubmissionType.DAILY) {
-                VerifyDB.verifyCalendar();
+            List<Task> tasks = SheetsTasks.getTasks();
+            Task thisTask = null;
+            for (Task t : tasks) {
+                if (t.name.equalsIgnoreCase(data.getTaskName())) {
+                    thisTask = t;
+                    break;
+                }
             }
+            // this should never be the case, but just in case
+            if (thisTask == null) {
+                throw new IllegalArgumentException("No task name with " + data.getTaskName() + " found");
+            }
+
             String insertSql, getSql;
             ResultSet response;
-
             // insert the new submission in the table
-            insertSql = GetSql.getSqlInsertSubmission(data);
             Statement statement = VerifyDB.database.createStatement();
+            int currentSubmissionIdFor1st = currentSubmissionId++;
+            insertSql = GetSql.getSqlInsertSubmission(data, currentSubmissionIdFor1st);
             statement.execute(insertSql);
+            boolean isNormalSubmissionsInserted = false;
 
-            int soulJuice;
-            if (data.getType() == SubmissionData.TaskSubmissionType.NORMAL)
-                soulJuice = 0;
-            else if (data.getType() == SubmissionData.TaskSubmissionType.DAILY)
-                soulJuice = SOUL_JUICE_FOR_DAILY;
-            else
-                soulJuice = 0;
-
+            boolean isDaily = data.getType() == SubmissionData.TaskSubmissionType.DAILY;
             for (Pair<Long, String> id : data.getSubmittersNameAndIds()) {
+                boolean isNormalForThisPlayer = !isDaily;
+                if (isDaily) {
+                    PlayerData playerData = GetDB.getPlayerData(id);
+                    if (playerData.getNormalSubmissionsWithName(data.getTaskName()).size() < thisTask.bulletsCount) {
+                        isNormalForThisPlayer = true;
+                    }
+                }
                 try {
-                    SheetsPlayerStats.submit(data.getTaskName(), id.getKey(), id.getValue(), soulJuice);
+                    SheetsPlayerStats.submit(data.getTaskName(), id.getKey(), id.getValue(), isDaily, isNormalForThisPlayer);
+
+                    getSql = GetSql.getSqlGetPlayerGuild(id.getKey());
+                    response = statement.executeQuery(getSql);
+                    String guildTag;
+                    if (response.isClosed()) {
+                        insertPlayer(id, DEFAULT_GUILD_TAG, DEFAULT_GUILD_NAME);
+                        guildTag = DEFAULT_GUILD_TAG;
+                    } else {
+                        guildTag = response.getString(2);
+                    }
+                    response.close();
+                    if (isDaily) {
+                        String updateSql = GetSql.getSqlUpdatePlayerSoulJuice(id.getKey(), SOUL_JUICE_FOR_DAILY);
+                        statement.execute(updateSql);
+                    }
+                    if (isDaily && isNormalForThisPlayer) {
+                        // then add the insert the submission if needed and link it
+                        if (!isNormalSubmissionsInserted) {
+                            SubmissionData data2nd = new SubmissionData(data, true);
+                            isNormalSubmissionsInserted = true;
+                            insertSql = GetSql.getSqlInsertSubmission(data2nd, currentSubmissionIdFor1st + 1);
+                            currentSubmissionId++;
+                            statement.execute(insertSql);
+                        }
+                        insertSql = GetSql.getSqlInsertSubmissionLink(currentSubmissionIdFor1st + 1, id.getKey(), guildTag);
+                        statement.execute(insertSql);
+                    }
+                    insertSql = GetSql.getSqlInsertSubmissionLink(currentSubmissionIdFor1st, id.getKey(), guildTag);
+                    statement.execute(insertSql);
                 } catch (IOException e) {
                     SendLogs.error(MODULE, String.format("IOException updating the sheet for <%s,%d> in %s", id.getValue(), id.getKey(), data.getTaskName()));
                     DiscordBot.client.retrieveUserById(id.getKey()).queue(user -> {
@@ -57,24 +100,10 @@ public class InsertDB {
                         SendLogs.discordError(MODULE, failure.getMessage());
                     });
                 }
-                getSql = GetSql.getSqlGetPlayerGuild(id.getKey());
-                response = statement.executeQuery(getSql);
-                String guildTag;
-                if (response.isClosed()) {
-                    insertPlayer(id, DEFAULT_GUILD_TAG, DEFAULT_GUILD_NAME);
-                    guildTag = DEFAULT_GUILD_TAG;
-                } else {
-                    guildTag = response.getString(2);
-                }
-                response.close();
-                String updateSql = GetSql.getSqlUpdatePlayerSoulJuice(id.getKey(), soulJuice);
-                statement.execute(updateSql);
-                insertSql = GetSql.getSqlInsertSubmissionLink(currentSubmissionId, id.getKey(), guildTag);
-                statement.execute(insertSql);
             }
             statement.executeBatch();
             statement.close();
-            return currentSubmissionId++;
+            return currentSubmissionIdFor1st;
         }
     }
 

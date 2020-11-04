@@ -1,6 +1,7 @@
 package apple.excursion.sheets;
 
 import apple.excursion.ExcursionMain;
+import apple.excursion.database.queries.InsertDB;
 import apple.excursion.discord.data.TaskSimple;
 import apple.excursion.utils.GetFromObject;
 import com.google.api.services.sheets.v4.model.*;
@@ -46,7 +47,7 @@ public class SheetsPlayerStats {
         return null;
     }
 
-    public synchronized static void submit(String questNameToAdd, long discordId, String discordName, int soulJuiceToAdd) throws IOException, NumberFormatException {
+    public synchronized static void submit(String questNameToAdd, long discordId, String discordName, boolean isDaily, boolean isNormal) throws IOException, NumberFormatException {
         int row = getRowFromDiscord(String.valueOf(discordId));
         if (row == -1) row = addProfile(discordId, discordName);
         int pointsToAdd = -1;
@@ -69,6 +70,7 @@ public class SheetsPlayerStats {
                         throw new NumberFormatException("Bad number in mission value");
                     }
                     pointsToAdd = questValue;
+                    if (isDaily && isNormal) pointsToAdd += questValue; // double points if its for a double submission
                     col = i;
                     break;
                 }
@@ -87,7 +89,7 @@ public class SheetsPlayerStats {
                     new ValueRange().setRange(range)
                             .setValues(Collections.singletonList(Collections.singletonList(String.valueOf(pointsThere + pointsToAdd))))
             ).setValueInputOption("USER_ENTERED").execute();
-            if (soulJuiceToAdd != 0) {
+            if (isDaily) {
                 range = PLAYER_STATS_SHEET + "!" + addA1Notation("A1", 2, row);
                 pointsThereRaw = SHEETS_VALUES.get(SPREADSHEET_ID, range).execute().getValues();
                 if (pointsThereRaw == null) pointsThere = 0;
@@ -97,7 +99,7 @@ public class SheetsPlayerStats {
                     throw new NumberFormatException("Bad number in player's soulJuice value at " + range);
                 SHEETS_VALUES.update(SPREADSHEET_ID, range,
                         new ValueRange().setRange(range)
-                                .setValues(Collections.singletonList(Collections.singletonList(String.valueOf(pointsThere + soulJuiceToAdd))))
+                                .setValues(Collections.singletonList(Collections.singletonList(String.valueOf(pointsThere + InsertDB.SOUL_JUICE_FOR_DAILY))))
                 ).setValueInputOption("USER_ENTERED").execute();
             }
         } catch (IOException e) {
