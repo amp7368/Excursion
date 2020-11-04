@@ -43,7 +43,7 @@ public class CompletedTasksMessage implements ReactableMessage {
         int upper = Math.min(taskNameToSubmissions.size(), (page + 1) * ENTRIES_PER_PAGE);
         char correspondingLetter = 65;
         for (int lower = page * ENTRIES_PER_PAGE; lower < upper; lower++) {
-            if(lower%5==0){
+            if (lower % 5 == 0) {
                 text.append(getDash());
             }
             Pair<Task, List<OldSubmission>> thisTaskNameAndSubmissions = taskNameToSubmissions.get(lower);
@@ -59,13 +59,14 @@ public class CompletedTasksMessage implements ReactableMessage {
                         break;
                 }
             }
-            text.append(String.format("%c: %-27s| %-10d| %-10d| %-8d| %-10b|\n",
+            int bulletsCount = thisTaskNameAndSubmissions.getKey().bulletsCount;
+            text.append(String.format("%c: %-27s| %-10d| %-10d| %-8s| %-10b|\n",
                     correspondingLetter++,
                     thisTaskNameAndSubmissions.getKey().name,
                     normalsCount,
                     dailiesCount,
-                    -1,
-                    normalsCount > -1
+                    bulletsCount == -1 ? "\u221E" : String.valueOf(bulletsCount),
+                    bulletsCount != -1 && normalsCount > bulletsCount
                     )
             );
         }
@@ -75,7 +76,7 @@ public class CompletedTasksMessage implements ReactableMessage {
     }
 
     private static String getDash() {
-        return "-".repeat(77)+"\n";
+        return "-".repeat(77) + "\n";
     }
 
     @Override

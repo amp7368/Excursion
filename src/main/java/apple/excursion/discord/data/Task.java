@@ -3,7 +3,9 @@ package apple.excursion.discord.data;
 import apple.excursion.utils.GetFromObject;
 
 import javax.annotation.Nullable;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Task {
     public final String category; // is lowercase
@@ -11,6 +13,7 @@ public class Task {
     public final String description;
     @Nullable
     public final String coordinates;
+    public final int bulletsCount;
     public int points;
     public final String createdBy;
     @Nullable
@@ -36,8 +39,9 @@ public class Task {
                 points = GetFromObject.getInt(epObject);
         }
         createdBy = row.get(5).toString();
-        images = row.size() < 8 ? null : row.get(7).toString();
-        isFail = GetFromObject.intFail(points);
+        bulletsCount = GetFromObject.getInt(row.get(7));
+        images = row.size() < 9 ? null : row.get(8).toString();
+        isFail = GetFromObject.intFail(points) || GetFromObject.intFail(bulletsCount);
     }
 
     @Override

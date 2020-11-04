@@ -2,11 +2,14 @@ package apple.excursion.sheets;
 
 import apple.excursion.discord.data.Task;
 import apple.excursion.utils.SendLogs;
+import com.google.api.services.sheets.v4.model.ValueRange;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static apple.excursion.sheets.SheetsConstants.*;
 

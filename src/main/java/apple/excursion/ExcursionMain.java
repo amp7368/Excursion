@@ -2,6 +2,7 @@ package apple.excursion;
 
 import apple.excursion.database.VerifyDB;
 import apple.excursion.discord.DiscordBot;
+import apple.excursion.sheets.SheetsTasks;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
@@ -66,13 +67,14 @@ public class ExcursionMain {
         return user;
     }
 
-    public static void main(String... args) throws IOException, GeneralSecurityException, SQLException, ClassNotFoundException, InterruptedException {
+    public static void main(String... args) throws IOException, GeneralSecurityException, SQLException, ClassNotFoundException {
         System.out.println("Starting Excursion");
         // Build a new authorized API client service.
         final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
         service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
                 .setApplicationName(APPLICATION_NAME)
                 .build();
+        new SheetsTasks().start();
         VerifyDB.connect();
         DiscordBot bot = new DiscordBot();
         try {
