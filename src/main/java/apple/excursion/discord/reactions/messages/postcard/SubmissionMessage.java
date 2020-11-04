@@ -51,7 +51,11 @@ public class SubmissionMessage {
             text.append("\n");
         }
         text.append("\n");
-        text.append(data.submissionHistoryMessage);
+        if (text.length() + data.submissionHistoryMessage.length() > 2040) {
+            text.append("The message is too long for the submission history");
+        } else {
+            text.append(data.submissionHistoryMessage);
+        }
         EmbedBuilder embed = new EmbedBuilder();
         try {
             User user = DiscordBot.client.retrieveUserById(data.getSubmitterId()).complete();
