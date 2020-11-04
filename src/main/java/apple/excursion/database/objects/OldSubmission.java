@@ -64,11 +64,11 @@ public class OldSubmission {
                 Pretty.date(dateSubmitted));
     }
 
-    public MessageEmbed getDisplay() {
+    public MessageEmbed getDisplay(String author) {
         List<String> otherSubmittersTemp = new ArrayList<>(otherSubmitters);
         otherSubmittersTemp.remove(submitter);
         EmbedBuilder embed = new EmbedBuilder();
-
+        embed.setAuthor(author);
         StringBuilder description = new StringBuilder();
         description.append("**");
         description.append(submitter);

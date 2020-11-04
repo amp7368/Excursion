@@ -38,8 +38,9 @@ public class HelpMessage implements ReactableMessage {
         embed.setTitle("Excursion Benchmarks commands");
         embed.addField("y!lb || y!leaderboard", "This player leaderboard ranks players by their EP of all time, shows their guild, and also shows how much EP a player has earned during the month and the last month", false);
         embed.addField("y!glb || y!gleaderboard", "This guild leaderboard ranks guilds by their EP of all time, shows their player who contributed the most EP, and also shows much much EP a guild has earned during the month and the last month", false);
-        embed.addField("y!glb [guild] || y!gleaderboard [guild]", "search for guild profile. it displays the guild progress bar, a ranked list of every player in the guild, and a submission record", false);
-        embed.addField("y!profile [player]", "search for player profile. it displays your progress bar for EP, a progress bar for your guild, a personalised recommendation list of tasks by most EP and a submission record", false);
+        embed.addField("y!glb [guild] || y!gleaderboard [guild]", "Search for guild profile. it displays the guild progress bar, a ranked list of every player in the guild, and a submission record", false);
+        embed.addField("y!profile [player]", "Search for player profile. it displays your progress bar for EP, a progress bar for your guild, a personalised recommendation list of tasks by most EP and a submission record", false);
+        embed.addField("y!completed","Shows a list of your completed tasks with a submission history for each.",false);
         helpPages.add(embed.build());
 
         embed = new EmbedBuilder();

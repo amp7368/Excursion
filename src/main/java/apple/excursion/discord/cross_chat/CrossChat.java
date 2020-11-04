@@ -203,7 +203,6 @@ public class CrossChat {
                 embedBuilder.setAuthor(messagesToAddReaction.username + " #" + messagesToAddReaction.myMessageId, null, messagesToAddReaction.avatarUrl);
                 embedBuilder.setDescription(makeReactionMessage(messagesToAddReaction.description, messagesToAddReaction.reactions));
                 if (messagesToAddReaction.imageUrl != null && !messagesToAddReaction.imageUrl.equals("null")) {
-                    System.out.println(messagesToAddReaction.imageUrl);
                     embedBuilder.setImage(messagesToAddReaction.imageUrl);
                 }
                 for (MessageId messageId : messagesToAddReaction.messageIds) {

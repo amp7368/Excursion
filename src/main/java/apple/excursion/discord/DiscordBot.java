@@ -35,7 +35,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class DiscordBot extends ListenerAdapter {
-    public static final String PREFIX = "t!";
+    public static final String PREFIX = "y!";
     public static final long EXCURSION_GUILD_ID = 555318916344184834L;
     public static final long APPLEPTR16 = 253646208084475904L;
     public static final int BOT_COLOR = 0x4e80f7;

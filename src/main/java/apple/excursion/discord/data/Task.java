@@ -53,4 +53,8 @@ public class Task {
     public boolean equals(Object other) {
         return other instanceof Task && ((Task) other).name.equalsIgnoreCase(name);
     }
+
+    public boolean isFallsShort(int size) {
+        return bulletsCount == -1 || size < bulletsCount;
+    }
 }

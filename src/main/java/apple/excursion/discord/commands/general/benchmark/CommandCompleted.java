@@ -28,7 +28,7 @@ public class CommandCompleted implements DoCommand {
         String name = coloredName.getName() == null ? ColoredName.getGuestName(member.getEffectiveName()) : coloredName.getName();
         PlayerData player;
         try {
-            player = GetDB.getPlayerData(new Pair<>(299547698527207435L, "Wybel God FlamingoBike"));
+            player = GetDB.getPlayerData(new Pair<>(member.getIdLong(), name));
         } catch (SQLException throwables) {
             event.getChannel().sendMessage("There was an SQLException getting your playerdata").queue();
             return;
