@@ -574,4 +574,16 @@ public class GetSql {
                 "FROM submissions_link\n" +
                 "WHERE submission_id = %d\n", submissionId);
     }
+
+    public static String getSqlUpdateTaskNameSubmissions(String oldName, String newName) {
+        return String.format("update submissions\n" +
+                "set task_name = '%s'\n" +
+                "where task_name = '%s';\n", newName, oldName);
+    }
+
+    public static String getSqlUpdateTaskNameResponses(String oldName, String newName) {
+        return String.format("update response\n" +
+                "set task_name = '%s'\n" +
+                "where task_name = '%s';\n", newName, oldName);
+    }
 }

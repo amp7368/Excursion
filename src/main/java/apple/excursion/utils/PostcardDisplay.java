@@ -13,7 +13,7 @@ public class PostcardDisplay {
         embed.setDescription(task.description);
         if (task.createdBy != null)
             embed.setFooter("Keep in mind each bullet point (-) is a task. You can make a task submission per bullet point.\n\nThis task was created by " +
-                    task.createdBy + String.format(" - Repeatable %s time%s",
+                    task.createdBy + (task.creationDate == null ? "" : " on " + task.creationDate) + String.format(" - Repeatable %s time%s",
                     task.bulletsCount == -1 ? "\u221E" : String.valueOf(task.bulletsCount), task.bulletsCount == 1 ? "" : "s"));
         else
             embed.setFooter("Keep in mind each bullet point (-) is a task. You can make a task submission per bullet point.");

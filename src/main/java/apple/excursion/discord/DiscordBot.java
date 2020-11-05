@@ -149,9 +149,13 @@ public class DiscordBot extends ListenerAdapter {
                 CrossChat.dealWithReaction(event);
             DatabaseResponseReactable.dealWithReaction(event);
         } catch (InsufficientPermissionException e) {
-            SendLogs.sendLogs(Collections.singletonList(
-                    String.format(e.getGuild(client).getName() + " did not give me the perms: " + e.getPermission().getName())
-            ));
+            Guild guild = e.getGuild(client);
+            String name = "";
+            if (guild == null)
+                name = e.getChannelType().name();
+            else
+                name = guild.getName();
+            SendLogs.sendLogs(Collections.singletonList(name + " did not give me the perms: " + e.getPermission().getName()));
         }
     }
 }

@@ -14,6 +14,8 @@ public class Task {
     @Nullable
     public final String coordinates;
     public final int bulletsCount;
+    @Nullable
+    public final String creationDate;
     public int points;
     public final String createdBy;
     @Nullable
@@ -39,7 +41,8 @@ public class Task {
                 points = GetFromObject.getInt(epObject);
         }
         createdBy = row.get(5).toString();
-        bulletsCount = GetFromObject.getInt(row.get(7));
+        bulletsCount = GetFromObject.getInt(row.get(6));
+        creationDate = row.size() < 8 ? null : row.get(7).toString();
         images = row.size() < 9 ? null : row.get(8).toString();
         isFail = GetFromObject.intFail(points) || GetFromObject.intFail(bulletsCount);
     }

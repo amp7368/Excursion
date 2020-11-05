@@ -25,8 +25,33 @@ public class CompletedTasksMessage implements ReactableMessage {
     private List<OldSubmission> currentOldSubmissions;
     private int oldSubmissionPage = 0;
     private long lastUpdated = System.currentTimeMillis();
+    private final int totalNormalsCompleted;
+    private final int totalDailiesCompleted;
+    private final int totalTaskBullets;
+    private final int totalTasks;
 
     public CompletedTasksMessage(PlayerData player, List<Pair<Task, List<OldSubmission>>> taskNameToSubmissions, MessageChannel channel) {
+        int tempTotalNormalsCompleted = 0;
+        int tempTotalDailiesCompleted = 0;
+        int tempTotalTaskBullets = 0;
+        int tempTotalTasks = 0;
+        for (Pair<Task, List<OldSubmission>> entry : taskNameToSubmissions) {
+            tempTotalTaskBullets += entry.getKey().bulletsCount == -1 ? 1 : entry.getKey().bulletsCount;
+            tempTotalTasks++;
+            for (OldSubmission submission : entry.getValue()) {
+                if (submission.submissionType == SubmissionData.TaskSubmissionType.DAILY) {
+                    tempTotalDailiesCompleted++;
+                } else {
+                    tempTotalNormalsCompleted++;
+                }
+            }
+        }
+
+        this.totalNormalsCompleted = tempTotalNormalsCompleted;
+        this.totalDailiesCompleted = tempTotalDailiesCompleted;
+        this.totalTaskBullets = tempTotalTaskBullets;
+        this.totalTasks = tempTotalTasks;
+
         this.player = player;
         this.taskNameToSubmissions = taskNameToSubmissions;
         this.taskNameToSubmissions.sort((t1, t2) -> {
@@ -83,7 +108,13 @@ public class CompletedTasksMessage implements ReactableMessage {
         text.append(getDash());
         text.append(String.format("   %-27s| %-10s| %-10s| %-8s| %-10s|\n", "Name", "Normals", "Dailies", "Task", "Fully"));
         text.append(String.format("   %-27s| %-10s| %-10s| %-8s| %-10s|\n", "", "Completed", "Completed", "Bullets", "Completed"));
-
+        text.append(getDash());
+        text.append(String.format("   %-27s| %-10d| %-10d| %-8d| %-10s|\n",
+                "Total Count",
+                totalNormalsCompleted,
+                totalDailiesCompleted,
+                totalTaskBullets,
+                "Tasks:" + totalTasks));
         int upper = Math.min(taskNameToSubmissions.size(), (page + 1) * ENTRIES_PER_PAGE);
         char correspondingLetter = 'A';
         for (int lower = page * ENTRIES_PER_PAGE; lower < upper; lower++) {

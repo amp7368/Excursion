@@ -70,4 +70,13 @@ public class UpdateDB {
             statement.close();
         }
     }
+
+    public static void updateTaskName(String oldName, String newName) throws SQLException {
+        synchronized (VerifyDB.syncDB){
+            Statement statement = VerifyDB.database.createStatement();
+            statement.execute(GetSql.getSqlUpdateTaskNameSubmissions(oldName,newName));
+            statement.execute(GetSql.getSqlUpdateTaskNameResponses(oldName,newName));
+            statement.close();
+        }
+    }
 }
