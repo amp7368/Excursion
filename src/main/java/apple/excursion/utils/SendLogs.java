@@ -81,23 +81,20 @@ public class SendLogs {
     }
 
     public static void error(String module, String message) {
-        MessageChannel dms;
+        String msg = String.format("[%s] %s", module, message);
         if (IS_CHANNEL) {
-            dms = DiscordBot.client.getTextChannelById(SENDER);
+            DiscordBot.client.getTextChannelById(SENDER).sendMessage(msg).queue();
         } else {
-            dms = DiscordBot.client.retrieveUserById(SENDER).complete().openPrivateChannel().complete();//todo
+            DiscordBot.client.retrieveUserById(SENDER).queue(user -> user.openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage(msg).queue()));//todo
         }
-        dms.sendMessage(String.format("[%s] %s", module, message)).queue();
-
     }
 
     public static void discordError(String module, String message) {
-        MessageChannel dms;
+        String msg = String.format("[%s] %s", module, message);
         if (IS_CHANNEL) {
-            dms = DiscordBot.client.getTextChannelById(SENDER);
+            DiscordBot.client.getTextChannelById(SENDER).sendMessage(msg).queue();
         } else {
-            dms = DiscordBot.client.retrieveUserById(SENDER).complete().openPrivateChannel().complete();//todo
+            DiscordBot.client.retrieveUserById(SENDER).queue(user -> user.openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage(msg).queue()));//todo
         }
-        dms.sendMessage(String.format("[%s] %s", module, message)).queue();
     }
 }

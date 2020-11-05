@@ -57,7 +57,7 @@ public class HelpMessage implements ReactableMessage {
         embed = new EmbedBuilder();
         embed.setColor(DiscordBot.BOT_COLOR);
         embed.setTitle("Postcard Task commands");
-        embed.addField("y!postcard", "List of missions, excursions, dares and total tasks organised in Alphabetical order", false);
+        embed.addField("y!postcard || y!pc", "List of missions, excursions, dares and total tasks organised in Alphabetical order", false);
         embed.addField("y!postcard [task]", "Search for an specific task and receive its information.", false);
         embed.addField("Note", "Each bullet point (-) is a task. You can make a task submission per bullet point.", false);
         embed.addField("y!calendar", "Weekly calendar of daily tasks. It displays 3 tasks per week day and 10 tasks for the weekend. I generate a new set of daily tasks at the start of every month", false);

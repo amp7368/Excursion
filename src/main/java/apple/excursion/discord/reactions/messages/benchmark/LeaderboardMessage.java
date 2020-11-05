@@ -15,7 +15,7 @@ import java.sql.SQLException;
 
 public class LeaderboardMessage implements ReactableMessage {
     private final PlayerLeaderboard leaderboard = GetDB.getPlayerLeaderboard();
-    public static final int ENTRIES_PER_PAGE = 20;
+    public static final int ENTRIES_PER_PAGE = 15;
     private final Message message;
     private int page;
     private long lastUpdated;

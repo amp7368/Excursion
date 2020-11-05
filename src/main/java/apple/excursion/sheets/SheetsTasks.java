@@ -4,11 +4,13 @@ import apple.excursion.discord.data.Task;
 import apple.excursion.utils.SendLogs;
 import com.google.api.services.sheets.v4.model.ValueRange;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static apple.excursion.sheets.SheetsConstants.*;
@@ -20,6 +22,15 @@ public class SheetsTasks extends Thread {
 
     public static List<Task> getTasks() {
         return tasks;
+    }
+
+    @Nullable
+    public static Task getTaskWithName(String taskName) {
+        Pattern pattern = Pattern.compile(".*" + taskName + ".*", Pattern.CASE_INSENSITIVE);
+        for (Task task : tasks) {
+            if (pattern.matcher(task.name).matches()) return task;
+        }
+        return null;
     }
 
     @Override

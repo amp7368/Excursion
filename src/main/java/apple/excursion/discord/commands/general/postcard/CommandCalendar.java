@@ -1,4 +1,4 @@
-package apple.excursion.discord.commands.general.benchmark;
+package apple.excursion.discord.commands.general.postcard;
 
 import apple.excursion.discord.commands.DoCommand;
 import apple.excursion.discord.reactions.messages.benchmark.CalendarMessage;

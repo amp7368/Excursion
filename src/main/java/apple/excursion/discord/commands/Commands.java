@@ -1,6 +1,8 @@
 package apple.excursion.discord.commands;
 
 import apple.excursion.discord.commands.general.benchmark.*;
+import apple.excursion.discord.commands.general.postcard.CommandCalendar;
+import apple.excursion.discord.commands.general.postcard.CommandDaily;
 import apple.excursion.discord.commands.general.settings.*;
 import apple.excursion.discord.commands.general.postcard.CommandPostcard;
 import apple.excursion.discord.commands.general.postcard.CommandSubmit;
@@ -20,12 +22,13 @@ public enum Commands {
     COMMAND_HISTORY(Collections.singletonList("history"), "Gives a history with intervals of the specified time", "[(optional) -m [months]] [(optional) -w [weeks]] [(optional) -d [days]]", new CommandHistory()),
     PROFILE(Collections.singletonList("profile"), "Gives the profile of the person who entered the command or the profile of the player_name", "[player_name]", new CommandProfile()),
     COMPLETED(Collections.singletonList("completed"), "Gives a list of completed tasks", "[(optional) task name]", new CommandCompleted()),
-    POSTCARD(Collections.singletonList("postcard"), "Gives a list of postcards or searches for taskName", "[(optional) postcard name)]", new CommandPostcard()),
+    POSTCARD(Arrays.asList("postcard", "pc"), "Gives a list of postcards or searches for taskName", "[(optional) postcard name)]", new CommandPostcard()),
     CALENDAR(Collections.singletonList("calendar"), "Gives a list of daily tasks", "", new CommandCalendar()),
     SUBMIT(Collections.singletonList("submit"), "Submits the attached evidence to be reviewed", "[url or attach image]", new CommandSubmit()),
     GUILD(Collections.singletonList("guild"), "Change your guild", "[guild tag]", new CommandGuild()),
     TITLE(Collections.singletonList("title"), "Change your rank and title", "[title]", new CommandTitle()),
-    BAN_LIST(Collections.singletonList("daily"), "Shows the list of daily bans", "", new CommandBanListDaily()),
+    BAN_LIST(Collections.singletonList("blacklist"), "Shows the list of daily bans", "", new CommandBanListDaily()),
+    DAILY(Collections.singletonList("daily"), "Shows the list of the daily tasks for today", "", new CommandDaily()),
     CROSS_CHAT_DELETE(Collections.singletonList("delete"), "Deletes the message corresponding to the id if it's your own", "[id]", new CommandCrossChatDelete()),
     BUG_REPORT(Collections.singletonList("bug"), "Reports the following message (with an optional image) as a bug", "", new CommandBugReport()),
     HELP(Collections.singletonList("help"), "Gives this help message", "", new CommandHelp());
