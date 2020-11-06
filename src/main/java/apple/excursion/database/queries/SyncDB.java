@@ -1,6 +1,8 @@
 package apple.excursion.database.queries;
 
+import apple.excursion.ExcursionMain;
 import apple.excursion.database.VerifyDB;
+import apple.excursion.database.objects.OldSubmission;
 import apple.excursion.database.objects.guild.GuildHeader;
 import apple.excursion.database.objects.player.PlayerData;
 import apple.excursion.database.objects.player.PlayerHeader;
@@ -9,10 +11,14 @@ import apple.excursion.discord.data.TaskSimple;
 import apple.excursion.discord.data.TaskSimpleCompleted;
 import apple.excursion.discord.data.answers.SubmissionData;
 import apple.excursion.discord.reactions.messages.benchmark.CalendarMessage;
+import apple.excursion.sheets.SheetsConstants;
+import apple.excursion.sheets.SheetsPlayerStats;
 import apple.excursion.sheets.profiles.Profile;
 import apple.excursion.utils.ColoredName;
 import apple.excursion.utils.Pair;
+import com.google.api.services.sheets.v4.model.*;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
@@ -251,6 +257,90 @@ public class SyncDB {
             statement.executeBatch();
             statement.close();
         }
+        return logs;
+    }
+
+    public static List<String> syncUsingDB(Set<Profile> sheetData, List<PlayerHeader> databasePlayers, List<PlayerData> databasePlayerDatas, List<TaskSimple> sheetTasks) throws IOException {
+        List<String> logs = new ArrayList<>();
+        List<Request> sheetRequests = new ArrayList<>();
+        for (PlayerData databasePlayer : databasePlayerDatas) {
+            Profile sheetPlayer = null;
+            for (Profile profile : sheetData) {
+                if (profile.hasId(databasePlayer.id)) {
+                    sheetPlayer = profile;
+                    break;
+                }
+            }
+            if (sheetPlayer == null) {
+                // todo make a new player row in the google sheet
+                continue;
+            }
+            Map<String, List<OldSubmission>> databaseSubmissions = new HashMap<>();
+            for (OldSubmission submission : databasePlayer.submissions) {
+                databaseSubmissions.putIfAbsent(submission.taskName, new ArrayList<>());
+                databaseSubmissions.get(submission.taskName).add(submission);
+            }
+            for (TaskSimpleCompleted sheetTask : sheetPlayer.tasksDone) {
+                databaseSubmissions.putIfAbsent(sheetTask.name, Collections.emptyList());
+            }
+            List<Pair<String, Integer>> databaseTasks = new ArrayList<>();
+            for (Map.Entry<String, List<OldSubmission>> entry : databaseSubmissions.entrySet()) {
+                int pointsEarned = 0;
+                for (OldSubmission submission : entry.getValue()) {
+                    pointsEarned += submission.score;
+                }
+                databaseTasks.add(new Pair<>(entry.getKey(), pointsEarned));
+            }
+            for (Pair<String, Integer> databaseTask : databaseTasks) {
+                // find the matching sheetTask and compare
+                for (TaskSimpleCompleted sheetTask : sheetPlayer.tasksDone) {
+                    if (databaseTask.getKey().equals(sheetTask.name)) {
+                        // we found the corresponding task
+                        if (databaseTask.getValue() == sheetTask.pointsEarned) {
+                            // this is a match
+                            continue;
+                        }
+                        logs.add(
+                                String.format("Correcting %s's sheet task %s having %d points while database task had %d points",
+                                        databasePlayer.name,
+                                        databaseTask.getKey(),
+                                        sheetTask.pointsEarned,
+                                        databaseTask.getValue()
+                                )
+                        );
+                        int sheetTaskIndex = 0;
+                        for (TaskSimple sheetTaskHeader : sheetTasks) {
+                            if (sheetTaskHeader.name.equals(sheetTask.name)) {
+                                Request sheetRequest = SheetsPlayerStats.getRequestUpdateCell(
+                                        sheetTaskIndex,
+                                        sheetPlayer.getRow(),
+                                        databaseTask.getValue());
+                                sheetRequests.add(sheetRequest);
+                                break;
+                            }
+                            sheetTaskIndex++;
+                        }
+                        break;
+                    }
+                }
+                break;
+            }
+            // update the soul juice of the player
+            if (sheetPlayer.getSoulJuice() != databasePlayer.getSoulJuice()) {
+                Request sheetRequest = SheetsPlayerStats.getRequestUpdateCell(
+                        -3,
+                        sheetPlayer.getRow(),
+                        databasePlayer.getSoulJuice());
+                sheetRequests.add(sheetRequest);
+                logs.add(String.format("Correcting %s's sheet soulJuice having %d points while database task had %d points",
+                        sheetPlayer.getName(), sheetPlayer.getSoulJuice(), databasePlayer.getSoulJuice()));
+            }
+
+        }
+        if (!sheetRequests.isEmpty()) {
+            ExcursionMain.service.spreadsheets().batchUpdate(SheetsConstants.SPREADSHEET_ID, new BatchUpdateSpreadsheetRequest().setRequests(sheetRequests)).execute();
+        }
+
         return logs;
     }
 

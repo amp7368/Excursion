@@ -586,4 +586,12 @@ public class GetSql {
                 "set task_name = '%s'\n" +
                 "where task_name = '%s';\n", newName, oldName);
     }
+
+    public static String getSqlGetUncompletedResponses(long channelId) {
+        return String.format("SELECT channel_id, message_id\n" +
+                "FROM response_link\n" +
+                "         INNER JOIN response ON response.response_id = response_link.response_id\n" +
+                "WHERE response.is_completed = FALSE\n" +
+                "  AND channel_id = %d;", channelId);
+    }
 }

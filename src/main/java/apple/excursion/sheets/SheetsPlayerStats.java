@@ -249,4 +249,30 @@ public class SheetsPlayerStats {
         }
         return tasks;
     }
+
+    public static Request getRequestUpdateCell(int sheetTaskIndex, int row, int value) {
+        return new Request().setUpdateCells(
+                new UpdateCellsRequest()
+                        .setFields("*")
+                        .setRows(
+                                Collections.singletonList(
+                                        new RowData().setValues(
+                                                Collections.singletonList(
+                                                        new CellData().setUserEnteredValue(
+                                                                new ExtendedValue().setNumberValue((double) value)
+                                                        )
+                                                )
+                                        )
+                                )
+                        )
+                        .setRange(
+                                new GridRange()
+                                        .setSheetId(PLAYER_STATS_SHEET_ID)
+                                        .setStartColumnIndex(5 + sheetTaskIndex)
+                                        .setEndColumnIndex(5 + sheetTaskIndex + 1)
+                                        .setStartRowIndex(4 + row)
+                                        .setEndRowIndex(4 + row + 1)
+                        )
+        );
+    }
 }

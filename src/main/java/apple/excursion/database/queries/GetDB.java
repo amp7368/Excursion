@@ -446,6 +446,23 @@ public class GetDB {
         }
     }
 
+    public static List<Pair<Long, Long>> getResponseMessages(long channelId) throws SQLException {
+        synchronized (VerifyDB.syncDB) {
+            String sql = GetSql.getSqlGetUncompletedResponses(channelId);
+            Statement statement = VerifyDB.database.createStatement();
+            ResultSet response = statement.executeQuery(sql);
+            List<Pair<Long, Long>> messages = new ArrayList<>();
+            if (!response.isClosed()) {
+                while (response.next()) {
+                    messages.add(new Pair<>(response.getLong(1), response.getLong(2)));
+                }
+            }
+            response.close();
+            statement.close();
+            return messages;
+        }
+    }
+
     public static List<CrossChatId> getDiscordChannels() throws SQLException {
         synchronized (VerifyDB.syncDB) {
             List<CrossChatId> channels = new ArrayList<>();

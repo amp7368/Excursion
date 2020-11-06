@@ -72,22 +72,7 @@ public class CompletedTasksMessage implements ReactableMessage {
                 return 1;
             if (fallShort2 && !fallShort1)
                 return -1;
-            if (!fallShort1) {
-                return String.CASE_INSENSITIVE_ORDER.compare(task1.name, task2.name);
-            }
-            int difference = l2.size() - l1.size();
-            if (difference == 0) {
-                int task1bulletsCount = task1.bulletsCount;
-                int task2bulletsCount = task2.bulletsCount;
-                if (task1bulletsCount == -1)
-                    task1bulletsCount = 999;
-                if (task2bulletsCount == -1)
-                    task2bulletsCount = 999;
-                if (task2bulletsCount - task1bulletsCount == 0)
-                    return String.CASE_INSENSITIVE_ORDER.compare(task1.name, task2.name);
-                return task2bulletsCount - task1bulletsCount;
-            }
-            return difference;
+            return String.CASE_INSENSITIVE_ORDER.compare(task1.name, task2.name);
         });
         message = channel.sendMessage(makeMessage()).complete();
         message.addReaction(AllReactables.Reactable.LEFT.getFirstEmoji()).queue();

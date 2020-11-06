@@ -33,6 +33,7 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.zip.CRC32;
 
 public class DiscordBot extends ListenerAdapter {
     public static final String PREFIX = "y!";
@@ -145,9 +146,8 @@ public class DiscordBot extends ListenerAdapter {
         }
         try {
             AllReactables.dealWithReaction(event);
-            if (event.isFromGuild())
+            if (event.isFromType(ChannelType.TEXT))
                 CrossChat.dealWithReaction(event);
-            DatabaseResponseReactable.dealWithReaction(event);
         } catch (InsufficientPermissionException e) {
             Guild guild = e.getGuild(client);
             String name = "";
@@ -157,5 +157,6 @@ public class DiscordBot extends ListenerAdapter {
                 name = guild.getName();
             SendLogs.sendLogs(Collections.singletonList(name + " did not give me the perms: " + e.getPermission().getName()));
         }
+        DatabaseResponseReactable.dealWithReaction(event);
     }
 }

@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 
 public class Profile {
+    private final int row;
     private int totalEp = 0;
     private int soulJuice = 0;
     private long discordId;
@@ -20,7 +21,8 @@ public class Profile {
     private final List<TaskSimple> tasksNotDone = new ArrayList<>();
     public final List<TaskSimpleCompleted> tasksDone = new ArrayList<>();
 
-    public Profile(Iterator<Object> profileRow) {
+    public Profile(Iterator<Object> profileRow, int row) {
+        this.row = row;
         if (!profileRow.hasNext()) return;
         discordId = GetFromObject.getLong(profileRow.next());
         if (GetFromObject.longFail(discordId))
@@ -50,6 +52,10 @@ public class Profile {
         guildTag = next.toString();
 
         complete = true;
+    }
+
+    public int getRow() {
+        return row;
     }
 
     public boolean isFail() {
