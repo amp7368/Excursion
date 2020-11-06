@@ -1,5 +1,6 @@
 package apple.excursion.discord.commands.general.settings;
 
+import apple.excursion.database.objects.OldSubmission;
 import apple.excursion.database.objects.player.PlayerData;
 import apple.excursion.database.queries.GetDB;
 import apple.excursion.discord.DiscordBot;
@@ -16,9 +17,7 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.exceptions.PermissionException;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class CommandTitle implements DoCommand {
     private static final List<Title> titles = Arrays.asList(
@@ -103,12 +102,13 @@ public class CommandTitle implements DoCommand {
                     isTitlesAvailable = true;
                 }
             }
+            helpEmbed.setAuthor(String.format("%d unique task%s completed", tasksDone, tasksDone == 1 ? "" : "s"));
             if (!isTitlesAvailable) {
-                description.append("You have no titles available right now.\n");
+                description.append("\nYou have no titles available right now.\n");
             }
 
             description.append("\n\n");
-            description.append("**You've unlocked these colors**");
+            description.append("**You've unlocked these colors:**");
             lastReq = -1;
             boolean isColorsAvailable = false;
             for (ColorRole color : colors) {
@@ -123,7 +123,7 @@ public class CommandTitle implements DoCommand {
                 }
             }
             if (!isColorsAvailable) {
-                description.append("You have no colors available right now.\n");
+                description.append("\nYou have no colors available right now.\n");
             }
             helpEmbed.setDescription(description.toString());
             helpEmbed.setImage("https://cdn.discordapp.com/attachments/743394724567711745/747884178493669509/info3.png"); // colors image
